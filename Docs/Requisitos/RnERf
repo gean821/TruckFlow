@@ -44,3 +44,16 @@ RNF06: As integrações com calendário e comandos de voz devem funcionar sem tr
 RNF07: O reconhecimento de voz deve ter precisão mínima de 50%.
 
 RNF08: Os relatórios devem ser atualizados automaticamente a cada 24hs
+
+
+
+
+Definição De Atores: 
+
+Usuário Comum
+
+Administrador do Sistema
+
+Módulo de Inteligência Artificial (IA)
+
+APIs Externas (Google Calendar, Outlook, etc.)
