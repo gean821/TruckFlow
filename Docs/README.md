@@ -1,4 +1,4 @@
-# 🚚 Projeto Aurora
+# 🚚 Projeto TruckFlow
 
 ## 📌 Descrição
 O **TruckFlow** é uma solução voltada para o **gerenciamento e automação de agendamentos** de descarga de caminhões de matéria-prima em fábricas.  
