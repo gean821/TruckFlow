@@ -5,7 +5,7 @@
 ## UC01 – Cadastro de Motorista
 
 **Atores Principais:** Motorista  
-**Atores Secundários:** Administrador (visualiza cadastros)  
+**Atores Secundários:** Sistema (valida cadastros)  
 
 **Pré-condições:**
 - O motorista deve ter acesso ao aplicativo.
