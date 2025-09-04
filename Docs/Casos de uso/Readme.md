@@ -1,11 +1,10 @@
 # 📄 Documento de Casos de Uso – TruckFlow
-
+#Atenção, o sistema nunca será um ator de caso de uso, ao fazer não inclua ele como um ator, e sim a validação,etc como parte do processo
 ---
 
 ## UC01 – Cadastro de Motorista
 
 **Atores Principais:** Motorista  
-**Atores Secundários:** Administrador (visualiza cadastros)  
 
 **Pré-condições:**
 - O motorista deve ter acesso ao aplicativo.
