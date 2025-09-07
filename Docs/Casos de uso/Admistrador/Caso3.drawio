@@ -1,0 +1,52 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36" version="28.2.0">
+  <diagram name="Página-2" id="ZmiVusArg0eAbAJM250A">
+    <mxGraphModel dx="1422" dy="743" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="7BSrLb9yEdah-kjwerx5-308" value="ADM&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="30" y="320" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7BSrLb9yEdah-kjwerx5-310" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="7BSrLb9yEdah-kjwerx5-308" target="7BSrLb9yEdah-kjwerx5-320">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-10" y="354" as="sourcePoint" />
+            <mxPoint x="247.57359312880726" y="348.2842712474617" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7BSrLb9yEdah-kjwerx5-320" value="Ver programação" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="300" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="7BSrLb9yEdah-kjwerx5-321" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;rounded=0;" edge="1" parent="1" source="7BSrLb9yEdah-kjwerx5-320" target="7BSrLb9yEdah-kjwerx5-322">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="370" y="310" as="sourcePoint" />
+            <mxPoint x="530" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7BSrLb9yEdah-kjwerx5-322" value="Cadastrar programação" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="290" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="7BSrLb9yEdah-kjwerx5-323" value="Informar dados" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="330" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="7BSrLb9yEdah-kjwerx5-324" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;rounded=0;exitX=0.75;exitY=0.038;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="7BSrLb9yEdah-kjwerx5-322" target="7BSrLb9yEdah-kjwerx5-325">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="590" y="196" as="sourcePoint" />
+            <mxPoint x="760" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7BSrLb9yEdah-kjwerx5-325" value="Voltar" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="140" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="7BSrLb9yEdah-kjwerx5-326" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;rounded=0;entryX=0.05;entryY=0.688;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="7BSrLb9yEdah-kjwerx5-322" target="7BSrLb9yEdah-kjwerx5-323">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="600" y="369.99999999999994" as="sourcePoint" />
+            <mxPoint x="781" y="352.96" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7BSrLb9yEdah-kjwerx5-327" value="CASO DE USO 4" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="70" width="276" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
