@@ -109,9 +109,19 @@ public Enum StatusAgendamento {
 	Pendente = 3,
 }
 
+public class Produto {
+	public Guid Id;
+	public string Nome;
+	public LocalDescarga LocalDescarga;
+}
+
 public enum TipoCarga {
 	Milho = 1,
 	Farelo = 2,
 	Soja = 3,
 	etc = 4,
+}
+
+public enum LocalDescarga {
+	...
 }
