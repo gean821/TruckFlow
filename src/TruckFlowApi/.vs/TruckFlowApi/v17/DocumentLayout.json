@@ -1,0 +1,58 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\ESTUDO\\TruckFlow\\src\\TruckFlowApi\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{BDFAE031-426F-4608-9667-DAA178F2D43A}|TruckFlowApi.Infra\\TruckFlowApi.Infra.csproj|c:\\estudo\\truckflow\\src\\truckflowapi\\truckflowapi.infra\\truckflowapi.infra.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{BDFAE031-426F-4608-9667-DAA178F2D43A}|TruckFlowApi.Infra\\TruckFlowApi.Infra.csproj|solutionrelative:truckflowapi.infra\\truckflowapi.infra.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8FCAF22B-38AF-4C74-B1D9-126FDED1D1A0}|TruckFlow\\TruckFlow.csproj|c:\\estudo\\truckflow\\src\\truckflowapi\\truckflow\\2-domain\\entities\\agendamento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8FCAF22B-38AF-4C74-B1D9-126FDED1D1A0}|TruckFlow\\TruckFlow.csproj|solutionrelative:truckflow\\2-domain\\entities\\agendamento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "TruckFlowApi.Infra",
+              "DocumentMoniker": "C:\\ESTUDO\\TruckFlow\\src\\TruckFlowApi\\TruckFlowApi.Infra\\TruckFlowApi.Infra.csproj",
+              "RelativeDocumentMoniker": "TruckFlowApi.Infra\\TruckFlowApi.Infra.csproj",
+              "ToolTip": "C:\\ESTUDO\\TruckFlow\\src\\TruckFlowApi\\TruckFlowApi.Infra\\TruckFlowApi.Infra.csproj",
+              "RelativeToolTip": "TruckFlowApi.Infra\\TruckFlowApi.Infra.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-09-08T05:15:33.987Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Agendamento.cs",
+              "DocumentMoniker": "C:\\ESTUDO\\TruckFlow\\src\\TruckFlowApi\\TruckFlow\\2-Domain\\Entities\\Agendamento.cs",
+              "RelativeDocumentMoniker": "TruckFlow\\2-Domain\\Entities\\Agendamento.cs",
+              "ToolTip": "C:\\ESTUDO\\TruckFlow\\src\\TruckFlowApi\\TruckFlow\\2-Domain\\Entities\\Agendamento.cs",
+              "RelativeToolTip": "TruckFlow\\2-Domain\\Entities\\Agendamento.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-08T05:11:24.966Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
