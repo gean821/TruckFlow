@@ -7,9 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Database\Configurations\" />
-    <Folder Include="Repositories\Interfaces\" />
-    <Folder Include="Repositories\" />
+    <Folder Include="Dto\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,10 +18,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\TruckFlow.Application\TruckFlow.Application.csproj" />
   </ItemGroup>
 
 </Project>

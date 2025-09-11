@@ -9,16 +9,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="2-Domain\Dto\" />
-    <Folder Include="1-API\Controllers\" />
-    <Folder Include="1-API\" />
-    <Folder Include="4-Services\Interfaces\" />
-    <Folder Include="Testes\" />
+    <ProjectReference Include="..\TruckFlow.Application\TruckFlow.Application.csproj" />
+    <ProjectReference Include="..\TruckFlow.Infrastructure\TruckFlow.Domain.csproj" />
+    <ProjectReference Include="..\TruckFlowApi.Infra\TruckFlowApi.Infra.csproj" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>
