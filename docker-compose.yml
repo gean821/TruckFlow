@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  sql-server:
+    container_name: sql-server-ecm
+    hostname: sql-server-ecm
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    user: root
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: root
+    ports:
+      - 1433:1433
+
+    volumes:
+      - type: volume
+        source: sqlserver-volume
+        target: /var/opt/mssql/backups
+        volume:
+          subpath: backup
+      - type: volume
+        source: sqlserver-volume
+        target: /var/opt/mssql/data
+        volume:
+          subpath: data
+      - type: volume
+        source: sqlserver-volume
+        target: /var/opt/mssql/log
+        volume:
+          subpath: log
+    networks:
+      - ecm
+
+# Volumes criados manualmente (ou que já existem)
+# volumes:
+#   ecm-sqlserverdb-backups:
+#     external: true
+#   ecm-sqlserverdb-data:
+#     external: true
+#   ecm-sqlserverdb-log:
+#     external: true
+
+# Networks criadas manualmente (ou que já existem)
+networks:
+  ecm:
+    external: true
+
+volumes:
+  sqlserver-volume:
+    external: true
+
+  mongodb-volume:
+    external: true
+
+  redis-volume:
+    external: true
+
+  rabbitmq-volume:
+    external: true

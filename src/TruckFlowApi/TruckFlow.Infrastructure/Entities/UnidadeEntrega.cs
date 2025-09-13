@@ -1,8 +1,9 @@
-﻿namespace TruckFlow.Infrastructure.Entities
+﻿using TruckFlow.Domain.Entities;
+
+namespace TruckFlow.Infrastructure.Entities
 {
-    public class UnidadeEntrega
+    public class UnidadeEntrega : EntidadeBase
     {
-        public required Guid Id { get; set; }
         public required string Nome { get; set; }
         public required string Localizacao { get; set; }
     }

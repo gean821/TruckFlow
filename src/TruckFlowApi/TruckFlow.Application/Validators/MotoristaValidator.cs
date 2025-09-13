@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FluentValidation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,9 @@ using TruckFlow.Infrastructure.Entities;
 
 namespace TruckFlow.Application.Validators
 {
-    public class MotoristaValidator
+    public class UsuarioValidator : AbstractValidator<Usuario>
     {
+        
+
     }
 }

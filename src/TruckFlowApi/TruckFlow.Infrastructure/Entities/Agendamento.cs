@@ -1,12 +1,12 @@
-﻿using TruckFlow.Infrastructure.Enums;
+﻿using TruckFlow.Domain.Entities;
+using TruckFlow.Infrastructure.Enums;
 
 namespace TruckFlow.Infrastructure.Entities
 {
-    public class Agendamento
+    public class Agendamento : EntidadeBase
     {
-        public required Guid Id { get; set; }
-        public required Motorista Motorista;
-        public required Guid MotoristaId { get; set; }
+        public required Usuario Usuario;
+        public required Guid UsuarioId { get; set; }
         public required Fornecedor Fornecedor { get; set; }
         public required Guid FornecedorId { get; set; }
         public required TipoCarga TipoCarga { get; set; }
@@ -17,8 +17,8 @@ namespace TruckFlow.Infrastructure.Entities
         public required NotaFiscal NotaFiscal { get; set; }
         public required Guid NotaFiscalId { get; set; }
         public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
-        public required DateTime HoraCriacao { get; set; }
-        public DateTime? HoraDelecao { get; set; }
-        public DateTime? HoraAtualizacao { get; set; }
+        public required DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }

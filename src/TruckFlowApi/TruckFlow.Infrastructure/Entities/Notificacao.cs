@@ -1,8 +1,9 @@
-﻿namespace TruckFlow.Infrastructure.Entities
+﻿using TruckFlow.Domain.Entities;
+
+namespace TruckFlow.Infrastructure.Entities
 {
-    public class Notificacao
+    public class Notificacao : EntidadeBase
     {
-        public required Guid Id { get; set; }
         public required string Descricao { get; set; }
     }
 }

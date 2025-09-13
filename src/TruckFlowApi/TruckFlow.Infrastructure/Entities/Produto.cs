@@ -1,8 +1,9 @@
-﻿namespace TruckFlow.Infrastructure.Entities
+﻿using TruckFlow.Domain.Entities;
+
+namespace TruckFlow.Infrastructure.Entities
 {
-    public class Produto
+    public class Produto : EntidadeBase
     {
-        public required Guid Id { get; set; }
         public required string Nome { get; set; }
         public required LocalDescarga LocalDescarga{ get; set; }
     }

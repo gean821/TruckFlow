@@ -1,10 +1,10 @@
-﻿using TruckFlow.Infrastructure.Enums;
+﻿using TruckFlow.Domain.Entities;
+using TruckFlow.Infrastructure.Enums;
 
 namespace TruckFlow.Infrastructure.Entities
 {
-    public class Carga
+    public class Carga : EntidadeBase
     {
-        public required Guid Id { get; set; }
         public Guid AgendamentoId;
         public TipoCarga TipoCarga {get;set;}
     }

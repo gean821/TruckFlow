@@ -19,7 +19,7 @@ namespace TruckFlowApi.Infra.Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfiguration(new MotoristaConfiguracao());
+            modelBuilder.ApplyConfiguration(new UsuarioConfiguracao());
             modelBuilder.ApplyConfiguration(new AgendamentoConfiguracao());
             modelBuilder.ApplyConfiguration(new CargaConfiguracao());
             modelBuilder.ApplyConfiguration(new VeiculoConfiguracao());
@@ -30,7 +30,7 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new UnidadeEntregaConfiguracao());
         }
 
-        public DbSet<Motorista> Motorista { get; set; }
+        public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Veiculo> Veiculo { get; set; }
         public DbSet<Produto> Produto { get; set; }
         public DbSet<Fornecedor> Fornecedor { get; set; }

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Infrastructure.Entities;
 
-namespace TruckFlow.Application.Interfaces
+namespace TruckFlow.Domain.Entities
 {
-    public interface IMotoristaService
+    public class EntidadeBase
     {
+        public Guid Id { get; set; }
     }
 }

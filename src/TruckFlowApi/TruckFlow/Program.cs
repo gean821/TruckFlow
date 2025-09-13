@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TruckFlow.Application.Auth;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Extensions.Auth;
 using TruckFlowApi.Infra.Database;
 
 
@@ -14,6 +17,7 @@ namespace TruckFlow
 
             // Add services to the container.
             builder.Services.AddControllers();
+            builder.Services.AddTransient<AuthService>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             
@@ -23,12 +27,14 @@ namespace TruckFlow
                 optionsBuilder.UseSqlServer(builder.Configuration["DefaultConnection"]);
             });
 
+            builder.AddAuthenticationJwt();
             builder.Services.AddAuthentication();
             builder.Services.AddAuthorization();
 
-            builder.Services
-                .AddIdentityApiEndpoints<Usuario>()
-                .AddEntityFrameworkStores<AppDbContext>();
+            builder.Services.AddIdentity<Usuario, IdentityRole>()
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
+                
 
             var app = builder.Build();
             app.MapIdentityApi<Usuario>();
