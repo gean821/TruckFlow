@@ -1,0 +1,35 @@
+services:
+  sql-server:
+    container_name: sql-server-truckflow
+    hostname: sql-server-ecm
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    user: root
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: Nesher#2019
+    ports:
+      - 1433:1433
+
+    volumes:
+      - truck-sqlserverdb-backups:/var/opt/mssql/backups
+      - truck-sqlserverdb-data:/var/opt/mssql/data
+      - truck-sqlserverdb-log:/var/opt/mssql/log
+    networks:
+      - truckflow
+
+networks:
+  truckflow:
+    external: false
+
+volumes:
+  truck-sqlserverdb-backups:
+    external: true
+    name: truck-sql-serverdb-backups
+  truck-sqlserverdb-data:
+    external: true
+    name: truck-sql-serverdb-data
+  truck-sqlserverdb-log:
+    external: true
+    name: truck-sql-serverdb-log
+  
