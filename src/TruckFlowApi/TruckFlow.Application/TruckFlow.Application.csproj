@@ -19,6 +19,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TruckFlow.Domain\TruckFlow.Domain.csproj" />
+    <ProjectReference Include="..\TruckFlowApi.Infra\TruckFlowApi.Infra.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Validators\Motorista\" />
   </ItemGroup>
 
 </Project>

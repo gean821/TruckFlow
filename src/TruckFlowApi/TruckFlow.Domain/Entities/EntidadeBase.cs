@@ -8,6 +8,6 @@ namespace TruckFlow.Domain.Entities
 {
     public class EntidadeBase
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
     }
 }

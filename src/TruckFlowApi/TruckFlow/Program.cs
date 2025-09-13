@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application.Auth;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Extensions.Auth;
+using TruckFlow.Extensions.Produto;
 using TruckFlowApi.Infra.Database;
 
 
@@ -14,10 +15,11 @@ namespace TruckFlow
         public static void Main(string[] args)
         { 
             var builder = WebApplication.CreateBuilder(args);
-
+            
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddTransient<AuthService>();
+            builder.Services.AddProduto();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             
