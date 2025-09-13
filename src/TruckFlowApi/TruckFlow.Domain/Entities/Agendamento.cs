@@ -1,11 +1,10 @@
-﻿using TruckFlow.Domain.Entities;
-using TruckFlow.Infrastructure.Enums;
+﻿using TruckFlow.Domain.Enums;
 
-namespace TruckFlow.Infrastructure.Entities
+namespace TruckFlow.Domain.Entities
 {
     public class Agendamento : EntidadeBase
     {
-        public required Usuario Usuario;
+        public required Usuario Usuario { get; set; }
         public required Guid UsuarioId { get; set; }
         public required Fornecedor Fornecedor { get; set; }
         public required Guid FornecedorId { get; set; }

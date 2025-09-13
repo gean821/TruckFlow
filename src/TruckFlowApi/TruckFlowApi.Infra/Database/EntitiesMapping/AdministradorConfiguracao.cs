@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 
-namespace TruckFlowApi.Infra.Database.Configurations
+namespace TruckFlowApi.Infra.Database.EntitiesMapping
 {
     public class AdministradorConfiguracao : IEntityTypeConfiguration<Administrador>
     {
@@ -33,10 +33,10 @@ namespace TruckFlowApi.Infra.Database.Configurations
             builder.Property(x => x.DeletedAt)
                 .IsRequired(false);
 
-            builder.HasOne<Usuario>(x => x.Usuario)
+            builder.HasOne(x => x.Usuario)
                 .WithOne(x => x.Administrador)
-                .HasForeignKey<Administrador>(x=> x.UsuarioId)
-                .IsRequired();
+                .HasForeignKey<Administrador>(x => x.UsuarioId)
+                .IsRequired(false);
         }
     }
 }

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
-using TruckFlow.Infrastructure.Entities;
 
 namespace TruckFlowApi.Infra.Database.Configurations
 {
@@ -15,6 +14,24 @@ namespace TruckFlowApi.Infra.Database.Configurations
         public void Configure(EntityTypeBuilder<Veiculo> builder)
         {
 
+            builder.ToTable(nameof(Veiculo));
+
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Nome)
+                .IsRequired();
+
+            builder.Property(x => x.Placa)
+                .IsRequired()
+                .HasMaxLength(7);
+
+            builder.Property(x => x.TipoVeiculo)
+                .IsRequired();
+
+            builder.HasOne<Motorista>(x => x.Motorista)
+                .WithOne(x => x.Veiculo)
+                .HasForeignKey<Veiculo>(x => x.MotoristaId)
+                .IsRequired();
         }
     }
 }

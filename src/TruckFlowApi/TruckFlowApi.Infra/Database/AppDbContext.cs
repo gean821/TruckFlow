@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -6,13 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
-using TruckFlow.Infrastructure.Entities;
 using TruckFlowApi.Infra.Database.Configurations;
 using TruckFlowApi.Infra.Database.EntitiesMapping;
 
 namespace TruckFlowApi.Infra.Database
 {
-    public class AppDbContext : IdentityDbContext<Usuario>
+    public class AppDbContext : IdentityDbContext<Usuario, IdentityRole<Guid>, Guid>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {

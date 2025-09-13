@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TruckFlow.Application\TruckFlow.Application.csproj" />
-    <ProjectReference Include="..\TruckFlow.Infrastructure\TruckFlow.Domain.csproj" />
+    <ProjectReference Include="..\TruckFlow.Domain\TruckFlow.Domain.csproj" />
     <ProjectReference Include="..\TruckFlowApi.Infra\TruckFlowApi.Infra.csproj" />
   </ItemGroup>
 

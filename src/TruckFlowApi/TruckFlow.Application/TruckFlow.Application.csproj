@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TruckFlow.Infrastructure\TruckFlow.Domain.csproj" />
+    <ProjectReference Include="..\TruckFlow.Domain\TruckFlow.Domain.csproj" />
   </ItemGroup>
 
 </Project>

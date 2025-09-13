@@ -1,4 +1,4 @@
-﻿namespace TruckFlow.Infrastructure.Enums
+﻿namespace TruckFlow.Domain.Enums
 {
     public enum TipoCarga
     {

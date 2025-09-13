@@ -31,7 +31,7 @@ namespace TruckFlow
             builder.Services.AddAuthentication();
             builder.Services.AddAuthorization();
 
-            builder.Services.AddIdentity<Usuario, IdentityRole>()
+            builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>()
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
                 

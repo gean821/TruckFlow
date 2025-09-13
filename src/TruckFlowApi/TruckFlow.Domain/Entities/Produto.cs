@@ -1,6 +1,4 @@
-﻿using TruckFlow.Domain.Entities;
-
-namespace TruckFlow.Infrastructure.Entities
+﻿namespace TruckFlow.Domain.Entities
 {
     public class Produto : EntidadeBase
     {

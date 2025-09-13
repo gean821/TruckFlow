@@ -6,9 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
-using TruckFlow.Infrastructure.Entities;
 
-namespace TruckFlowApi.Infra.Database.Configurations
+namespace TruckFlowApi.Infra.Database.EntitiesMapping
 {
     public class MotoristaConfiguracao : IEntityTypeConfiguration<Motorista>
     {
@@ -35,19 +34,14 @@ namespace TruckFlowApi.Infra.Database.Configurations
             builder.Property(x => x.DeletedAt)
                 .IsRequired(false);
 
-            builder.HasOne<Veiculo>(x => x.Veiculo)
+            builder.HasOne(x => x.Veiculo)
                 .WithOne(x => x.Motorista)
                 .HasForeignKey<Veiculo>(x => x.MotoristaId);
 
-            builder.HasMany<Agendamento>(x => x.Agendamentos)
-                .WithOne(x => x.Usuario.Motorista)
-                .HasForeignKey(x => x.UsuarioId)
-                .IsRequired(false);
-
-            builder.HasOne<Usuario>(x => x.Usuario)
+            builder.HasOne(x => x.Usuario)
                 .WithOne(x => x.Motorista)
                 .HasForeignKey<Motorista>(x => x.UsuarioId)
-                .IsRequired();
+                .IsRequired(false);
         }
     }
 }

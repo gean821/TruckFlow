@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
-using TruckFlow.Infrastructure.Entities;
 
 namespace TruckFlowApi.Infra.Database.EntitiesMapping
 {
@@ -26,13 +25,28 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .HasMaxLength(300);
 
             builder.Property(x => x.CreatedAt)
-                .IsRequired();
+                    .IsRequired();
             
             builder.Property(x => x.UpdatedAt)
-                .IsRequired(false);
+                    .IsRequired(false);
 
-            builder.Property(x => x.DeletedAt).IsRequired(false);
+            builder.Property(x => x.DeletedAt)
+                    .IsRequired(false);
 
+            builder.HasOne(u => u.Motorista)
+                    .WithOne(m => m.Usuario)
+                    .HasForeignKey<Motorista>(m => m.UsuarioId)
+                    .IsRequired(false);
+
+            builder.HasOne(u => u.Administrador)
+                    .WithOne(a => a.Usuario)
+                    .HasForeignKey<Administrador>(a => a.UsuarioId)
+                    .IsRequired(false);
+
+            builder.HasMany(u => u.Agendamentos)
+                    .WithOne(a => a.Usuario)
+                    .HasForeignKey(a => a.UsuarioId)
+                    .IsRequired(false);
         }
     }
 }
