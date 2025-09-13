@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Infrastructure.Entities;
 using TruckFlowApi.Infra.Database.Configurations;
+using TruckFlowApi.Infra.Database.EntitiesMapping;
 
 namespace TruckFlowApi.Infra.Database
 {

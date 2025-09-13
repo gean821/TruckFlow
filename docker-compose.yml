@@ -1,60 +1,35 @@
-version: '3.8'
-
 services:
   sql-server:
-    container_name: sql-server-ecm
+    container_name: sql-server-truckflow
     hostname: sql-server-ecm
     image: mcr.microsoft.com/mssql/server:2022-latest
     user: root
     restart: unless-stopped
     environment:
       ACCEPT_EULA: 'Y'
-      MSSQL_SA_PASSWORD: root
+      MSSQL_SA_PASSWORD: Nesher#2019
     ports:
       - 1433:1433
 
     volumes:
-      - type: volume
-        source: sqlserver-volume
-        target: /var/opt/mssql/backups
-        volume:
-          subpath: backup
-      - type: volume
-        source: sqlserver-volume
-        target: /var/opt/mssql/data
-        volume:
-          subpath: data
-      - type: volume
-        source: sqlserver-volume
-        target: /var/opt/mssql/log
-        volume:
-          subpath: log
+      - truck-sqlserverdb-backups:/var/opt/mssql/backups
+      - truck-sqlserverdb-data:/var/opt/mssql/data
+      - truck-sqlserverdb-log:/var/opt/mssql/log
     networks:
-      - ecm
+      - truckflow
 
-# Volumes criados manualmente (ou que já existem)
-# volumes:
-#   ecm-sqlserverdb-backups:
-#     external: true
-#   ecm-sqlserverdb-data:
-#     external: true
-#   ecm-sqlserverdb-log:
-#     external: true
-
-# Networks criadas manualmente (ou que já existem)
 networks:
-  ecm:
-    external: true
+  truckflow:
+    external: false
 
 volumes:
-  sqlserver-volume:
+  truck-sqlserverdb-backups:
     external: true
-
-  mongodb-volume:
+    name: truck-sql-serverdb-backups
+  truck-sqlserverdb-data:
     external: true
-
-  redis-volume:
+    name: truck-sql-serverdb-data
+  truck-sqlserverdb-log:
     external: true
-
-  rabbitmq-volume:
-    external: true
+    name: truck-sql-serverdb-log
+  

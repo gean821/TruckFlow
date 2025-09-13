@@ -44,8 +44,7 @@ namespace TruckFlow.Application.Auth
             var ci = new ClaimsIdentity();
             ci.AddClaim(new Claim(ClaimTypes.Name, usuario.UserName!));
             ci.AddClaim(new Claim(ClaimTypes.Email, usuario.Email!));
-            ci.AddClaim(new Claim("Telefone", usuario.Usuario?.Telefone.ToString()!));
-
+            ci.AddClaim(new Claim("Telefone", usuario.Motorista!.Telefone.ToString()));
             return ci;
         }
     }

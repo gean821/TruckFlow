@@ -24,7 +24,7 @@ namespace TruckFlow
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
             {
-                optionsBuilder.UseSqlServer(builder.Configuration["DefaultConnection"]);
+                optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
             builder.AddAuthenticationJwt();
@@ -37,8 +37,7 @@ namespace TruckFlow
                 
 
             var app = builder.Build();
-            app.MapIdentityApi<Usuario>();
-
+            
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
