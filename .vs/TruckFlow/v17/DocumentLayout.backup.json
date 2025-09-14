@@ -1,0 +1,301 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoCarga.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoCarga.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoVeiculo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoVeiculo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\FuncaoAdminstrador.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\FuncaoAdminstrador.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Veiculo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Veiculo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\UnidadeEntrega.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\UnidadeEntrega.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Produto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Produto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Notificacao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Notificacao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\NotaFiscal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\NotaFiscal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\LocalDescarga.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\LocalDescarga.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Fornecedor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Fornecedor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Carga.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Carga.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Agendamento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Agendamento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Motorista.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Motorista.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Administrador.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Administrador.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow\\appsettings.Development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow\\appsettings.Development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\TruckFlowApi\\TruckFlow\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 6,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TipoCarga.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoCarga.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoCarga.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoCarga.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoCarga.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T05:04:39.165Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "TipoVeiculo.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoVeiculo.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoVeiculo.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoVeiculo.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\TipoVeiculo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T05:04:28.093Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "FuncaoAdminstrador.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\FuncaoAdminstrador.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\FuncaoAdminstrador.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\FuncaoAdminstrador.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums\\FuncaoAdminstrador.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T05:03:06.526Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Veiculo.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Veiculo.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Veiculo.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Veiculo.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Veiculo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T05:01:26.63Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Usuario.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Usuario.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Usuario.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Usuario.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Usuario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T05:01:13.048Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "UnidadeEntrega.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\UnidadeEntrega.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\UnidadeEntrega.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\UnidadeEntrega.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\UnidadeEntrega.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T05:01:09.622Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "NotaFiscal.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\NotaFiscal.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\NotaFiscal.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\NotaFiscal.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\NotaFiscal.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T05:00:07.606Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Notificacao.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Notificacao.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Notificacao.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Notificacao.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Notificacao.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T05:00:02.762Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Produto.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Produto.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Produto.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Produto.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Produto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T05:00:00.971Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Carga.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Carga.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Carga.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Carga.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Carga.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T04:58:43.687Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "LocalDescarga.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\LocalDescarga.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\LocalDescarga.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\LocalDescarga.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\LocalDescarga.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T04:58:37.894Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Fornecedor.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Fornecedor.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Fornecedor.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Fornecedor.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Fornecedor.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T04:58:36.673Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Motorista.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Motorista.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Motorista.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Motorista.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Motorista.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T04:58:20.997Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Agendamento.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Agendamento.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Agendamento.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Agendamento.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Agendamento.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T04:58:17.473Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Administrador.cs",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Administrador.cs",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Administrador.cs",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Administrador.cs",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Administrador.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-13T04:58:04.224Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow\\appsettings.Development.json",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow\\appsettings.Development.json",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow\\appsettings.Development.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-09-13T04:56:06.998Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow\\appsettings.json",
+              "RelativeDocumentMoniker": "src\\TruckFlowApi\\TruckFlow\\appsettings.json",
+              "ToolTip": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow\\appsettings.json",
+              "RelativeToolTip": "src\\TruckFlowApi\\TruckFlow\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-09-13T04:56:03.965Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

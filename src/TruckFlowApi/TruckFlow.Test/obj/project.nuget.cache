@@ -1,0 +1,99 @@
+{
+  "version": 2,
+  "dgSpecHash": "bBK9ug6LdZ8=",
+  "success": false,
+  "projectFilePath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.9\\microsoft.entityframeworkcore.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\9.0.9\\microsoft.entityframeworkcore.abstractions.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\9.0.9\\microsoft.entityframeworkcore.analyzers.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\9.0.9\\microsoft.extensions.caching.abstractions.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.caching.memory\\9.0.9\\microsoft.extensions.caching.memory.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.9\\microsoft.extensions.dependencyinjection.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.9\\microsoft.extensions.dependencyinjection.abstractions.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.logging\\9.0.9\\microsoft.extensions.logging.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.9\\microsoft.extensions.logging.abstractions.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.options\\9.0.9\\microsoft.extensions.options.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.9\\microsoft.extensions.primitives.9.0.9.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\system.diagnostics.diagnosticsource\\9.0.9\\system.diagnostics.diagnosticsource.9.0.9.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Não foi possível resolver 'xunit.runner.visualstudio (>= 2.5.3)' para 'net8.0'. O PackageSourceMapping está habilitado, as seguintes fontes não foram consideradas: Microsoft Visual Studio Offline Packages, nuget.org.",
+      "projectPath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "filePath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "libraryId": "xunit.runner.visualstudio",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Não foi possível resolver 'Microsoft.EntityFrameworkCore.SqlServer (>= 9.0.9)' para 'net8.0'. O PackageSourceMapping está habilitado, as seguintes fontes não foram consideradas: Microsoft Visual Studio Offline Packages, nuget.org.",
+      "projectPath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "filePath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "libraryId": "Microsoft.EntityFrameworkCore.SqlServer",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Não foi possível resolver 'Microsoft.NET.Test.Sdk (>= 17.8.0)' para 'net8.0'. O PackageSourceMapping está habilitado, as seguintes fontes não foram consideradas: Microsoft Visual Studio Offline Packages, nuget.org.",
+      "projectPath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "filePath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "libraryId": "Microsoft.NET.Test.Sdk",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Não foi possível resolver 'Microsoft.AspNetCore.Authentication.JwtBearer (>= 8.0.20)' para 'net8.0'. O PackageSourceMapping está habilitado, as seguintes fontes não foram consideradas: Microsoft Visual Studio Offline Packages, nuget.org.",
+      "projectPath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "filePath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "libraryId": "Microsoft.AspNetCore.Authentication.JwtBearer",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Não foi possível resolver 'xunit (>= 2.5.3)' para 'net8.0'. O PackageSourceMapping está habilitado, as seguintes fontes não foram consideradas: Microsoft Visual Studio Offline Packages, nuget.org.",
+      "projectPath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "filePath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "libraryId": "xunit",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Não foi possível resolver 'coverlet.collector (>= 6.0.0)' para 'net8.0'. O PackageSourceMapping está habilitado, as seguintes fontes não foram consideradas: Microsoft Visual Studio Offline Packages, nuget.org.",
+      "projectPath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "filePath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "libraryId": "coverlet.collector",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Não foi possível resolver 'Microsoft.EntityFrameworkCore.Tools (>= 9.0.9)' para 'net8.0'. O PackageSourceMapping está habilitado, as seguintes fontes não foram consideradas: Microsoft Visual Studio Offline Packages, nuget.org.",
+      "projectPath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "filePath": "C:\\Users\\User\\Documents\\GitHub\\TruckFlow\\src\\TruckFlowApi\\TruckFlow.Test\\TruckFlow.Test.csproj",
+      "libraryId": "Microsoft.EntityFrameworkCore.Tools",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}

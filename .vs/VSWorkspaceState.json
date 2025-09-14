@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\TruckFlowApi",
+    "\\src\\TruckFlowApi\\TruckFlow.Infrastructure",
+    "\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities",
+    "\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Enums",
+    "\\src\\TruckFlowApi\\TruckFlow.Services",
+    "\\src\\TruckFlowApi\\TruckFlow.Test",
+    "\\src\\TruckFlowApi\\TruckFlowApi.Infra",
+    "\\src\\TruckFlowApi\\TruckFlowApi.Infra\\Database"
+  ],
+  "SelectedNode": "\\src\\TruckFlowApi\\TruckFlow.Infrastructure\\Entities\\Usuario.cs",
+  "PreviewInSolutionExplorer": false
+}
