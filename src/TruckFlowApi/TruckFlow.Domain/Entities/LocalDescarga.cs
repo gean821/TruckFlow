@@ -3,7 +3,6 @@
     public class LocalDescarga : EntidadeBase
     {
         public required string Nome { get; set; }
-        public required Produto Produto { get; set; }
-        public required Guid ProdutoId { get; set; }
+        public ICollection<Produto>? Produtos { get; set; } = new List<Produto>();
     }
 }

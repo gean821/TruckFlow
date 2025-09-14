@@ -52,3 +52,13 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+
+
+#Arquivos do dotnet
+.vs/
+*.db
+*.db-shm
+*.db-wal
+*.suo
+*.vsidx

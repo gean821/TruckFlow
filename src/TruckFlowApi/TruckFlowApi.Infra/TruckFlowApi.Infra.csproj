@@ -18,7 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TruckFlow.Application\TruckFlow.Application.csproj" />
     <ProjectReference Include="..\TruckFlow.Domain\TruckFlow.Domain.csproj" />
   </ItemGroup>
 
