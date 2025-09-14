@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TruckFlow.Domain.Entities
+namespace TruckFlow.Application.Factories
 {
-    public class EntidadeBase
+    public class LocalDescargaFactory
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        
+
     }
 }

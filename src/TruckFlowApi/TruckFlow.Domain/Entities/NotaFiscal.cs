@@ -11,7 +11,6 @@ namespace TruckFlow.Domain.Entities
         public required DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
-
         public Agendamento? Agendamento { get; set; }
     }
 }

@@ -10,8 +10,8 @@ namespace TruckFlow.Application.Interfaces
 {
     public interface IUsuarioService
     {
-        public Task<UsuarioDto> CreateUsuario(UserCreateDto Usuario);
-        public Task<UsuarioDto> GetById(Guid id, CancellationToken token);
+        public Task<UserResponseDto> CreateUsuario(UserCreateDto Usuario);
+        public Task<UserResponseDto> GetById(Guid id, CancellationToken token);
         public Task<List<Usuario>> GetAll();
         public Task<Usuario> UpdateUsuario(Guid id, Usuario Usuario, CancellationToken token);
         public Task<Usuario> Delete(Guid id, CancellationToken token);
