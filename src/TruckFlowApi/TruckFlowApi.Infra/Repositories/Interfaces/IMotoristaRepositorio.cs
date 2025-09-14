@@ -11,5 +11,6 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         public Task<List<Usuario>> GetAll();
         public Task<Usuario> UpdateUsuario(Guid id, Usuario Usuario, CancellationToken token);
         public Task<Usuario> Delete(Guid id, CancellationToken token);
+        public Task SaveChangesAsync(CancellationToken token = default);
     }
 }
