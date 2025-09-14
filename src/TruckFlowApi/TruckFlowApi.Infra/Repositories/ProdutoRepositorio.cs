@@ -28,14 +28,17 @@ namespace TruckFlowApi.Infra.Repositories
 
         public async Task<List<Produto>> GetAll(CancellationToken cancellationToken = default) =>
             await _db.Produto
-            .Include(x => x.LocalDescarga)
+            .Include(x=> x.LocalDescarga)
             .ToListAsync(cancellationToken);
 
 
 
         public async Task<Produto> GetById(Guid id, CancellationToken cancellationToken = default)
         {
-            var produto = await _db.Produto.FindAsync(id, cancellationToken);
+            var produto = await _db.Produto
+                .Include(x=> x.LocalDescarga)
+                .FirstOrDefaultAsync(x=> x.Id == id, cancellationToken);
+            
             return produto!;
         }
         
@@ -45,9 +48,8 @@ namespace TruckFlowApi.Infra.Repositories
             var produtoBuscado = await GetById(id, cancellationToken);
 
             produtoBuscado.LocalDescarga = produto.LocalDescarga;
+            produtoBuscado.LocalDescargaId = produto.LocalDescargaId;
             produtoBuscado.Id = produto.Id;
-            
-            _db.Produto.Update(produto);
 
             await SaveChangesAsync(cancellationToken);
             return produtoBuscado;

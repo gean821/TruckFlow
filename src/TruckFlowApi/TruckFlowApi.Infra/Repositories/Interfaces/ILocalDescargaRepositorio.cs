@@ -13,7 +13,7 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         public Task<List<LocalDescarga>> GetAll(CancellationToken token = default);
         public Task<LocalDescarga> CreateLocalDescarga(LocalDescarga local, CancellationToken token = default);
         public Task<LocalDescarga> Update(Guid id, LocalDescarga local,  CancellationToken token = default);
-        public Task Delete(Guid id, LocalDescarga local,  CancellationToken token = default);
+        public Task Delete(Guid id, CancellationToken token = default);
         public Task SaveChangesAsync(CancellationToken token = default);
     }
 }

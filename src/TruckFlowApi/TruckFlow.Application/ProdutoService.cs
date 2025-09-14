@@ -36,7 +36,9 @@ namespace TruckFlow.Application
             _localRepo = localRepo;
         }
 
-        public async Task<ProdutoResponse> CreateProduto(ProdutoCreateDto produto, CancellationToken cancellationToken = default)
+        public async Task<ProdutoResponse> CreateProduto(
+            ProdutoCreateDto produto,
+            CancellationToken cancellationToken = default)
         {
             ValidationResult validationResult = await _createValidator.ValidateAsync(produto, cancellationToken);
             
@@ -101,7 +103,10 @@ namespace TruckFlow.Application
         }
 
 
-        public async Task<ProdutoResponse> UpdateProduto(Guid id, ProdutoEditDto produto, CancellationToken cancellationToken = default)
+        public async Task<ProdutoResponse> UpdateProduto(
+            Guid id,
+            ProdutoEditDto produto,
+            CancellationToken cancellationToken = default)
         {
             var localDescarga = await _localRepo.GetById(produto.LocalDescargaId, cancellationToken) 
                 ?? throw new ArgumentNullException("Local de descarga não encontrado");
@@ -119,6 +124,7 @@ namespace TruckFlow.Application
 
             produtoEncontrado.Nome = produto.Nome;
             produtoEncontrado.LocalDescarga = localDescarga;
+            produtoEncontrado.LocalDescargaId = localDescarga.Id;
 
             var produtoAtualizado = await _repo.UpdateProduto(id, produtoEncontrado, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);

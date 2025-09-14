@@ -19,13 +19,13 @@ namespace TruckFlow.Application.Factories
         {
             var localDescarga = await _repo.GetById(dto.LocalDescargaId, token) 
                 ?? throw new ArgumentNullException("Não foi possível encontrar o local de descarga.");
-            
+
             return new Produto
             {
                 Nome = dto.Nome,
-                LocalDescarga = localDescarga
+                LocalDescarga = localDescarga,
+                LocalDescargaId = localDescarga.Id
             };
         }
-
     }
 }

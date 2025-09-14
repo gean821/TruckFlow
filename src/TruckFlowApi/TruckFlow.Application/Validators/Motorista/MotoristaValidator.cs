@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 
-namespace TruckFlow.Application.Validators
+namespace TruckFlow.Application.Validators.Motorista
 {
-    public class UsuarioValidator : AbstractValidator<Usuario>
+    public class MotoristaValidator : AbstractValidator<Usuario>
     {
     }
 }

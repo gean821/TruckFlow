@@ -17,7 +17,6 @@ namespace TruckFlow.Extensions.Produto
             services.AddTransient<IProdutoRepositorio, ProdutoRepositorio>();
             services.AddTransient<ILocalDescargaRepositorio, LocalDescargaRepositorio>();
             services.AddTransient<ProdutoFactory>();
-
             services.AddTransient<IValidator<ProdutoCreateDto>, ProdutoCreateValidator>();
             services.AddTransient<IValidator<ProdutoEditDto>, ProdutoEditValidator>();
 
