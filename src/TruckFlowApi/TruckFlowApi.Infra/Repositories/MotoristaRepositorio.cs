@@ -34,10 +34,5 @@ namespace TruckFlowApi.Infra.Repositories
         {
             throw new NotImplementedException();
         }
-
-        public Task SaveChangesAsync(CancellationToken token = default)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
