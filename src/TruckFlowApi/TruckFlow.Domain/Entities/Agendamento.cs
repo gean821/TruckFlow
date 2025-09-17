@@ -16,8 +16,5 @@ namespace TruckFlow.Domain.Entities
         public required NotaFiscal NotaFiscal { get; set; }
         public required Guid NotaFiscalId { get; set; }
         public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
-        public required DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public DateTime? DeletedAt { get; set; }
     }
 }

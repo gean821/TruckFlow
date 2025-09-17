@@ -56,7 +56,8 @@ namespace TruckFlow.Application
             {
                 Id = produtoCriado.Id,
                 Nome = produtoCriado.Nome,
-                LocalDescarga = produtoCriado.LocalDescarga.Nome
+                LocalDescarga = produtoCriado.LocalDescarga.Nome,
+                CreatedAt = produtoCriado.CreatedAt
             };
         }
 
@@ -69,7 +70,8 @@ namespace TruckFlow.Application
             {
                 Id = produtoEncontrado.Id,
                 Nome = produtoEncontrado.Nome,
-                LocalDescarga = produtoEncontrado.LocalDescarga.Nome
+                LocalDescarga = produtoEncontrado.LocalDescarga.Nome,
+                CreatedAt = produtoEncontrado.CreatedAt
             };
         }
 
@@ -96,7 +98,8 @@ namespace TruckFlow.Application
             {
                 Id = x.Id,
                 Nome = x.Nome,
-                LocalDescarga = x.LocalDescarga.Nome
+                LocalDescarga = x.LocalDescarga.Nome,
+                CreatedAt = x.CreatedAt
             }).ToList();
 
             return listaProdutosDto;
@@ -125,6 +128,7 @@ namespace TruckFlow.Application
             produtoEncontrado.Nome = produto.Nome;
             produtoEncontrado.LocalDescarga = localDescarga;
             produtoEncontrado.LocalDescargaId = localDescarga.Id;
+            produtoEncontrado.UpdatedAt = DateTime.UtcNow;
 
             var produtoAtualizado = await _repo.UpdateProduto(id, produtoEncontrado, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
@@ -133,17 +137,19 @@ namespace TruckFlow.Application
             {
                 Id = produtoAtualizado.Id,
                 Nome = produtoAtualizado.Nome,
-                LocalDescarga = produtoAtualizado.LocalDescarga.Nome
+                LocalDescarga = produtoAtualizado.LocalDescarga.Nome,
+                CreatedAt = produtoAtualizado.CreatedAt
             };
         }
 
         private ProdutoResponse MapToResponse(Produto p) => 
 
             new ProdutoResponse
-        {
-            Id = p.Id,
-            Nome = p.Nome,
-            LocalDescarga = p.LocalDescarga.Nome
-        };
-    }
+            {
+                Id = p.Id,
+                Nome = p.Nome,
+                LocalDescarga = p.LocalDescarga.Nome,
+                CreatedAt = p.CreatedAt
+            };
+       }
 }

@@ -50,6 +50,7 @@ namespace TruckFlowApi.Infra.Repositories
             produtoBuscado.LocalDescarga = produto.LocalDescarga;
             produtoBuscado.LocalDescargaId = produto.LocalDescargaId;
             produtoBuscado.Id = produto.Id;
+            produtoBuscado.UpdatedAt = DateTime.UtcNow;
 
             await SaveChangesAsync(cancellationToken);
             return produtoBuscado;
