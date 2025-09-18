@@ -7,7 +7,7 @@ using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Repositories.Interfaces
 {
-    internal interface IVeiculoRepositorio
+    public interface IVeiculoRepositorio
     {
         public Task<Veiculo> GetById(Guid id, CancellationToken token = default);
         public Task<List<Veiculo>> GetAll(CancellationToken token = default);
