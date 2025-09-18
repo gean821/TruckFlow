@@ -138,7 +138,8 @@ namespace TruckFlow.Application
                 Id = produtoAtualizado.Id,
                 Nome = produtoAtualizado.Nome,
                 LocalDescarga = produtoAtualizado.LocalDescarga.Nome,
-                CreatedAt = produtoAtualizado.CreatedAt
+                CreatedAt = produtoAtualizado.CreatedAt,
+                UpdatedAt = produtoAtualizado.UpdatedAt
             };
         }
 

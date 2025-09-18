@@ -140,6 +140,7 @@ namespace TruckFlow.Application
                 Id = f.Id,
                 Nome = f.Nome,
                 Produto = f.Produto.Nome,
+                CreatedAt = f.CreatedAt
         };
     }
 }

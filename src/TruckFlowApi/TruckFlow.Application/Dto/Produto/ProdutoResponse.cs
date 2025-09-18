@@ -14,6 +14,6 @@ namespace TruckFlow.Application.Dto.Produto
         public required string LocalDescarga { get; set; }
 
         public required DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
