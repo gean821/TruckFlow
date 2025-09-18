@@ -8,9 +8,6 @@ namespace TruckFlow.Domain.Entities
         public required Fornecedor Fornecedor{ get; set; }
         public Guid FornecedorId { get; set; }
         public required TipoCarga TipoCarga { get; set; }
-        public required DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public DateTime? DeletedAt { get; set; }
         public Agendamento? Agendamento { get; set; }
     }
 }

@@ -5,15 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 
-namespace TruckFlow.Application.Dto.Produto
+namespace TruckFlow.Application.Dto.Fornecedor
 {
-    public class ProdutoResponse
+    public class FornecedorResponse
     {
         public required Guid Id { get; set; }
         public required string Nome { get; set; }
-        public required string LocalDescarga { get; set; }
-
-        public required DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
+        public required string Produto { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

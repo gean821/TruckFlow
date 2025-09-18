@@ -9,8 +9,5 @@ namespace TruckFlow.Domain.Entities
         public Veiculo? Veiculo { get; set; }
         public required Usuario Usuario { get; set; }
         public required Guid UsuarioId { get; set; }
-        public required DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public DateTime? DeletedAt { get; set; }
     }
 }

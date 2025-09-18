@@ -24,7 +24,8 @@ namespace TruckFlow.Application.Factories
             {
                 Nome = dto.Nome,
                 LocalDescarga = localDescarga,
-                LocalDescargaId = localDescarga.Id
+                LocalDescargaId = localDescarga.Id,
+                CreatedAt = DateTime.UtcNow
             };
         }
     }
