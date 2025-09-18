@@ -63,7 +63,7 @@ namespace TruckFlow.Application
         public async Task<FornecedorResponse> GetById(Guid id, CancellationToken cancellatioToken = default)
         {
             var fornecedorEncontrado = await _repo.GetById(id, cancellatioToken)
-                ?? throw new ArgumentNullException("Fornecedor nçao encontrado");
+                ?? throw new ArgumentNullException("Fornecedor não encontrado");
 
             return new FornecedorResponse
             {
@@ -134,7 +134,7 @@ namespace TruckFlow.Application
             };
         }
 
-        private FornecedorResponse MapToResponse(Fornecedor f) => //Não entendi direito o MapToResponse
+        private FornecedorResponse MapToResponse(Fornecedor f) => 
             new FornecedorResponse
         {
                 Id = f.Id,

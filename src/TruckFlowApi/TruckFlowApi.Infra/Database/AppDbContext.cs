@@ -23,6 +23,7 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new UsuarioConfiguracao());
             modelBuilder.ApplyConfiguration(new AgendamentoConfiguracao());
             modelBuilder.ApplyConfiguration(new CargaConfiguracao());
+            modelBuilder.ApplyConfiguration(new MotoristaConfiguracao());
             modelBuilder.ApplyConfiguration(new VeiculoConfiguracao());
             modelBuilder.ApplyConfiguration(new AdministradorConfiguracao());
             modelBuilder.ApplyConfiguration(new NotificacaoConfiguracao());
@@ -33,6 +34,7 @@ namespace TruckFlowApi.Infra.Database
 
         public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Veiculo> Veiculo { get; set; }
+        public DbSet<Motorista> Motorista { get; set; }
         public DbSet<Produto> Produto { get; set; }
         public DbSet<Fornecedor> Fornecedor { get; set; }
         public DbSet<Carga> Carga { get; set; }
