@@ -23,8 +23,8 @@ namespace TruckFlow.Application.Factories
             return new Fornecedor
             {
                 Nome = dto.Nome,
-                Produto = produto,
-                ProdutoId = produto.Id
+                //Produto = produto,
+                //ProdutoId = produto.Id
             };
         }
     }

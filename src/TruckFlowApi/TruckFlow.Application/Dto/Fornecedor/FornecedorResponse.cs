@@ -11,7 +11,7 @@ namespace TruckFlow.Application.Dto.Fornecedor
     {
         public required Guid Id { get; set; }
         public required string Nome { get; set; }
-        public required string Produto { get; set; }
+        public string? Produto { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }
