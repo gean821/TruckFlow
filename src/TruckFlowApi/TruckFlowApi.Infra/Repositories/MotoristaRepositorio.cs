@@ -52,7 +52,7 @@ namespace TruckFlowApi.Infra.Repositories
             motoristaEncontrado.Telefone = motorista.Telefone;
             motoristaEncontrado.Veiculo = motorista.Veiculo;
             motoristaEncontrado.VeiculoId = motorista.VeiculoId;
-
+            motoristaEncontrado.UpdatedAt = DateTime.Now;
 
             await SaveChangesAsync(token);
             return motoristaEncontrado;
@@ -66,9 +66,12 @@ namespace TruckFlowApi.Infra.Repositories
             await SaveChangesAsync(token);
         }
 
-        public Task SaveChangesAsync(CancellationToken token = default)
+        public async Task SaveChangesAsync(CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            await _db.SaveChangesAsync(token);
         }
     }
+
+
+
 }
