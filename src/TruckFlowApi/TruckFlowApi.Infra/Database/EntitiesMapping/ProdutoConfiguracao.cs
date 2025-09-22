@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 
-namespace TruckFlowApi.Infra.Database.Configurations
+namespace TruckFlowApi.Infra.Database.EntitiesMapping
 {
     public class ProdutoConfiguracao : IEntityTypeConfiguration<Produto>
     {
@@ -24,6 +24,20 @@ namespace TruckFlowApi.Infra.Database.Configurations
                 .WithMany(x => x.Produtos)
                 .HasForeignKey(x => x.LocalDescargaId)
                 .IsRequired();
+
+            builder.HasMany(x => x.Fornecedores)
+                .WithMany(x => x.Produtos)
+                .UsingEntity<ProdutoFornecedor>(x => x.HasOne(pf => pf.Fornecedor)
+                .WithMany()
+                .HasForeignKey(pf => pf.FornecedorId),
+                x => x.HasOne(x => x.Produto)
+                .WithMany()
+                .HasForeignKey(x => x.ProdutoId),
+                x =>
+                {
+                    x.HasKey(pf => new { pf.ProdutoId, pf.FornecedorId });
+                    x.ToTable("ProdutoFornecedor");
+                });
         }
     }
 }

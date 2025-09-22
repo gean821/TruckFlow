@@ -56,7 +56,6 @@ namespace TruckFlow.Application
             {
                 Id = fornecedorCriado.Id,
                 Nome = fornecedorCriado.Nome,
-                Produto = fornecedorCriado.Produto.Nome
             };
         }
 
@@ -69,7 +68,6 @@ namespace TruckFlow.Application
             {
                 Id = fornecedorEncontrado.Id,
                 Nome = fornecedorEncontrado.Nome,
-                Produto = fornecedorEncontrado.Produto.Nome
             };
         }
 
@@ -95,7 +93,6 @@ namespace TruckFlow.Application
             {
                 Id = x.Id,
                 Nome = x.Nome,
-                Produto = x.Produto.Nome
             }).ToList();
             
             return listaFornecedorDto;
@@ -120,8 +117,8 @@ namespace TruckFlow.Application
                 ?? throw new ArgumentNullException("Fornecedor não encontrado.");
 
             fornecedorEncontrado.Nome = fornecedor.Nome;
-            fornecedorEncontrado.Produto = produto;
-            fornecedorEncontrado.ProdutoId = produto.Id;
+            //fornecedorEncontrado.Produto = produto;
+            //fornecedorEncontrado.ProdutoId = produto.Id;
 
             var fornecedorAtualizado = await _repo.Update(id, fornecedorEncontrado, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
@@ -130,7 +127,7 @@ namespace TruckFlow.Application
             {
                 Id = fornecedorAtualizado.Id,
                 Nome = fornecedorAtualizado.Nome,
-                Produto = fornecedorAtualizado.Produto.Nome
+                //Produto = fornecedorAtualizado.Produto.Nome
             };
         }
 
@@ -139,7 +136,7 @@ namespace TruckFlow.Application
         {
                 Id = f.Id,
                 Nome = f.Nome,
-                Produto = f.Produto.Nome,
+                //Produto = f.Produto.Nome,
                 CreatedAt = f.CreatedAt
         };
     }
