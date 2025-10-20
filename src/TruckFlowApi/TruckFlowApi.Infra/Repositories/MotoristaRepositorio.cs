@@ -71,7 +71,4 @@ namespace TruckFlowApi.Infra.Repositories
             await _db.SaveChangesAsync(token);
         }
     }
-
-
-
 }
