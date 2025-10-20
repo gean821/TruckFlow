@@ -4,11 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using TruckFlow.Domain.Entities;
 using TruckFlow.Application.Dto.Fornecedor;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
@@ -130,6 +131,13 @@ namespace TruckFlow.Application
                 //Produto = fornecedorAtualizado.Produto.Nome
             };
         }
+        public async Task<FornecedorResponse> GetByNome(string nome, CancellationToken token = default)
+        {
+            var fornecedorEncontrado = await _repo.GetByNome(nome, token)
+               ?? throw new ArgumentNullException("Fornecedor não encontrado");
+
+            return MapToResponse(fornecedorEncontrado);
+        }
 
         private FornecedorResponse MapToResponse(Fornecedor f) => 
             new FornecedorResponse
@@ -139,6 +147,7 @@ namespace TruckFlow.Application
                 //Produto = f.Produto.Nome,
                 CreatedAt = f.CreatedAt
         };
+
     }
 }
 

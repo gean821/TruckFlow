@@ -15,5 +15,7 @@ namespace TruckFlow.Application.Interfaces
         public Task<FornecedorResponse> CreateFornecedor(FornecedorCreateDto fornecedor, CancellationToken token = default);
         public Task<FornecedorResponse> UpdateFornecedor(Guid id, FornecedorUpdateDto fornecedor, CancellationToken token = default);
         public Task DeleteFornecedor(Guid id, CancellationToken token = default);
+
+        public Task<FornecedorResponse> GetByNome(string nome, CancellationToken token = default);
     }
 }

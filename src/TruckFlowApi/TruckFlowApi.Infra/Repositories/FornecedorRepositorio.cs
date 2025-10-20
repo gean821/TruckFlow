@@ -61,7 +61,15 @@ namespace TruckFlowApi.Infra.Repositories
             _db.Remove(fornecedorEncontrado);
             await SaveChangesAsync(token);
         }
+        public async Task<Fornecedor> GetByNome(string nome, CancellationToken token = default)
+        {
+            var fornecedor = await _db.Fornecedor
+                .Include(x => x.NotaFiscal)
+                .Include(x => x.Agendamento)
+                .FirstOrDefaultAsync(x => x.Nome == nome, token);
 
+            return fornecedor!;
+        }
         public async Task SaveChangesAsync(CancellationToken token = default)
         {
             await _db.SaveChangesAsync(token);
