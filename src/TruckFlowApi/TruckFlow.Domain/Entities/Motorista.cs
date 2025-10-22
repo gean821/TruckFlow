@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace TruckFlow.Domain.Entities
+namespace TruckFlow.Application.Entities
 {
     public class Motorista : EntidadeBase
     {

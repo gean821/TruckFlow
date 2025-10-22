@@ -1,12 +1,11 @@
 ﻿using FluentValidation;
-using TruckFlow.Application;
-using TruckFlow.Application.Dto.LocalDescarga;
-using TruckFlow.Application.Dto.Produto;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Application;
 using TruckFlow.Application.Validators.LocalDescarga;
 using TruckFlow.Application.Validators.Produto;
 using TruckFlowApi.Infra.Repositories;
 using TruckFlowApi.Infra.Repositories.Interfaces;
+using TruckFlow.Domain.Dto.LocalDescarga;
 
 namespace TruckFlow.Extensions.LocalDescarga
 {

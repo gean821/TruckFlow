@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 using TruckFlow.Application;
-using TruckFlow.Application.Dto.Produto;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Validators.Produto;
+using TruckFlow.Domain.Dto.Produto;
 using TruckFlowApi.Infra.Repositories;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 

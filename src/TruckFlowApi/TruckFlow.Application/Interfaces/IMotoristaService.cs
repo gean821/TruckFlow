@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TruckFlow.Application.Interfaces
+namespace TruckFlow.Application.Interfaces;
+
+public interface IMotoristaService
 {
-    public interface IMotoristaService
-    {
-    }
+
 }

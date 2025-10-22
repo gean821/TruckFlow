@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TruckFlow.Domain.Entities
+namespace TruckFlow.Application.Entities
 {
     public class Usuario : IdentityUser<Guid>   //aqui fica o usuario base do identity, autenticação, roles, está tudo aqui.
     { 

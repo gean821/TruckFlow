@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TruckFlow.Domain.Entities;
+using TruckFlow.Application.Entities;
 using TruckFlowApi.Infra.Database;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 

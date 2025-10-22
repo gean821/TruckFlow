@@ -1,4 +1,4 @@
-﻿namespace TruckFlow.Domain.Entities
+﻿namespace TruckFlow.Application.Entities
 {
     public class Fornecedor : EntidadeBase
     {

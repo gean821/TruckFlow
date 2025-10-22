@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Dto.Fornecedor;
+using TruckFlow.Domain.Dto.Fornecedor;
 
 namespace TruckFlow.Application.Validators.Fornecedor
 {

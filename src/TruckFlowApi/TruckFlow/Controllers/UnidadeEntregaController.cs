@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TruckFlow.Application.Dto.UnidadeEntrega;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.UnidadeEntrega;
 namespace TruckFlow.Controllers
 {
     [ApiController]

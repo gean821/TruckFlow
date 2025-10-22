@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Dto.Veiculo;
-using TruckFlow.Domain.Entities;
+using TruckFlow.Application.Entities;
+using TruckFlow.Domain.Dto.Veiculo;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application.Factories

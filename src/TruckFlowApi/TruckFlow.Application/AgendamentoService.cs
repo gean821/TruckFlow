@@ -5,12 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Dto.Agendamento;
-using TruckFlow.Application.Dto.Fornecedor;
 using TruckFlow.Application.Factories;
-using TruckFlow.Application.Interfaces;
-using TruckFlow.Domain.Entities;
+using TruckFlow.Application.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
+using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.Agendamento;
 //aqui vou precisar deixar assim até defiinir como vamos usar a notaFiscal no projeto..
 
 namespace TruckFlow.Application

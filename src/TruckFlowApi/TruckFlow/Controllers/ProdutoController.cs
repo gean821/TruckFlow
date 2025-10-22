@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TruckFlow.Application.Dto.Produto;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.Produto;
 
 namespace TruckFlow.Controllers
 {

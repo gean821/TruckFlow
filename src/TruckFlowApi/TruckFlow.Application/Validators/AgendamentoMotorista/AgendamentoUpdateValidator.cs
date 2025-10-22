@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Dto.Agendamento;
+using TruckFlow.Domain.Dto.Agendamento;
 
 namespace TruckFlow.Application.Validators.AgendamentoMotorista
 {

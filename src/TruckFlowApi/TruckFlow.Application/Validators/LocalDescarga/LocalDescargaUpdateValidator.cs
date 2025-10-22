@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Dto.LocalDescarga;
+using TruckFlow.Domain.Dto.LocalDescarga;
 
 namespace TruckFlow.Application.Validators.LocalDescarga
 {

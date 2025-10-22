@@ -1,8 +1,9 @@
-﻿namespace TruckFlow.Domain.Enums
+﻿namespace TruckFlow.Application.Enums
 {
     public enum TipoCarga
     {
         // Grãos
+        Indefinido = 0,
         Milho = 1,
         SojaCrua = 2,
         FareloDeSoja = 3,

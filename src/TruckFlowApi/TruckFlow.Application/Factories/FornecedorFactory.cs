@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Dto.Fornecedor;
-using TruckFlow.Domain.Entities;
+using TruckFlow.Application.Entities;
+using TruckFlow.Domain.Dto.Fornecedor;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application.Factories
@@ -15,7 +15,10 @@ namespace TruckFlow.Application.Factories
 
         public FornecedorFactory(IProdutoRepositorio repo) => _repo = repo;
 
-        public async Task<Fornecedor> CreateFornecedorFromDto(FornecedorCreateDto dto, CancellationToken token = default)
+        public async Task<Fornecedor> CreateFornecedorFromDto(
+            FornecedorCreateDto dto,
+            CancellationToken token = default
+            )
         {
             var produto = await _repo.GetById(dto.ProdutoId, token)
                 ?? throw new ArgumentNullException("Não foi possível encontrar o produto.");
