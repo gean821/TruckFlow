@@ -38,9 +38,7 @@ namespace TruckFlow.Application
             AgendamentoCreateDto agendamento,
             CancellationToken token = default)
         {
-
-            throw new NotImplementedException();
-           
+            throw new NotImplementedException();  
         }
 
         public async Task Delete(Guid id, CancellationToken token = default)

@@ -34,7 +34,6 @@ namespace TruckFlow.Controllers
             {
                 return NotFound();
             }
-
             return Ok(produto);
         }
 
