@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Dto.Agendamento;
-using TruckFlow.Domain.Entities;
+using TruckFlow.Application.Entities;
+using TruckFlow.Domain.Dto.Agendamento;
 
 namespace TruckFlow.Application.Interfaces
 {

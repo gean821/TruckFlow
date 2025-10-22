@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TruckFlow.Application.Dto.Agendamento;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.Agendamento;
 namespace TruckFlow.Controllers
 {
     [ApiController]

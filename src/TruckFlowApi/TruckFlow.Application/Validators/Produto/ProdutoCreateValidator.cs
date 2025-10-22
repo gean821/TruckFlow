@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Dto.Produto;
+using TruckFlow.Domain.Dto.Produto;
 
 namespace TruckFlow.Application.Validators.Produto
 {

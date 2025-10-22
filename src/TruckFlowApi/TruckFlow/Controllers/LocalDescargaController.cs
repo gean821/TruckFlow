@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TruckFlow.Application.Dto.LocalDescarga;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.LocalDescarga;
 
 namespace TruckFlow.Controllers
 {

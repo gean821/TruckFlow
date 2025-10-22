@@ -1,11 +1,11 @@
 ﻿using FluentValidation;
-using TruckFlow.Application;
-using TruckFlow.Application.Dto.Fornecedor;
-using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Application;
+using TruckFlow.Application.Factories;
 using TruckFlow.Application.Validators.Fornecedor;
 using TruckFlowApi.Infra.Repositories;
 using TruckFlowApi.Infra.Repositories.Interfaces;
+using TruckFlow.Domain.Dto.Fornecedor;
 
 namespace TruckFlow.Extensions.Fornecedor
 {

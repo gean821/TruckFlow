@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Dto.UnidadeEntrega;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Validators.UnidadeEntrega;
-using TruckFlow.Domain.Entities;
+using TruckFlow.Application.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
+using TruckFlow.Domain.Dto.UnidadeEntrega;
 
 namespace TruckFlow.Application
 {

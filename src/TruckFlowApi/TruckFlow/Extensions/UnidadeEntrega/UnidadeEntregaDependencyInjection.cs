@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 using TruckFlow.Application;
-using TruckFlow.Application.Dto.UnidadeEntrega;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Validators.UnidadeEntrega;
+using TruckFlow.Domain.Dto.UnidadeEntrega;
 using TruckFlowApi.Infra.Repositories;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
