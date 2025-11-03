@@ -18,7 +18,7 @@ namespace TruckFlow.Application.Validators.Fornecedor
                 .MinimumLength(2)
                 .WithMessage("O nome precisa de ao menos 2 caracteres");
 
-            RuleFor(x => x.ProdutoId)
+            RuleFor(x => x.ProdutoIds)
                 .NotEmpty()
                 .WithMessage("Deve ser selecionado ao menos 1 produto associado");
         }

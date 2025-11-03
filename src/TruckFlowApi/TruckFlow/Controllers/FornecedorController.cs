@@ -62,5 +62,42 @@ namespace TruckFlow.Controllers
             await _service.DeleteFornecedor(id, ct);
             return NoContent();
         }
+
+        [HttpPost("{fornecedorId}/produtos/{produtoId}")]
+        public async Task<IActionResult> AddProdutoToFornecedor
+            (
+                [FromRoute]Guid fornecedorId, 
+                [FromRoute] Guid produtoId,
+                CancellationToken token
+           )
+        {
+            var produtoAdicionado = await _service
+                .AddProdutoToFornecedorAsync(fornecedorId, produtoId, token);
+
+            return Ok(produtoAdicionado);
+        }
+
+        [HttpDelete("{fornecedorId}/produtos/{produtoId}")]
+        public async Task<IActionResult> DeleteProdutoFromFornecedor
+            (
+               [FromRoute] Guid fornecedorId,
+               [FromRoute] Guid produtoId,
+               CancellationToken token
+            )
+        {
+            await _service.DeleteProdutoFromFornecedorAsync(fornecedorId, produtoId, token);
+            return NoContent();
+        }
+
+        [HttpGet("produtos")]
+        public async Task<IActionResult> GetByIdsAsyc
+            (
+                [FromQuery] IEnumerable<Guid> produtosIds,
+                CancellationToken token
+            )
+        {
+            var produtos = await _service.GetByIdWithProdutosAsync(produtosIds, token);
+            return Ok(produtos);
+        }
     }
 }

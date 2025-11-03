@@ -9,6 +9,9 @@ namespace TruckFlow.Domain.Dto.Fornecedor
     public class FornecedorCreateDto
     {
         public required string Nome { get; set; }
-        public required Guid ProdutoId  { get; set; }
+        public  List<Guid>? ProdutoIds { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }

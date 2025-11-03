@@ -74,5 +74,12 @@ namespace TruckFlowApi.Infra.Repositories
         {
             await _db.SaveChangesAsync(token);
         }
+
+        public async Task<Fornecedor?> GetByIdWithProdutosAsync(Guid id, CancellationToken token = default)
+        {
+            return await _db.Fornecedor
+                .Include(x => x.Produtos)
+                .FirstOrDefaultAsync(x => x.Id == id, token);
+        }
     }
 }

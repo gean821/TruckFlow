@@ -25,13 +25,10 @@ namespace TruckFlowApi.Infra.Repositories
             return produto;
         }
 
-
         public async Task<List<Produto>> GetAll(CancellationToken cancellationToken = default) =>
             await _db.Produto
             .Include(x=> x.LocalDescarga)
             .ToListAsync(cancellationToken);
-
-
 
         public async Task<Produto> GetById(Guid id, CancellationToken cancellationToken = default)
         {
@@ -42,7 +39,6 @@ namespace TruckFlowApi.Infra.Repositories
             return produto!;
         }
         
-
         public async Task<Produto> UpdateProduto(Guid id, Produto produto, CancellationToken cancellationToken = default)
         {
             var produtoBuscado = await GetById(id, cancellationToken);
@@ -64,6 +60,14 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<List<Produto>> GetByIdsAsync(IEnumerable<Guid> produtoIds, CancellationToken token)
+        {
+            return await _db.Produto
+                .Where(p => produtoIds.Contains(p.Id))
+                .Include(p => p.LocalDescarga)
+                .ToListAsync(token);
         }
     }
 }

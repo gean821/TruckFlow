@@ -1,16 +1,18 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TruckFlow.Application.Factories;
 using TruckFlow.Application.Entities;
-using TruckFlowApi.Infra.Repositories.Interfaces;
+using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Fornecedor;
+using TruckFlow.Domain.Dto.Produto;
+using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
 {
@@ -37,27 +39,32 @@ namespace TruckFlow.Application
             _produtoRepo = produtoRepo;
         }
 
-        public async Task<FornecedorResponse> CreateFornecedor(
-            FornecedorCreateDto fornecedor,
-            CancellationToken cancellationToken = default)
+        public async Task<FornecedorResponse> CreateFornecedor
+            (
+                FornecedorCreateDto fornecedor,
+                CancellationToken token = default
+            )
         {
-            ValidationResult validationResult = await _createValidator.ValidateAsync(fornecedor, cancellationToken);
+            ValidationResult validationResult = await _createValidator.ValidateAsync(fornecedor, token);
 
             if (!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var fornecedorCriado = await _factory.CreateFornecedorFromDto(fornecedor, cancellationToken);
+            List<Produto> produtos = new();
 
-            await _repo.CreateFornecedor(fornecedorCriado, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
-
-            return new FornecedorResponse
+            if (fornecedor.ProdutoIds?.Count > 0)
             {
-                Id = fornecedorCriado.Id,
-                Nome = fornecedorCriado.Nome,
-            };
+                produtos = await _produtoRepo.GetByIdsAsync(fornecedor.ProdutoIds, token);
+            }
+            
+            var fornecedorCriado = await _factory.CreateFornecedorFromDto(fornecedor, produtos, token);
+
+            await _repo.CreateFornecedor(fornecedorCriado, token);
+            await _repo.SaveChangesAsync(token);
+
+            return MapToResponse(fornecedorCriado);
         }
 
         public async Task<FornecedorResponse> GetById(Guid id, CancellationToken cancellatioToken = default)
@@ -69,9 +76,9 @@ namespace TruckFlow.Application
             {
                 Id = fornecedorEncontrado.Id,
                 Nome = fornecedorEncontrado.Nome,
+                CreatedAt = fornecedorEncontrado.CreatedAt
             };
         }
-
         public async Task DeleteFornecedor(Guid id, CancellationToken cancellationToken = default)
         {
             var fornecedorEncontrado = await _repo.GetById(id, cancellationToken)
@@ -94,15 +101,19 @@ namespace TruckFlow.Application
             {
                 Id = x.Id,
                 Nome = x.Nome,
+                CreatedAt = x.CreatedAt
             }).ToList();
             
             return listaFornecedorDto;
         }
 
-        public async Task<FornecedorResponse> UpdateFornecedor(
-            Guid id,
-            FornecedorUpdateDto fornecedor,
-            CancellationToken cancellationToken = default)
+        public async Task<FornecedorResponse> UpdateFornecedor
+            (
+                Guid id,
+                FornecedorUpdateDto fornecedor,
+                CancellationToken cancellationToken = default
+           )
+
         {
             var produto = await _produtoRepo.GetById(fornecedor.ProdutoId, cancellationToken)
                 ?? throw new ArgumentNullException("Produto associado não encontrado.");
@@ -118,18 +129,11 @@ namespace TruckFlow.Application
                 ?? throw new ArgumentNullException("Fornecedor não encontrado.");
 
             fornecedorEncontrado.Nome = fornecedor.Nome;
-            //fornecedorEncontrado.Produto = produto;
-            //fornecedorEncontrado.ProdutoId = produto.Id;
-
+            
             var fornecedorAtualizado = await _repo.Update(id, fornecedorEncontrado, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
 
-            return new FornecedorResponse
-            {
-                Id = fornecedorAtualizado.Id,
-                Nome = fornecedorAtualizado.Nome,
-                //Produto = fornecedorAtualizado.Produto.Nome
-            };
+            return MapToResponse(fornecedorAtualizado);
         }
         public async Task<FornecedorResponse> GetByNome(string nome, CancellationToken token = default)
         {
@@ -138,16 +142,112 @@ namespace TruckFlow.Application
 
             return MapToResponse(fornecedorEncontrado);
         }
+        public async Task<FornecedorResponse> GetByIdWithProdutosAsync
+            (
+               Guid id,
+               CancellationToken token = default
+            )
+        {
+            var fornecedorEncontrado = await _repo.GetById(id, token)
+               ?? throw new ArgumentNullException("Fornecedor não encontrado");
 
-        private FornecedorResponse MapToResponse(Fornecedor f) => 
+            return MapToResponse(fornecedorEncontrado);
+        }
+        public async Task<FornecedorResponse> AddProdutoToFornecedorAsync
+          (
+            Guid fornecedorId,
+            Guid produtoId,
+            CancellationToken token = default
+          )
+
+        {
+            var fornecedor = await _repo.GetByIdWithProdutosAsync(fornecedorId, token)
+                          ?? throw new ArgumentNullException("Fornecedor não encontrado");
+
+            var produto = await _produtoRepo.GetById(produtoId, token)
+                          ?? throw new ArgumentNullException("Produto não encontrado");
+            
+            if (fornecedor.Produtos.Any(p => p.Id == produto.Id))
+            {
+                throw new InvalidOperationException("Produto já associado a este fornecedor.");
+            }
+
+            fornecedor.Produtos.Add(produto);
+            await _repo.SaveChangesAsync(token);
+
+            return MapToResponse(fornecedor);
+        }
+        public async Task<FornecedorResponse> DeleteProdutoFromFornecedorAsync
+            (
+               Guid fornecedorId,
+               Guid produtoId,
+               CancellationToken token = default
+            )
+
+        {
+            var fornecedor = await _repo.GetByIdWithProdutosAsync(fornecedorId, token)
+                ?? throw new ArgumentNullException("Fornecedor não encontrado");
+
+            var produto = fornecedor.Produtos.FirstOrDefault(p => p.Id == produtoId)
+                ?? throw new InvalidOperationException("Produto não associado a este fornecedor");
+
+            fornecedor.Produtos.Remove(produto);
+            await _repo.SaveChangesAsync(token);
+
+            return MapToResponse(fornecedor);
+        }
+        public async Task<List<FornecedorResponse>> GetByIdWithProdutosAsync
+            (
+                IEnumerable<Guid> produtoIds,
+                CancellationToken token = default
+            )
+        {
+
+            if (produtoIds == null || !produtoIds.Any())
+            {
+                throw new ArgumentException("Nenhum ID de produto fornecido.");
+            }
+
+            var produtosEncontrados = await _produtoRepo.GetByIdsAsync(produtoIds, token);
+
+
+            if (produtosEncontrados == null || produtosEncontrados.Count == 0)
+            {
+                throw new ArgumentNullException("Nenhum produto encontrado para os IDs informados.");
+            }
+
+            var fornecedores = produtosEncontrados
+            .Where(p => p.Fornecedores != null)
+                .SelectMany(p => p.Fornecedores!)
+                .Distinct()
+                .ToList();
+
+            if (fornecedores.Count == 0) { 
+                throw new ArgumentNullException("Nenhum fornecedor associado encontrado para os produtos informados.");
+            }
+
+            return MapListToResponse(fornecedores);
+        }
+
+        private static FornecedorResponse MapToResponse(Fornecedor f) => 
             new FornecedorResponse
         {
                 Id = f.Id,
                 Nome = f.Nome,
-                //Produto = f.Produto.Nome,
-                CreatedAt = f.CreatedAt
+                CreatedAt = f.CreatedAt,
+                Produtos = f.Produtos?.Select(x => new ProdutoResponse
+                {
+                    Id = x.Id,
+                    CreatedAt = x.CreatedAt,
+                    LocalDescarga = x.LocalDescarga.Nome,
+                    Nome = x.Nome
+                }).ToList()
         };
 
+        private static List<FornecedorResponse> MapListToResponse
+            (
+                IEnumerable<Fornecedor> fornecedores
+            ) => fornecedores.Select(MapToResponse).ToList();
     }
 }
 
