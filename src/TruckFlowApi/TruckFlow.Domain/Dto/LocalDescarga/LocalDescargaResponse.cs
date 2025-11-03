@@ -12,5 +12,8 @@ namespace TruckFlow.Domain.Dto.LocalDescarga
         public required Guid Id { get; set; }
         public required string Nome { get; set; }
         public ICollection<ProdutoResponse>? Produtos { get; set; }
+        public required DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }

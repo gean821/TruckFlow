@@ -29,7 +29,6 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.DeletedAt)
                 .IsRequired(false);
 
-
             builder.HasOne<Usuario>(x => x.Usuario)
                 .WithMany(x => x.Agendamentos)
                 .HasForeignKey(x => x.UsuarioId)

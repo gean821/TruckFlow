@@ -43,7 +43,8 @@ namespace TruckFlow.Application
 
             var entity = new LocalDescarga
             {
-                Nome = local.Nome
+                Nome = local.Nome,
+                CreatedAt = DateTime.Now
             };
 
             await _repo.CreateLocalDescarga(entity, token);
@@ -64,6 +65,8 @@ namespace TruckFlow.Application
             {
                 Id = x.Id,
                 Nome = x.Nome,
+                CreatedAt = x.CreatedAt,
+                UpdatedAt = x.UpdatedAt,
                 Produtos = x.Produtos?.Select(x => new ProdutoResponse
                 {
                     Id = x.Id,
@@ -99,7 +102,8 @@ namespace TruckFlow.Application
         public async Task<LocalDescargaResponse> Update(
             Guid id,
             LocalDescargaUpdateDto local,
-            CancellationToken token = default)
+            CancellationToken token = default
+            )
         {
             ValidationResult validation = await _updateValidator.ValidateAsync(local, token);
 
@@ -112,6 +116,7 @@ namespace TruckFlow.Application
                ?? throw new ArgumentNullException("Local não encontrado");
 
             localEncontrado.Nome = local.Nome;
+            localEncontrado.UpdatedAt = DateTime.Now;
 
             var localDescargaAtualizado = await _repo.Update(id, localEncontrado, token);
             await _repo.SaveChangesAsync(token);
@@ -126,6 +131,9 @@ namespace TruckFlow.Application
             {
                 Id = local.Id,
                 Nome = local.Nome,
+                CreatedAt = local.CreatedAt,
+                UpdatedAt = local.UpdatedAt,
+                DeletedAt = local.DeletedAt,
                 Produtos = local.Produtos?.Select(x => new ProdutoResponse
                 {
                     Id = x.Id,
