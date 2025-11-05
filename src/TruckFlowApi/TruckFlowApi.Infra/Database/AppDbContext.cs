@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Application.Entities;
+using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Database.Configurations;
 using TruckFlowApi.Infra.Database.EntitiesMapping;
 
@@ -30,7 +31,9 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new ProdutoConfiguracao());
             modelBuilder.ApplyConfiguration(new NotaFiscalConfiguracao());
             modelBuilder.ApplyConfiguration(new UnidadeEntregaConfiguracao());
-            modelBuilder.ApplyConfiguration(new NotaFiscalItemConfiguracao());        
+            modelBuilder.ApplyConfiguration(new NotaFiscalItemConfiguracao());
+            modelBuilder.ApplyConfiguration(new PlanejamentoRecebimentoConfiguracao());
+            modelBuilder.ApplyConfiguration(new ItemPlanejamentoConfiguracao());
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -46,6 +49,8 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<Notificacao> Notificacao { get; set; }
         public DbSet<LocalDescarga> LocalDescarga { get; set; }
         public DbSet<NotaFiscalItem> NotaFiscalItems { get; set; }
+        public DbSet<PlanejamentoRecebimento> PlanejamentosRecebimento { get; set; }
+        public DbSet<ItemPlanejamento> ItensPlanejamento{ get; set; }
     }
 }
     

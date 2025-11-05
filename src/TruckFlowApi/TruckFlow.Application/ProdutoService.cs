@@ -65,7 +65,7 @@ namespace TruckFlow.Application
         public async Task<ProdutoResponse> GetById(Guid id, CancellationToken cancellationToken = default)
         {
             var produtoEncontrado = await _repo.GetById(id, cancellationToken) ?? 
-                throw new ArgumentNullException("Produto não encontrado"); //aqui vai ser implementado com Resources futuramente para mensagens do sistema.
+                throw new InvalidOperationException("Produto não encontrado"); //aqui vai ser implementado com Resources futuramente para mensagens do sistema.
 
             return new ProdutoResponse
             {
@@ -80,7 +80,7 @@ namespace TruckFlow.Application
         public async Task DeleteProduto(Guid id, CancellationToken cancellationToken = default)
         {
             var produtoEncontrado = await _repo.GetById(id, cancellationToken) 
-                ?? throw new ArgumentNullException("Produto não encontrado");
+                ?? throw new InvalidOperationException("Produto não encontrado");
 
             await _repo.DeleteProduto(produtoEncontrado.Id, cancellationToken);
             
@@ -115,7 +115,7 @@ namespace TruckFlow.Application
             CancellationToken cancellationToken = default)
         {
             var localDescarga = await _localRepo.GetById(produto.LocalDescargaId, cancellationToken) 
-                ?? throw new ArgumentNullException("Local de descarga não encontrado");
+                ?? throw new InvalidOperationException("Local de descarga não encontrado");
 
             ValidationResult validationResult = await _editValidator.ValidateAsync(produto, cancellationToken);
 
@@ -125,7 +125,7 @@ namespace TruckFlow.Application
             }
 
             var produtoEncontrado = await _repo.GetById(id, cancellationToken)
-                ?? throw new ArgumentNullException("Produto não encontrado");
+                ?? throw new InvalidOperationException("Produto não encontrado");
 
 
             produtoEncontrado.Nome = produto.Nome;

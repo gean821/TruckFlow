@@ -12,6 +12,7 @@ using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Fornecedor;
 using TruckFlow.Domain.Dto.Produto;
+using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
