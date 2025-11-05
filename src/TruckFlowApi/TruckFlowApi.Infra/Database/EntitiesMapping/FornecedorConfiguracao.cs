@@ -20,6 +20,8 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.Nome)
                 .IsRequired().
                 HasMaxLength(250);
+        
+            
         }
     }
 }

@@ -5,6 +5,7 @@ using TruckFlow.Application.Auth;
 using TruckFlow.Application.Entities;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Cors;
+using TruckFlow.Extensions.Fornecedor;
 using TruckFlow.Extensions.LocalDescarga;
 using TruckFlow.Extensions.Produto;
 using TruckFlowApi.Infra.Database;
@@ -24,6 +25,7 @@ namespace TruckFlow
             builder.Services.AddCorsDependency();
             builder.Services.AddProduto();
             builder.Services.AddLocalDescarga();
+            builder.Services.AddFornecedor();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             

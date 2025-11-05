@@ -154,7 +154,11 @@ namespace TruckFlow.Application
                 }).ToList() ?? new List<NotaFiscalItemDto>()
             };
         }
-        public async Task<NotaFiscalParsedDto?> ObterPorChaveAsync(string chaveAcesso, CancellationToken token)
+        public async Task<NotaFiscalParsedDto?> ObterPorChaveAsync
+            (
+                string chaveAcesso,
+                CancellationToken token
+            )
         {
             var nota = await _repo.ObterPorChaveAsync(chaveAcesso, token);
             

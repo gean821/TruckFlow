@@ -97,14 +97,7 @@ namespace TruckFlow.Application
                 return new List<FornecedorResponse>();
             }
 
-            var listaFornecedorDto = listaFornecedor.Select(x => new FornecedorResponse
-            {
-                Id = x.Id,
-                Nome = x.Nome,
-                CreatedAt = x.CreatedAt
-            }).ToList();
-            
-            return listaFornecedorDto;
+            return MapListToResponse(listaFornecedor);
         }
 
         public async Task<FornecedorResponse> UpdateFornecedor
@@ -115,9 +108,6 @@ namespace TruckFlow.Application
            )
 
         {
-            var produto = await _produtoRepo.GetById(fornecedor.ProdutoId, cancellationToken)
-                ?? throw new ArgumentNullException("Produto associado não encontrado.");
-
             ValidationResult validationResult = await _updateValidator.ValidateAsync(fornecedor, cancellationToken);
 
             if (!validationResult.IsValid)
@@ -240,6 +230,7 @@ namespace TruckFlow.Application
                     Id = x.Id,
                     CreatedAt = x.CreatedAt,
                     LocalDescarga = x.LocalDescarga.Nome,
+                    LocalDescargaId = x.LocalDescargaId,
                     Nome = x.Nome
                 }).ToList()
         };

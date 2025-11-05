@@ -22,15 +22,18 @@ namespace TruckFlow.Controllers
             {
                 return BadRequest("Nenhum arquivo Xml enviado.");
             }
+
             using var stream = xmlFile.OpenReadStream();
             var notaFiscalDto = await _service.ParseXmlAsync(stream, token);
             return Ok(notaFiscalDto);
         }
 
         [HttpPost("save")]
-        public async Task<IActionResult> SaveParsedData(
-            [FromBody] NotaFiscalParsedDto dto,
-            CancellationToken token)
+        public async Task<IActionResult> SaveParsedData
+            (
+                [FromBody] NotaFiscalParsedDto dto,
+                CancellationToken token
+            )
         {
             if (dto == null)
             {

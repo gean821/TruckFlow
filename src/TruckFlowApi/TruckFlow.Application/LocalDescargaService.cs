@@ -72,6 +72,7 @@ namespace TruckFlow.Application
                     Id = x.Id,
                     Nome = x.Nome,
                     LocalDescarga = x.LocalDescarga.Nome,
+                    LocalDescargaId = x.LocalDescargaId,
                     CreatedAt = x.CreatedAt
                 }).ToList()
             }).ToList();
@@ -139,6 +140,7 @@ namespace TruckFlow.Application
                     Id = x.Id,
                     Nome = x.Nome,
                     LocalDescarga = x.LocalDescarga.Nome,
+                    LocalDescargaId = x.LocalDescargaId,
                     CreatedAt = x.CreatedAt
                 }).ToList()
             };

@@ -10,8 +10,8 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
 {
     public interface IProdutoFornecedorRepositorio //vai ser usada apenas futuramente, caso aqui tenha uma regra de negócio especifica a ser usada.
     {
-        public Task<ProdutoFornecedor> Add(Produto produto, Fornecedor fornecedor, CancellationToken token);
-        public Task<List<ProdutoFornecedor>> GetAll(CancellationToken token);
+        public Task<ProdutoFornecedor> AddProdutoToFornecedor(Guid fornecedorId, Guid produtoId, CancellationToken token = default);
+        public Task<List<ProdutoFornecedor>> GetAll(CancellationToken token = default);
         public Task<List<ProdutoFornecedor>> GetById(Guid produtoId, Guid fornecedorId, CancellationToken token);
         public Task<List<ProdutoFornecedor>> Update
             (
@@ -25,7 +25,7 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             (
                 Guid produtoId,
                 Guid fornecedorId,
-                CancellationToken token
+                CancellationToken token = default
             );
     }
 }

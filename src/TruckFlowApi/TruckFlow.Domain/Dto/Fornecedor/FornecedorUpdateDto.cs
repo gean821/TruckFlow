@@ -9,6 +9,6 @@ namespace TruckFlow.Domain.Dto.Fornecedor
      public class FornecedorUpdateDto
     {
         public required string Nome { get; set; }
-        public required Guid ProdutoId { get; set; }
+        public Guid? ProdutoId { get; set; }
     }
 }
