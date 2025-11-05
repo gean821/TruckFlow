@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Entities;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Database.EntitiesMapping
 {
@@ -20,8 +20,6 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.Nome)
                 .IsRequired().
                 HasMaxLength(250);
-        
-            
         }
     }
 }
