@@ -26,6 +26,8 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task<List<Fornecedor>> GetAll(CancellationToken token = default)
         {
             return await _db.Fornecedor
+                .Include(x=> x.Produtos)
+                    .ThenInclude(x=> x.LocalDescarga)
                 .Include(x => x.NotaFiscal)
                 .Include(x => x.Agendamento)
                 .ToListAsync(token);
@@ -73,6 +75,14 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task SaveChangesAsync(CancellationToken token = default)
         {
             await _db.SaveChangesAsync(token);
+        }
+
+        public async Task<Fornecedor?> GetByIdWithProdutosAsync(Guid id, CancellationToken token = default)
+        {
+            return await _db.Fornecedor
+                .Include(x => x.Produtos)
+                    .ThenInclude(x=> x.LocalDescarga)
+                .FirstOrDefaultAsync(x => x.Id == id, token);
         }
     }
 }

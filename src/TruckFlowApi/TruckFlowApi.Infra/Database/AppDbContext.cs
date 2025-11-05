@@ -30,6 +30,7 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new ProdutoConfiguracao());
             modelBuilder.ApplyConfiguration(new NotaFiscalConfiguracao());
             modelBuilder.ApplyConfiguration(new UnidadeEntregaConfiguracao());
+            modelBuilder.ApplyConfiguration(new NotaFiscalItemConfiguracao());        
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -44,6 +45,7 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<NotaFiscal> NotaFiscal { get; set; }
         public DbSet<Notificacao> Notificacao { get; set; }
         public DbSet<LocalDescarga> LocalDescarga { get; set; }
+        public DbSet<NotaFiscalItem> NotaFiscalItems { get; set; }
     }
 }
     

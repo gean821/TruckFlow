@@ -57,6 +57,7 @@ namespace TruckFlow.Application
                 Id = produtoCriado.Id,
                 Nome = produtoCriado.Nome,
                 LocalDescarga = produtoCriado.LocalDescarga.Nome,
+                LocalDescargaId = produtoCriado.LocalDescargaId,
                 CreatedAt = produtoCriado.CreatedAt
             };
         }
@@ -71,6 +72,7 @@ namespace TruckFlow.Application
                 Id = produtoEncontrado.Id,
                 Nome = produtoEncontrado.Nome,
                 LocalDescarga = produtoEncontrado.LocalDescarga.Nome,
+                LocalDescargaId = produtoEncontrado.LocalDescargaId,
                 CreatedAt = produtoEncontrado.CreatedAt
             };
         }
@@ -99,6 +101,7 @@ namespace TruckFlow.Application
                 Id = x.Id,
                 Nome = x.Nome,
                 LocalDescarga = x.LocalDescarga.Nome,
+                LocalDescargaId = x.LocalDescargaId,
                 CreatedAt = x.CreatedAt
             }).ToList();
 
@@ -138,6 +141,7 @@ namespace TruckFlow.Application
                 Id = produtoAtualizado.Id,
                 Nome = produtoAtualizado.Nome,
                 LocalDescarga = produtoAtualizado.LocalDescarga.Nome,
+                LocalDescargaId = produtoAtualizado.LocalDescargaId,
                 CreatedAt = produtoAtualizado.CreatedAt,
                 UpdatedAt = produtoAtualizado.UpdatedAt
             };
@@ -150,6 +154,7 @@ namespace TruckFlow.Application
                 Id = p.Id,
                 Nome = p.Nome,
                 LocalDescarga = p.LocalDescarga.Nome,
+                LocalDescargaId = p.LocalDescargaId,
                 CreatedAt = p.CreatedAt
             };
        }

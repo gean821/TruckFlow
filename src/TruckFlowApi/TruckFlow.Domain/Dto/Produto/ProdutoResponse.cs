@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Entities;
 
 namespace TruckFlow.Domain.Dto.Produto
 {
@@ -11,6 +10,8 @@ namespace TruckFlow.Domain.Dto.Produto
     {
         public required Guid Id { get; set; }
         public required string Nome { get; set; }
+
+        public required Guid LocalDescargaId { get; set; }
         public required string LocalDescarga { get; set; }
 
         public required DateTime CreatedAt { get; set; }
