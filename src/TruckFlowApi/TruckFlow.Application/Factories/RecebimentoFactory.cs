@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TruckFlow.Application.Entities;
-using TruckFlow.Domain.Dto.Fornecedor;
-using TruckFlow.Domain.Dto.ItensPlanejamento;
-using TruckFlow.Domain.Dto.Recebimento;
+﻿using TruckFlow.Domain.Dto.Recebimento;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -15,43 +7,58 @@ namespace TruckFlow.Application.Factories
 {
     public class RecebimentoFactory
     {
-
-        private readonly IFornecedorRepositorio _repo;
+        private readonly IFornecedorRepositorio _fornecedorRepo;
+        private readonly IProdutoRepositorio _produtoRepo;
 
         public RecebimentoFactory(
-            IFornecedorRepositorio repo 
-            )
+            IFornecedorRepositorio fornecedorRepo,
+            IProdutoRepositorio produtoRepo)
         {
-            _repo = repo;
+            _fornecedorRepo = fornecedorRepo;
+            _produtoRepo = produtoRepo;
         }
 
-        public async Task<PlanejamentoRecebimento> CreateRecebimentoFromDto
-                (
-                    RecebimentoCreateDto dto,
-                    CancellationToken token = default
-                )
+        public async Task<PlanejamentoRecebimento> CreateRecebimentoFromDto(
+            RecebimentoCreateDto dto,
+            CancellationToken token = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
 
-            var fornecedor = await _repo.GetById(dto.FornecedorId, token);
+            var fornecedor = await _fornecedorRepo.GetById(dto.FornecedorId, token)
+                ?? throw new InvalidOperationException("Fornecedor não encontrado.");
 
-                var recebimento = new PlanejamentoRecebimento
-                {
-                    CreatedAt = DateTime.UtcNow,
-                    DataInicio = dto.DataInicio,
-                    Fornecedor = fornecedor,
-                    FornecedorId = dto.FornecedorId,
-                    StatusRecebimento = StatusRecebimento.EmAndamento,
-                    ItemPlanejamentos = dto.ItensPlanejamento!.Select(x=> new ItemPlanejamento
-                    {
-                        PlanejamentoRecebimentoId = x.
-                        ProdutoId = x.ProdutoId,
-                        QuantidadeTotalPlanejada = x.QuantidadeTotalPlanejada,
-                        CadenciaDiariaPlanejada = x.CadenciaDiariaPlanejada,
-                    }).ToList()
-                };
+            var produtoIds = dto.ItensPlanejamento!.Select(x => x.ProdutoId).ToList();
+            var produtos = await _produtoRepo.GetByIdsAsync(produtoIds, token);
 
-                return recebimento;
-            }
+            if (produtos.Count != produtoIds.Count)
+                throw new InvalidOperationException("Um ou mais produtos informados não foram encontrados.");
+
+            var produtoDicionario = produtos.ToDictionary(p => p.Id);
+
+            var recebimento = new PlanejamentoRecebimento
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+                DataInicio = dto.DataInicio,
+                Fornecedor = fornecedor,
+                FornecedorId = fornecedor.Id,
+                StatusRecebimento = StatusRecebimento.Planejado,
+            };
+
+            recebimento.ItemPlanejamentos = dto.ItensPlanejamento!.Select(itemDto => new ItemPlanejamento
+            {
+                Id = Guid.NewGuid(),
+                PlanejamentoRecebimento = recebimento,
+                PlanejamentoRecebimentoId = recebimento.Id,
+                ProdutoId = itemDto.ProdutoId,
+                Produto = produtoDicionario[itemDto.ProdutoId],
+                QuantidadeTotalPlanejada = itemDto.QuantidadeTotalPlanejada,
+                CadenciaDiariaPlanejada = itemDto.CadenciaDiariaPlanejada,
+                QuantidadeTotalRecebida = 0,
+                CreatedAt = DateTime.UtcNow
+            }).ToList();
+
+            return recebimento;
         }
     }
+}

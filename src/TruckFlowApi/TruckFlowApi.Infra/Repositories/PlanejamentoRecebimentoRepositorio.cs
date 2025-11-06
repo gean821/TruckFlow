@@ -10,7 +10,7 @@ using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlowApi.Infra.Repositories
 {
-    internal class PlanejamentoRecebimentoRepositorio : IPlanejamentoRecebimentoRepositorio
+    public class PlanejamentoRecebimentoRepositorio : IPlanejamentoRecebimentoRepositorio
     {
         private readonly AppDbContext _db;
 

@@ -10,7 +10,7 @@ namespace TruckFlow.Domain.Dto.Recebimento
     public class RecebimentoUpdateDto
     {
         public required Guid FornecedorId { get; set; }
-        public required ICollection<ItemPlanejamentoEditDto>? ItensPlanejamento { get; set; }
+        public required ICollection<ItemPlanejamentoUpdateDto>? ItensPlanejamento { get; set; }
         public required DateTime DataInicio { get; set; }
     }
 }

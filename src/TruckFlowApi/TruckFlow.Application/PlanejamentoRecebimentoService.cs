@@ -22,6 +22,7 @@ namespace TruckFlow.Application
         private readonly IValidator<RecebimentoCreateDto> _createValidator;
         private readonly IValidator<RecebimentoUpdateDto> _updateValidator;
         private readonly RecebimentoFactory _factory;
+        private readonly IProdutoRepositorio _produtoRepositorio;
 
         public PlanejamentoRecebimentoService
             (
@@ -29,7 +30,8 @@ namespace TruckFlow.Application
                 IValidator<RecebimentoCreateDto> createValidator,
                 IValidator<RecebimentoUpdateDto> updateValidator,
                 RecebimentoFactory factory,
-                IFornecedorRepositorio repo
+                IFornecedorRepositorio repo,
+                IProdutoRepositorio produtoRepositorio
             )
         {
             _planeRepo = planeRepo;
@@ -37,6 +39,7 @@ namespace TruckFlow.Application
             _updateValidator = updateValidator;
             _factory = factory;
             _forRepo = repo;
+            _produtoRepositorio = produtoRepositorio;
         }
 
         public async Task<RecebimentoResponseDto> CreateRecebimento
@@ -98,6 +101,10 @@ namespace TruckFlow.Application
             var fornecedor = await _forRepo.GetById(recebimento.FornecedorId, token)
                 ?? throw new InvalidOperationException("Fornecedor não encontrado.");
 
+            var produtosIds = recebimento.ItensPlanejamento!.Select(x => x.ProdutoId).ToList();
+            var produtos = await _produtoRepositorio.GetByIdsAsync(produtosIds, token);
+
+
             recebimentoEncontrado.Fornecedor = fornecedor;
             recebimentoEncontrado.FornecedorId = fornecedor.Id;
             recebimentoEncontrado.DataInicio = recebimento.DataInicio;
@@ -105,13 +112,22 @@ namespace TruckFlow.Application
             recebimentoEncontrado.UpdatedAt = DateTime.UtcNow;
 
             recebimentoEncontrado.ItemPlanejamentos = recebimento.ItensPlanejamento!
-                .Select(x => new ItemPlanejamento
+                .Select(x =>
                 {
-                    PlanejamentoRecebimentoId = recebimentoEncontrado.Id,
-                    ProdutoId = x.ProdutoId,
-                    QuantidadeTotalPlanejada = x.QuantidadeTotalPlanejada,
-                    CadenciaDiariaPlanejada = x.CadenciaDiariaPlanejada
-                }).ToList();
+                    var produto = produtos.FirstOrDefault(p => p.Id == x.ProdutoId)
+                        ?? throw new InvalidOperationException($"Produto com ID {x.ProdutoId} não encontrado.");
+
+                    return new ItemPlanejamento
+                    {
+                        ProdutoId = produto.Id,
+                        Produto = produto,
+                        PlanejamentoRecebimentoId = recebimentoEncontrado.Id,
+                        PlanejamentoRecebimento = recebimentoEncontrado,
+                        QuantidadeTotalPlanejada = x.QuantidadeTotalPlanejada,
+                        CadenciaDiariaPlanejada = x.CadenciaDiariaPlanejada
+                    };
+                })
+                .ToList();
 
             var recebimentoAtualizado = await _planeRepo.UpdateRecebimento(id, recebimentoEncontrado, token);
             return MapToResponse(recebimentoAtualizado);

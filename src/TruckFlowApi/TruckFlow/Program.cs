@@ -6,8 +6,10 @@ using TruckFlow.Application.Entities;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Cors;
 using TruckFlow.Extensions.Fornecedor;
+using TruckFlow.Extensions.ItemPlanejamento;
 using TruckFlow.Extensions.LocalDescarga;
 using TruckFlow.Extensions.Produto;
+using TruckFlow.Extensions.Recebimento;
 using TruckFlowApi.Infra.Database;
 
 
@@ -26,6 +28,9 @@ namespace TruckFlow
             builder.Services.AddProduto();
             builder.Services.AddLocalDescarga();
             builder.Services.AddFornecedor();
+            builder.Services.AddPlanejamentoRecebimento();
+            builder.Services.AddItemPlanejameto();
+            
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             
