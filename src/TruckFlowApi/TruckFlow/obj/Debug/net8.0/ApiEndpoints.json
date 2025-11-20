@@ -1,0 +1,318 @@
+[
+  {
+    "ContainingType": "TruckFlow.Controllers.FornecedorController",
+    "Method": "CreateFornecedor",
+    "RelativePath": "v1/Fornecedor",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fornecedor",
+        "Type": "TruckFlow.Application.Dto.Fornecedor.FornecedorCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.FornecedorController",
+    "Method": "GetAll",
+    "RelativePath": "v1/Fornecedor",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.FornecedorController",
+    "Method": "GetById",
+    "RelativePath": "v1/Fornecedor/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.FornecedorController",
+    "Method": "Update",
+    "RelativePath": "v1/Fornecedor/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "TruckFlow.Application.Dto.Fornecedor.FornecedorUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.FornecedorController",
+    "Method": "Delete",
+    "RelativePath": "v1/Fornecedor/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.LocalDescargaController",
+    "Method": "Create",
+    "RelativePath": "v1/LocalDescarga",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "TruckFlow.Application.Dto.LocalDescarga.LocalDescargaCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.LocalDescargaController",
+    "Method": "GetAll",
+    "RelativePath": "v1/LocalDescarga",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.LocalDescargaController",
+    "Method": "GetById",
+    "RelativePath": "v1/LocalDescarga/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.LocalDescargaController",
+    "Method": "Update",
+    "RelativePath": "v1/LocalDescarga/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "TruckFlow.Application.Dto.LocalDescarga.LocalDescargaUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.LocalDescargaController",
+    "Method": "Update",
+    "RelativePath": "v1/LocalDescarga/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.ProdutoController",
+    "Method": "CreateProduto",
+    "RelativePath": "v1/Produto",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "produto",
+        "Type": "TruckFlow.Application.Dto.Produto.ProdutoCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.ProdutoController",
+    "Method": "GetAll",
+    "RelativePath": "v1/Produto",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.ProdutoController",
+    "Method": "GetById",
+    "RelativePath": "v1/Produto/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.ProdutoController",
+    "Method": "Update",
+    "RelativePath": "v1/Produto/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "TruckFlow.Application.Dto.Produto.ProdutoEditDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.ProdutoController",
+    "Method": "Delete",
+    "RelativePath": "v1/Produto/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.VeiculoController",
+    "Method": "CreateVeiculo",
+    "RelativePath": "v1/Veiculo",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "veiculo",
+        "Type": "TruckFlow.Application.Dto.Veiculo.VeiculoCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.VeiculoController",
+    "Method": "GetAll",
+    "RelativePath": "v1/Veiculo",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.VeiculoController",
+    "Method": "GetById",
+    "RelativePath": "v1/Veiculo/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.VeiculoController",
+    "Method": "Update",
+    "RelativePath": "v1/Veiculo/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "TruckFlow.Application.Dto.Veiculo.VeiculoUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TruckFlow.Controllers.VeiculoController",
+    "Method": "Delete",
+    "RelativePath": "v1/Veiculo/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
