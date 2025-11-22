@@ -22,20 +22,29 @@ namespace TruckFlow.Application.Factories
             _produtoRepo = produtoRepo;
         }
 
-        public async Task<ItemPlanejamento> CreateItemFromDto(ItemPlanejamentoCreateDto dto, CancellationToken token)
+        public async Task<ItemPlanejamento> CreateItemFromDto(
+            ItemPlanejamentoCreateDto dto,
+            PlanejamentoRecebimento? recebimentoPai,
+            CancellationToken token)
         {
             ArgumentNullException.ThrowIfNull(dto);
-            
-            var recebimento = await _repo.GetById(dto.PlanejamentoRecebimentoId, token)
-                ?? throw new InvalidOperationException("recebimento não encontrado.");
 
             var produto = await _produtoRepo.GetById(dto.ProdutoId)
                 ?? throw new InvalidOperationException("Produto não encontrado.");
 
+            PlanejamentoRecebimento? recebimento = recebimentoPai;
+
+            // Se não foi passado o recebimento, busca pelo ID do DTO
+            if (recebimento is null && dto.PlanejamentoRecebimentoId.HasValue)
+            {
+                recebimento = await _repo.GetById(dto.PlanejamentoRecebimentoId.Value, token)
+                    ?? throw new InvalidOperationException("Recebimento não encontrado.");
+            }
+
             var item = new ItemPlanejamento 
             {
-                PlanejamentoRecebimento = recebimento,
-                PlanejamentoRecebimentoId = dto.PlanejamentoRecebimentoId,
+                PlanejamentoRecebimento = recebimento!,
+                PlanejamentoRecebimentoId = recebimento?.Id ?? dto.PlanejamentoRecebimentoId ?? Guid.Empty,
                 Produto = produto,
                 ProdutoId = dto.ProdutoId,
                 CadenciaDiariaPlanejada = dto.CadenciaDiariaPlanejada,

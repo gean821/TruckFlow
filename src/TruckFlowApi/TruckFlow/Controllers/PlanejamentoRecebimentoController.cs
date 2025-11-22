@@ -5,7 +5,7 @@ using TruckFlow.Domain.Dto.Recebimento;
 namespace TruckFlow.Controllers
 {
     [ApiController]
-    [Route("/v1[Controller]")]
+    [Route("/v1/[Controller]")]
     public class PlanejamentoRecebimentoController : ControllerBase
     {
         private readonly IPlanejamentoRecebimentoService _service;

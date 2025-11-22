@@ -23,7 +23,7 @@ namespace TruckFlow.Application.Validators.Recebimento
 
             RuleFor(x => x.ItensPlanejamento)
                 .NotNull().WithMessage("É necessário informar ao menos um item de planejamento.")
-                .Must(x => x?.Count < 1).WithMessage("A lista de itens de planejamento não pode estar vazia.");
+                .Must(x => x!.Count > 0).WithMessage("A lista de itens de planejamento não pode estar vazia.");
 
             // Validação individual dos itens
             RuleForEach(x => x.ItensPlanejamento)

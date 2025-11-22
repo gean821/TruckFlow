@@ -15,6 +15,6 @@ namespace TruckFlow.Domain.Entities
         public required Guid PlanejamentoRecebimentoId { get; set; }
         public required decimal QuantidadeTotalPlanejada { get; set; }
         public required decimal CadenciaDiariaPlanejada { get; set; }
-        public decimal QuantidadeTotalRecebida { get; set; }//esse é o campo calculado que tem na tabela do front.
+        public decimal QuantidadeTotalRecebida { get; set; }
     }
 }

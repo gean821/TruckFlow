@@ -142,6 +142,8 @@ namespace TruckFlow.Application
                 Id = recebimento.Id,
                 DataInicio = recebimento.DataInicio,
                 FornecedorNome = recebimento.Fornecedor.Nome,
+                TotalItens = recebimento.ItemPlanejamentos.Count,
+                CreatedAt = recebimento.CreatedAt,
                 Itens = recebimento.ItemPlanejamentos.Select(item => new ItemPlanejamentoResponseDto
                 {
                     Id = item.Id,
@@ -150,7 +152,8 @@ namespace TruckFlow.Application
                     QuantidadeTotalPlanejada = item.QuantidadeTotalPlanejada,
                     QuantidadeTotalRecebida = item.QuantidadeTotalRecebida,
                     FaltaReceber = item.QuantidadeTotalPlanejada - item.QuantidadeTotalRecebida,
-                    Fornecedor = recebimento.Fornecedor.Nome
+                    Fornecedor = recebimento.Fornecedor.Nome,
+                    CreatedAt = item.CreatedAt
                 }).ToList()
             }).ToList();
         }
@@ -160,6 +163,9 @@ namespace TruckFlow.Application
             {
                 DataInicio = recebimento.DataInicio,
                 Id = recebimento.Id,
+                CreatedAt = recebimento.CreatedAt,
+                TotalItens = recebimento.ItemPlanejamentos.Count,
+                Status = recebimento.StatusRecebimento.ToString(),
                 Itens = recebimento.ItemPlanejamentos!.Select(x => new ItemPlanejamentoResponseDto
                 {
                     Id = x.Id,
@@ -168,8 +174,10 @@ namespace TruckFlow.Application
                     QuantidadeTotalPlanejada = x.QuantidadeTotalPlanejada,
                     QuantidadeTotalRecebida = x.QuantidadeTotalRecebida,
                     FaltaReceber = x.QuantidadeTotalPlanejada - x.QuantidadeTotalRecebida,
-                    Fornecedor = recebimento.Fornecedor.Nome
+                    Fornecedor = recebimento.Fornecedor.Nome,
+                    CreatedAt = x.CreatedAt
                 }).ToList()
             };
+            
     }
 }

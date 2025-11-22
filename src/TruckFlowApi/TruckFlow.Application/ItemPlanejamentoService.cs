@@ -52,7 +52,7 @@ namespace TruckFlow.Application
                 throw new ValidationException(validation.Errors);
             }
 
-            var novoItem = await _factory.CreateItemFromDto(dto, token);
+            var novoItem = await _factory.CreateItemFromDto(dto, null, token);
             var itemCriado = await _repo.CreateItem(novoItem, token);
 
             return MapToResponse(itemCriado, token);
@@ -63,7 +63,9 @@ namespace TruckFlow.Application
             var item = await _repo.GetById(id, token)
                 ?? throw new InvalidOperationException("item não encontrado");
 
+            var planejamentoId = item.PlanejamentoRecebimentoId;
             await _repo.DeleteItem(item.Id, token);
+
         }
 
         public async Task<List<ItemPlanejamentoResponseDto>> GetAll(CancellationToken token = default)
@@ -78,7 +80,8 @@ namespace TruckFlow.Application
                 QuantidadeTotalPlanejada = x.QuantidadeTotalPlanejada,
                 QuantidadeTotalRecebida = x.QuantidadeTotalRecebida,
                 FaltaReceber = x.QuantidadeTotalPlanejada - x.QuantidadeTotalRecebida,
-                Fornecedor = x.PlanejamentoRecebimento!.Fornecedor.Nome
+                Fornecedor = x.PlanejamentoRecebimento!.Fornecedor.Nome,
+                CreatedAt = DateTime.UtcNow
             }).ToList();
         }
 
@@ -132,7 +135,8 @@ namespace TruckFlow.Application
                 QuantidadeTotalPlanejada = item.QuantidadeTotalPlanejada,
                 QuantidadeTotalRecebida = item.QuantidadeTotalRecebida,
                 Fornecedor = item.PlanejamentoRecebimento!.Fornecedor.Nome,
-                FaltaReceber = item.QuantidadeTotalPlanejada - item.QuantidadeTotalRecebida
+                FaltaReceber = item.QuantidadeTotalPlanejada - item.QuantidadeTotalRecebida,
+                CreatedAt = DateTime.UtcNow
             };
     }
 }

@@ -15,7 +15,6 @@ namespace TruckFlow.Extensions.Recebimento
         {
             services.AddTransient<IPlanejamentoRecebimentoService, PlanejamentoRecebimentoService>();
             services.AddTransient<IPlanejamentoRecebimentoRepositorio, PlanejamentoRecebimentoRepositorio>();
-            services.AddTransient<ILocalDescargaRepositorio, LocalDescargaRepositorio>();
             services.AddTransient<RecebimentoFactory>();
             services.AddTransient<IValidator<RecebimentoCreateDto>, RecebimentoCreateDtoValidator>();
             services.AddTransient<IValidator<RecebimentoUpdateDto>, RecebimentoUpdateDtoValidator>();

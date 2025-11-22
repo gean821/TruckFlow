@@ -42,11 +42,11 @@ namespace TruckFlow.Application
         {
             ValidationResult validationResult = await _createValidator.ValidateAsync(veiculo, cancellationToken);
 
-            if(!validationResult.IsValid)
+            if (!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);
             }
-
+             
             var veiculoCriado = await _factory.CreateVeiculoFromDto(veiculo, cancellationToken);
 
             await _repo.CreateVeiculo(veiculoCriado, cancellationToken);

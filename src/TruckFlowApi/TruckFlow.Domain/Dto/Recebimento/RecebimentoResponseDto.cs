@@ -13,6 +13,10 @@ namespace TruckFlow.Domain.Dto.Recebimento
         public string FornecedorNome { get; set; } = string.Empty;
         public DateTime DataInicio { get; set; }
         public string Status { get; set; } = string.Empty;
+
+        public decimal TotalItens { get; set; } = 0;
+         
         public List<ItemPlanejamentoResponseDto> Itens { get; set; } = [];
+        public DateTime CreatedAt { get; set; }
     }
 }

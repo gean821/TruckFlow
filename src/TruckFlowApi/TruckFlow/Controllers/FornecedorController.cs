@@ -85,6 +85,7 @@ namespace TruckFlow.Controllers
                CancellationToken token
             )
         {
+
             await _service.DeleteProdutoFromFornecedorAsync(fornecedorId, produtoId, token);
             return NoContent();
         }

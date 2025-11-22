@@ -16,5 +16,7 @@ namespace TruckFlow.Domain.Dto.ItensPlanejamento
         public decimal QuantidadeTotalRecebida { get; set; }
 
         public decimal FaltaReceber { get; set; } = 0;
+
+        public required DateTime CreatedAt { get; set; }
     }
 }
