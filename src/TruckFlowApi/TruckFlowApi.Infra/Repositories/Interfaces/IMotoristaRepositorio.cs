@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using TruckFlow.Application.Entities;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Repositories.Interfaces
 {
