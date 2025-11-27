@@ -1,4 +1,4 @@
-﻿namespace TruckFlow.Application.Entities
+﻿namespace TruckFlow.Domain.Entities
 {
     public class Produto : EntidadeBase
     {
@@ -7,5 +7,7 @@
         public required Guid LocalDescargaId { get; set; }
 
         public ICollection<Fornecedor>? Fornecedores { get; set; } = [];
+
+        public ICollection<Grade>? Grades { get; set; } = [];
     }
 }
