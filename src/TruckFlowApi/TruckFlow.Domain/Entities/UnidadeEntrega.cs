@@ -1,4 +1,6 @@
-﻿ namespace TruckFlow.Application.Entities
+﻿using TruckFlow.Domain.Entities;
+
+namespace TruckFlow.Application.Entities
 {
     public class UnidadeEntrega : EntidadeBase
     {
