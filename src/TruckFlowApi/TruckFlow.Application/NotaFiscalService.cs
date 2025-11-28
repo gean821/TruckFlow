@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TruckFlow.Application.Enums;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Validators.NotaFiscal;
 using TruckFlow.Domain.Dto.NotaFiscal;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application

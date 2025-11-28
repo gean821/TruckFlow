@@ -1,4 +1,4 @@
-﻿using TruckFlow.Application.Enums;
+﻿using TruckFlow.Domain.Enums;
 
 
 namespace TruckFlow.Domain.Entities

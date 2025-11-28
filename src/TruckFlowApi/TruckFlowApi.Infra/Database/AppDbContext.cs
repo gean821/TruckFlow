@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Entities;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Database.Configurations;
 using TruckFlowApi.Infra.Database.EntitiesMapping;
