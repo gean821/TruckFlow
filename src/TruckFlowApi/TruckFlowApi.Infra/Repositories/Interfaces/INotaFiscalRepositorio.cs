@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Entities;
 using TruckFlow.Domain.Dto.NotaFiscal;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Repositories.Interfaces
 {

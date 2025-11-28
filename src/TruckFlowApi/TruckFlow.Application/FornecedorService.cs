@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TruckFlow.Application.Entities;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Fornecedor;

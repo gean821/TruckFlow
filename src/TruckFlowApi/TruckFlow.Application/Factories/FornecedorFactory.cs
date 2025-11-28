@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Entities;
 using TruckFlow.Domain.Dto.Fornecedor;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;

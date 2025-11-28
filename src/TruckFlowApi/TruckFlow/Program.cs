@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application.Auth;
-using TruckFlow.Application.Entities;
+using TruckFlow.Domain.Entities;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Cors;
 using TruckFlow.Extensions.Fornecedor;

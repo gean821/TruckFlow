@@ -1,7 +1,7 @@
 ﻿using TruckFlow.Application.Enums;
 using TruckFlow.Domain.Entities;
 
-namespace TruckFlow.Application.Entities
+namespace TruckFlow.Domain.Entities
 {
     public class Carga : EntidadeBase
     {

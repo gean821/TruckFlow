@@ -8,8 +8,8 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Application.Interfaces;
-using TruckFlow.Application.Entities;
 using TruckFlow.Interfaces;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Application.Auth
 {

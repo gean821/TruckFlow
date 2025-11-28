@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TruckFlow.Application.Entities
+namespace TruckFlow.Domain.Entities
 {
     public class NotaFiscalItem : EntidadeBase
     {

@@ -11,5 +11,7 @@ namespace TruckFlow.Application.Entities
         public ICollection<ItemPlanejamento>? ItemPlanejamentos { get; set; } = [];
 
         public ICollection<Fornecedor>? Fornecedores { get; set; } = [];
+
+        public ICollection<Grade>? Grades { get; set; } = [];
     }
 }

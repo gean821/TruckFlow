@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TruckFlowApi.Infra.Database;
 
@@ -11,9 +12,11 @@ using TruckFlowApi.Infra.Database;
 namespace TruckFlowApi.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251127224324_Grade")]
+    partial class Grade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -268,7 +271,76 @@ namespace TruckFlowApi.Infra.Migrations
                     b.ToTable("Carga", (string)null);
                 });
 
-            modelBuilder.Entity("TruckFlow.Application.Entities.LocalDescarga", b =>
+            modelBuilder.Entity("TruckFlow.Domain.Entities.Fornecedor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Fornecedor");
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.Grade", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("DataFim")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("DataInicio")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FornecedorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("HoraFinal")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("HoraInicial")
+                        .HasColumnType("time");
+
+                    b.Property<int>("IntervaloMinutos")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ProdutoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FornecedorId");
+
+                    b.HasIndex("ProdutoId");
+
+                    b.ToTable("Grade");
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.LocalDescarga", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -706,127 +778,6 @@ namespace TruckFlowApi.Infra.Migrations
                     b.ToTable("Veiculo", (string)null);
                 });
 
-            modelBuilder.Entity("TruckFlow.Domain.Entities.Fornecedor", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Fornecedor");
-                });
-
-            modelBuilder.Entity("TruckFlow.Domain.Entities.ItemPlanejamento", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("CadenciaDiariaPlanejada")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("PlanejamentoRecebimentoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ProdutoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("QuantidadeTotalPlanejada")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("QuantidadeTotalRecebida")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlanejamentoRecebimentoId");
-
-                    b.HasIndex("ProdutoId");
-
-                    b.ToTable("ItemPlanejamento", (string)null);
-                });
-
-            modelBuilder.Entity("TruckFlow.Domain.Entities.PlanejamentoRecebimento", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DataInicio")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("FornecedorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("StatusRecebimento")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FornecedorId");
-
-                    b.ToTable("PlanejamentoRecebimento", (string)null);
-                });
-
-            modelBuilder.Entity("TruckFlow.Domain.Entities.ProdutoFornecedor", b =>
-                {
-                    b.Property<Guid>("ProdutoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("FornecedorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ProdutoId", "FornecedorId");
-
-                    b.HasIndex("FornecedorId");
-
-                    b.ToTable("ProdutoFornecedor", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -999,47 +950,6 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Navigation("LocalDescarga");
                 });
 
-            modelBuilder.Entity("TruckFlow.Application.Entities.Veiculo", b =>
-                {
-                    b.HasOne("TruckFlow.Application.Entities.Motorista", "Motorista")
-                        .WithOne("Veiculo")
-                        .HasForeignKey("TruckFlow.Application.Entities.Veiculo", "MotoristaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Motorista");
-                });
-
-            modelBuilder.Entity("TruckFlow.Domain.Entities.ItemPlanejamento", b =>
-                {
-                    b.HasOne("TruckFlow.Domain.Entities.PlanejamentoRecebimento", "PlanejamentoRecebimento")
-                        .WithMany("ItemPlanejamentos")
-                        .HasForeignKey("PlanejamentoRecebimentoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TruckFlow.Application.Entities.Produto", "Produto")
-                        .WithMany("ItemPlanejamentos")
-                        .HasForeignKey("ProdutoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlanejamentoRecebimento");
-
-                    b.Navigation("Produto");
-                });
-
-            modelBuilder.Entity("TruckFlow.Domain.Entities.PlanejamentoRecebimento", b =>
-                {
-                    b.HasOne("TruckFlow.Domain.Entities.Fornecedor", "Fornecedor")
-                        .WithMany("Recebimentos")
-                        .HasForeignKey("FornecedorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Fornecedor");
-                });
-
             modelBuilder.Entity("TruckFlow.Domain.Entities.ProdutoFornecedor", b =>
                 {
                     b.HasOne("TruckFlow.Domain.Entities.Fornecedor", "Fornecedor")
@@ -1075,7 +985,16 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Navigation("Notificacoes");
                 });
 
-            modelBuilder.Entity("TruckFlow.Application.Entities.LocalDescarga", b =>
+            modelBuilder.Entity("TruckFlow.Domain.Entities.Fornecedor", b =>
+                {
+                    b.Navigation("Agendamento");
+
+                    b.Navigation("Grades");
+
+                    b.Navigation("NotaFiscal");
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.LocalDescarga", b =>
                 {
                     b.Navigation("Produtos");
                 });
@@ -1092,12 +1011,12 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Navigation("Itens");
                 });
 
-            modelBuilder.Entity("TruckFlow.Application.Entities.Produto", b =>
+            modelBuilder.Entity("TruckFlow.Domain.Entities.Produto", b =>
                 {
-                    b.Navigation("ItemPlanejamentos");
+                    b.Navigation("Grades");
                 });
 
-            modelBuilder.Entity("TruckFlow.Application.Entities.UnidadeEntrega", b =>
+            modelBuilder.Entity("TruckFlow.Domain.Entities.UnidadeEntrega", b =>
                 {
                     b.Navigation("Agendamento");
                 });
@@ -1109,20 +1028,6 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Navigation("Agendamentos");
 
                     b.Navigation("Motorista");
-                });
-
-            modelBuilder.Entity("TruckFlow.Domain.Entities.Fornecedor", b =>
-                {
-                    b.Navigation("Agendamento");
-
-                    b.Navigation("NotaFiscal");
-
-                    b.Navigation("Recebimentos");
-                });
-
-            modelBuilder.Entity("TruckFlow.Domain.Entities.PlanejamentoRecebimento", b =>
-                {
-                    b.Navigation("ItemPlanejamentos");
                 });
 #pragma warning restore 612, 618
         }

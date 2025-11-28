@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Validators.UnidadeEntrega;
-using TruckFlow.Application.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 using TruckFlow.Domain.Dto.UnidadeEntrega;
 

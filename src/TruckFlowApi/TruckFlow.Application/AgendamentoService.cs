@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Application.Factories;
-using TruckFlow.Application.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Agendamento;
