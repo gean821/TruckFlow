@@ -1,4 +1,5 @@
-﻿using TruckFlow.Domain.Dto.Recebimento;
+﻿
+using TruckFlow.Domain.Dto.Recebimento;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Repositories.Interfaces;

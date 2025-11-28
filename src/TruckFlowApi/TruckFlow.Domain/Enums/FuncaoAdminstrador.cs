@@ -1,4 +1,4 @@
-﻿namespace TruckFlow.Application.Enums
+﻿namespace TruckFlow.Domain.Enums
 {
          public enum FuncaoAdministrador
         {

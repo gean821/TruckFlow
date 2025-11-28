@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Enums;
 using TruckFlow.Domain.Dto.Fornecedor;
+using TruckFlow.Domain.Enums;
 
 namespace TruckFlow.Domain.Dto.NotaFiscal
 {

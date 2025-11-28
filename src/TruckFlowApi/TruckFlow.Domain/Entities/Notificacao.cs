@@ -1,6 +1,4 @@
-﻿using TruckFlow.Domain.Entities;
-
-namespace TruckFlow.Application.Entities
+﻿namespace TruckFlow.Domain.Entities
 {
     public class Notificacao : EntidadeBase
     {

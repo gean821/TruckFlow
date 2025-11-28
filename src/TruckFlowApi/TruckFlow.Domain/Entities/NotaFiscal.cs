@@ -1,5 +1,5 @@
-﻿using TruckFlow.Application.Enums;
-using TruckFlow.Domain.Entities;
+﻿using TruckFlow.Domain.Entities;
+using TruckFlow.Domain.Enums;
 
 namespace TruckFlow.Domain.Entities
 {
