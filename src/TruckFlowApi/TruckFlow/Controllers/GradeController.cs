@@ -19,7 +19,7 @@ namespace TruckFlow.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateGrade(
             [FromBody] GradeCreateDto grade,
-            CancellationToken ct)
+            CancellationToken ct = default)
         {
             var gradeCriada = await _service.CreateGrade(grade, ct);
             return Ok(gradeCriada);
@@ -28,7 +28,7 @@ namespace TruckFlow.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(
             [FromRoute] Guid id,
-            CancellationToken ct)
+            CancellationToken ct = default)
         {
             var grade = await _service.GetById(id, ct);
 
@@ -44,7 +44,6 @@ namespace TruckFlow.Controllers
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {
             var lista = await _service.GetAll(ct);
-
             return Ok(lista);
         }
 
@@ -55,7 +54,6 @@ namespace TruckFlow.Controllers
             CancellationToken ct)
         {
             var gradeEncontrada = await _service.UpdateGrade(id, dto, ct);
-
             return Ok(gradeEncontrada);
         }
 

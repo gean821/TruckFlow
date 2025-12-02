@@ -74,10 +74,10 @@ namespace TruckFlow.Application
 
         public async Task DeleteGrade(Guid id, CancellationToken cancellationToken = default)
         {
-            var gradeEncontrado = await _repo.GetById(id, cancellationToken)
+            var gradeEncontrada = await _repo.GetById(id, cancellationToken)
                 ?? throw new InvalidOperationException("Grade não encontrado");
 
-            await _repo.Delete(gradeEncontrado.Id, cancellationToken);
+            await _repo.Delete(gradeEncontrada, cancellationToken);
 
             await _repo.SaveChangesAsync(cancellationToken);
         }
@@ -88,7 +88,7 @@ namespace TruckFlow.Application
 
             if (listarGrades.Count == 0)
             {
-                return new List<GradeResponse>();
+                return [];
             }
 
             var listaGradesDto = listarGrades.Select(g => new GradeResponse
@@ -103,7 +103,8 @@ namespace TruckFlow.Application
                 HoraInicial = g.HoraInicial,
                 HoraFinal = g.HoraFinal,
                 IntervaloMinutos = g.IntervaloMinutos,
-                CreatedAt = g.CreatedAt
+                CreatedAt = g.CreatedAt,
+                UpdatedAt = g.UpdatedAt
             }).ToList();
 
             return listaGradesDto;
@@ -141,13 +142,12 @@ namespace TruckFlow.Application
             gradeEncontrada.IntervaloMinutos = grade.IntervaloMinutos;
             gradeEncontrada.UpdatedAt = DateTime.UtcNow;
 
-            var gradeAtualizada = await _repo.Update(id, gradeEncontrada, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
+            var gradeAtualizada = await _repo.Update(gradeEncontrada, cancellationToken);
 
             return MapToResponse(gradeAtualizada);
         }
 
-        private  GradeResponse MapToResponse(Grade g) =>
+        private static GradeResponse MapToResponse(Grade g) =>
 
             new GradeResponse
             {

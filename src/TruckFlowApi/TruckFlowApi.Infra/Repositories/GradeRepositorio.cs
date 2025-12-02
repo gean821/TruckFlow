@@ -28,11 +28,6 @@ namespace TruckFlowApi.Infra.Repositories
             return await _db.Grade
                 .Include(x => x.Produto)
                 .Include(x => x.Fornecedor)
-                .Include(x => x.DataInicio)
-                .Include(x => x.DataFim)
-                .Include(x => x.HoraInicial)
-                .Include(x => x.HoraFinal)
-                .Include(x => x.IntervaloMinutos)
                 .ToListAsync(token);
         }
 
@@ -41,38 +36,22 @@ namespace TruckFlowApi.Infra.Repositories
             var grade = await _db.Grade
                 .Include(x => x.Produto)
                 .Include(x => x.Fornecedor)
-                .Include(x => x.DataInicio)
-                .Include(x => x.DataFim)
-                .Include(x => x.HoraInicial)
-                .Include(x => x.HoraFinal)
-                .Include(x => x.IntervaloMinutos)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
 
             return grade!;
         }
 
-        public async Task<Grade> Update(Guid id, Grade grade, CancellationToken token = default)
+        public async Task<Grade> Update(Grade grade, CancellationToken token = default)
         {
-            var gradeEncontrada = await GetById(id, token);
-
-            gradeEncontrada.Id = grade.Id;
-            gradeEncontrada.Produto = grade.Produto;
-            gradeEncontrada.Fornecedor = grade.Fornecedor;
-            gradeEncontrada.DataInicio = grade.DataInicio;
-            gradeEncontrada.DataFim = grade.DataFim;
-            gradeEncontrada.HoraInicial = grade.HoraInicial;
-            gradeEncontrada.HoraFinal = grade.HoraFinal;
-            gradeEncontrada.IntervaloMinutos = grade.IntervaloMinutos;
-
+            _db.Grade.Update(grade);
             await SaveChangesAsync(token);
-            return gradeEncontrada;
+
+            return grade;
         }
 
-        public async Task Delete(Guid id, CancellationToken token)
-        {
-            var gradeEncontrada = await GetById(id, token);
-
-            _db.Remove(gradeEncontrada);
+        public async Task Delete(Grade grade, CancellationToken token = default)
+        { 
+            _db.Remove(grade);
             await SaveChangesAsync(token);
         }
 

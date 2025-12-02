@@ -12,8 +12,8 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         public Task<Grade> GetById(Guid id, CancellationToken token = default);
         public Task<List<Grade>> GetAll(CancellationToken token = default);
         public Task<Grade> CreateGrade(Grade grade, CancellationToken token = default);
-        public Task<Grade> Update(Guid id, Grade grade, CancellationToken token = default);
-        public Task Delete(Guid id, CancellationToken token = default);
+        public Task<Grade> Update(Grade grade, CancellationToken token = default);
+        public Task Delete(Grade grade, CancellationToken token = default);
         public Task SaveChangesAsync(CancellationToken token = default);
     }
 }

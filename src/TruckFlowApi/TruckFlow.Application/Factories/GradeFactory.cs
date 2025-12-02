@@ -13,19 +13,23 @@ namespace TruckFlow.Application.Factories
     public class GradeFactory
     {
         private readonly IProdutoRepositorio _repo;
+        private readonly IFornecedorRepositorio _fornecedorRepositorio;
 
-        public GradeFactory(IProdutoRepositorio repo) => _repo = repo;
+        public GradeFactory(
+            IProdutoRepositorio repo,
+            IFornecedorRepositorio fornecedorRepositorio
+            )
+        {
+            _repo = repo;
+            _fornecedorRepositorio = fornecedorRepositorio;
+        }
 
-        private readonly IFornecedorRepositorio _rep;
-
-        public GradeFactory(IFornecedorRepositorio repo) => _rep = repo;
-        
         public async Task<Grade> CreateGradeFromDto(GradeCreateDto dto, CancellationToken token = default)
         {
             var Produto = await _repo.GetById(dto.ProdutoId, token)
                 ?? throw new ArgumentNullException("Não foi possível encontrar o produto.");
 
-            var Fornecedor = await _rep.GetById(dto.FornecedorId, token)
+            var Fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId, token)
                 ?? throw new ArgumentNullException("Não foi possível encontrar o fornecedor.");
 
             return new Grade
@@ -35,6 +39,7 @@ namespace TruckFlow.Application.Factories
                 Fornecedor = Fornecedor,
                 FornecedorId = Fornecedor.Id,
                 CreatedAt = DateTime.UtcNow,
+                UpdatedAt = dto.UpdatedAt,
                 DataInicio = dto.DataInicio,
                 DataFim = dto.DataFim,
                 HoraInicial = dto.HoraInicial,
