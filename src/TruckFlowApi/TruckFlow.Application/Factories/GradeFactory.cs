@@ -12,30 +12,35 @@ namespace TruckFlow.Application.Factories
 {
     public class GradeFactory
     {
-        public Task<Grade> CreateGradeFromDto
-            (GradeCreateDto dto,
-            List<Produto>? produtos = null,
-            List<Fornecedor>? fornecedores = null,
-            CancellationToken token = default
-            )
-        {
-            ArgumentNullException.ThrowIfNull(dto);
+        private readonly IProdutoRepositorio _repo;
 
-            var Grade = new Grade
+        public GradeFactory(IProdutoRepositorio repo) => _repo = repo;
+
+        private readonly IFornecedorRepositorio _rep;
+
+        public GradeFactory(IFornecedorRepositorio repo) => _rep = repo;
+        
+        public async Task<Grade> CreateGradeFromDto(GradeCreateDto dto, CancellationToken token = default)
+        {
+            var Produto = await _repo.GetById(dto.ProdutoId, token)
+                ?? throw new ArgumentNullException("Não foi possível encontrar o produto.");
+
+            var Fornecedor = await _rep.GetById(dto.FornecedorId, token)
+                ?? throw new ArgumentNullException("Não foi possível encontrar o fornecedor.");
+
+            return new Grade
             {
-                Produtos = produtos?? new List<Produto>(),
-                Fornecedores = fornecedores?? new List<Fornecedor>(),
+                Produto = Produto,
+                ProdutoId = Produto.Id,
+                Fornecedor = Fornecedor,
+                FornecedorId = Fornecedor.Id,
+                CreatedAt = DateTime.UtcNow,
                 DataInicio = dto.DataInicio,
                 DataFim = dto.DataFim,
                 HoraInicial = dto.HoraInicial,
                 HoraFinal = dto.HoraFinal,
                 IntervaloMinutos = dto.IntervaloMinutos,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = dto.UpdatedAt,
-                DeletedAt= dto.DeletedAt
             };
-
-            return Task.FromResult(Grade);
         }
     }
 }

@@ -12,11 +12,11 @@ namespace TruckFlow.Application.Validators.Grade
     {
         public GradeCreateValidator() 
         {
-            RuleFor(x => x.FornecedorIds)
+            RuleFor(x => x.FornecedorId)
                 .NotNull()
-                .WithMessage("O fornecedor deve ser informado.")
+                .WithMessage("O fornecedor deve ser informado.");
 
-            RuleFor(x => x.ProdutoIds)
+            RuleFor(x => x.ProdutoId)
                 .NotEmpty()
                 .WithMessage("O produto deve ser informado.");
 

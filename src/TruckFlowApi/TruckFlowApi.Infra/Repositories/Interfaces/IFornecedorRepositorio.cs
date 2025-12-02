@@ -17,6 +17,6 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         public Task<Fornecedor?> GetByIdWithProdutosAsync(Guid id, CancellationToken token = default);
         public Task Delete(Guid id, CancellationToken token = default);
         public Task SaveChangesAsync(CancellationToken token = default);
-        public Task<List<Fornecedor>> GetByIdsAsync(IEnumerable<Guid> fornecedoresIds, CancellationToken token = default);
+        
     }
 }

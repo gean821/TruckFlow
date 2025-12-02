@@ -10,8 +10,10 @@ namespace TruckFlow.Domain.Dto.Grade
 {
     public class GradeResponse
     {
-        public ICollection<FornecedorResponse>? FornecedorIds { get; set; }
-        public ICollection<ProdutoResponse>? ProdutoIds { get; set; }
+        public required Guid FornecedorId { get; set; }
+        public required string Fornecedor { get; set; }
+        public Guid ProdutoId { get; set; }
+        public required string Produto { get; set; }
         public required Guid Id { get; set; }
         public required DateOnly DataInicio { get; set; }
         public required DateOnly DataFim { get; set; }
@@ -19,5 +21,6 @@ namespace TruckFlow.Domain.Dto.Grade
         public required TimeOnly HoraFinal { get; set; }
         public required int IntervaloMinutos { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

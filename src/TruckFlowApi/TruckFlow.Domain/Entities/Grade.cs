@@ -8,8 +8,10 @@ namespace TruckFlow.Domain.Entities
 {
     public sealed class Grade : EntidadeBase
     {
-        public ICollection<Fornecedor> Fornecedores { get; set; } = [];
-        public ICollection<Produto> Produtos { get; set; } = [];
+        public required Produto Produto { get; set; }
+        public required Guid ProdutoId { get; set; }
+        public required Fornecedor Fornecedor { get; set; }
+        public required Guid FornecedorId { get; set; }
         public DateOnly DataInicio { get; set; }
         public DateOnly DataFim { get; set; }
         public TimeOnly HoraInicial { get; set; }

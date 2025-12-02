@@ -17,7 +17,7 @@ using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
 {
-    internal class GradeService : IGradeService
+    public class GradeService : IGradeService
     {
         private readonly IGradeRepositorio _repo;
         private readonly IValidator<GradeCreateDto> _createValidator;
@@ -46,30 +46,123 @@ namespace TruckFlow.Application
         public async Task<GradeResponse> CreateGrade
             (
                 GradeCreateDto grade,
-                CancellationToken token = default
+                CancellationToken cancellationToken = default
             )
         {
-            ValidationResult validationResult = await _createValidator.ValidateAsync(grade, token);
+            ValidationResult validationResult = await _createValidator.ValidateAsync(grade, cancellationToken);
 
             if (!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);
             }
 
-            List<Produto> produtos = new();
+            var gradeCriada = await _factory.CreateGradeFromDto(grade, cancellationToken);
 
-            if (grade.ProdutoIds?.Count > 0)
-            {
-                produtos = await _produtoRepo.GetByIdsAsync(grade.ProdutoIds, token);
-            }
+            await  _repo.CreateGrade(gradeCriada, cancellationToken);
+            await  _repo.SaveChangesAsync(cancellationToken);
 
-            List<Fornecedor> fornecedores = new();
-
-            if (grade.FornecedorIds?.Count > 0)
-            {
-                fornecedores = await _fornecedorRepo.GetByIdsAsync(grade.FornecedorIds, token);
-            }
+            return MapToResponse(gradeCriada);
         }
 
+        public async Task<GradeResponse> GetById(Guid id, CancellationToken cancellationToken = default)
+        {
+            var gradeEncontrada = await _repo.GetById(id, cancellationToken) ??
+                throw new InvalidOperationException("Grade não encontrado"); // lembra da implemnetacao em Resources Geanzada
+
+            return MapToResponse(gradeEncontrada);
+        }
+
+        public async Task DeleteGrade(Guid id, CancellationToken cancellationToken = default)
+        {
+            var gradeEncontrado = await _repo.GetById(id, cancellationToken)
+                ?? throw new InvalidOperationException("Grade não encontrado");
+
+            await _repo.Delete(gradeEncontrado.Id, cancellationToken);
+
+            await _repo.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<List<GradeResponse>> GetAll(CancellationToken cancellationToken = default)
+        {
+            var listarGrades = await _repo.GetAll(cancellationToken);
+
+            if (listarGrades.Count == 0)
+            {
+                return new List<GradeResponse>();
+            }
+
+            var listaGradesDto = listarGrades.Select(g => new GradeResponse
+            {
+                Id = g.Id,
+                Produto = g.Produto.Nome,
+                Fornecedor = g.Fornecedor.Nome,
+                ProdutoId = g.ProdutoId,
+                FornecedorId = g.FornecedorId,
+                DataInicio = g.DataInicio,
+                DataFim = g.DataFim,
+                HoraInicial = g.HoraInicial,
+                HoraFinal = g.HoraFinal,
+                IntervaloMinutos = g.IntervaloMinutos,
+                CreatedAt = g.CreatedAt
+            }).ToList();
+
+            return listaGradesDto;
+        }
+
+        public async Task<GradeResponse> UpdateGrade(
+            Guid id,
+            GradeUpdateDto grade,
+            CancellationToken cancellationToken = default)
+        {
+            var produto = await _produtoRepo.GetById(grade.ProdutoId, cancellationToken)
+                ?? throw new InvalidOperationException("Produto não encontrado");
+
+            var fornecedor = await _fornecedorRepo.GetById(grade.FornecedorId, cancellationToken)
+                ?? throw new InvalidOperationException("Fornecedor não encontrado");
+
+            ValidationResult validationResult = await _updateValidator.ValidateAsync(grade, cancellationToken);
+
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
+            var gradeEncontrada = await _repo.GetById(id, cancellationToken)
+                ?? throw new InvalidOperationException("Grade não encontrado");
+
+            gradeEncontrada.Produto = produto;
+            gradeEncontrada.Fornecedor = fornecedor;
+            gradeEncontrada.ProdutoId = produto.Id;
+            gradeEncontrada.FornecedorId = fornecedor.Id;
+            gradeEncontrada.DataInicio = grade.DataInicio;
+            gradeEncontrada.DataFim = grade.DataFim;
+            gradeEncontrada.HoraInicial = grade.HoraInicial;
+            gradeEncontrada.HoraFinal = grade.HoraFinal;
+            gradeEncontrada.IntervaloMinutos = grade.IntervaloMinutos;
+            gradeEncontrada.UpdatedAt = DateTime.UtcNow;
+
+            var gradeAtualizada = await _repo.Update(id, gradeEncontrada, cancellationToken);
+            await _repo.SaveChangesAsync(cancellationToken);
+
+            return MapToResponse(gradeAtualizada);
+        }
+
+        private  GradeResponse MapToResponse(Grade g) =>
+
+            new GradeResponse
+            {
+                Id = g.Id,
+                Produto = g.Produto.Nome,
+                Fornecedor = g.Fornecedor.Nome,
+                ProdutoId = g.ProdutoId,
+                FornecedorId = g.FornecedorId,
+                DataInicio = g.DataInicio,
+                DataFim = g.DataFim,
+                HoraInicial = g.HoraInicial,
+                HoraFinal = g.HoraFinal,
+                IntervaloMinutos = g.IntervaloMinutos,
+                CreatedAt = g.CreatedAt,
+                UpdatedAt = g.UpdatedAt
+            };
     }
 }

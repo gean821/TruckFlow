@@ -84,16 +84,5 @@ namespace TruckFlowApi.Infra.Repositories
                     .ThenInclude(x => x.LocalDescarga)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
         }
-
-        public async Task<List<Fornecedor>> GetByIdsAsync(IEnumerable<Guid> fornecedoresIds, CancellationToken token)
-        {
-            return await _db.Fornecedor
-                .Where(f => fornecedoresIds.Contains(f.Id))
-                .Include(x => x.NotaFiscal)
-                .Include(x => x.Agendamento)
-                .Include(f => f.Produtos)
-                    .ThenInclude(x => x.LocalDescarga)
-                .ToListAsync(token);
-        }
     }
 }

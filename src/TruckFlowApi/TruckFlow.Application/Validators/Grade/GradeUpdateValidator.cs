@@ -8,15 +8,15 @@ using TruckFlow.Domain.Dto.Grade;
 
 namespace TruckFlow.Application.Validators.Grade
 {
-    public class GradeUpdateValidator : AbstractValidator<GradeCreateDto>
+    public class GradeUpdateValidator : AbstractValidator<GradeUpdateDto>
     {
         public GradeUpdateValidator()
         {
-            RuleFor(x => x.FornecedorIds)
+            RuleFor(x => x.FornecedorId)
                 .NotEmpty()
                 .WithMessage("O fornecedor deve ser informado.");
 
-            RuleFor(x => x.ProdutoIds)
+            RuleFor(x => x.ProdutoId)
                 .NotEmpty()
                 .WithMessage("O produto deve ser informado.");
 
