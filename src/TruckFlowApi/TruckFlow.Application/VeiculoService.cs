@@ -10,6 +10,7 @@ using TruckFlow.Application.Interfaces;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 using TruckFlow.Domain.Dto.Veiculo;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Application.Exceptions;
 
 namespace TruckFlow.Application
 {
@@ -58,7 +59,7 @@ namespace TruckFlow.Application
         public async Task<VeiculoResponse> GetById(Guid id, CancellationToken cancellationToken = default)
         {
             var veiculoEncontrado = await _repo.GetById(id, cancellationToken)
-                ?? throw new ArgumentNullException("Veículo não encontrado.");
+                ?? throw new NotFoundException("Veículo não encontrado.");
 
             return MapToResponse(veiculoEncontrado);
         }
@@ -66,7 +67,7 @@ namespace TruckFlow.Application
         public async Task DeleteVeiculo(Guid id, CancellationToken cancellationToken = default)
         {
             var veiculoEncontrado = await _repo.GetById(id, cancellationToken)
-                ?? throw new ArgumentNullException("Veículo não encontrado.");
+                ?? throw new NotFoundException("Veículo não encontrado.");
 
             await _repo.Delete(veiculoEncontrado.Id, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
@@ -92,7 +93,7 @@ namespace TruckFlow.Application
             CancellationToken cancellationToken = default)
         {
             var motorista = await _motoristaRepo.GetById(veiculo.MotoristaId, cancellationToken)
-                ?? throw new ArgumentNullException("Motorista não encontrado.");
+                ?? throw new NotFoundException("Motorista não encontrado.");
 
             ValidationResult validationResult = await _updateValidator.ValidateAsync(veiculo, cancellationToken);
 
@@ -102,7 +103,7 @@ namespace TruckFlow.Application
             }
 
             var veiculoEncontrado = await _repo.GetById(id, cancellationToken)
-                ?? throw new ArgumentNullException("Veículo não encontrado.");
+                ?? throw new NotFoundException("Veículo não encontrado.");
 
             veiculoEncontrado.Nome = veiculo.Nome;
             veiculoEncontrado.Placa = veiculo.Placa;
@@ -116,7 +117,7 @@ namespace TruckFlow.Application
             return MapToResponse(veiculoAtualizado);
         }
 
-        private VeiculoResponse MapToResponse(Veiculo v) =>
+        private static VeiculoResponse MapToResponse(Veiculo v) =>
             new VeiculoResponse
             {
                 Id = v.Id,
@@ -125,6 +126,5 @@ namespace TruckFlow.Application
                 Motorista = v.Motorista.Nome,
                 CreatedAt = v.CreatedAt
             };
-
     }
 }

@@ -11,6 +11,7 @@ using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.LocalDescarga;
 using TruckFlow.Domain.Dto.Produto;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Application.Exceptions;
 
 namespace TruckFlow.Application
 {
@@ -83,7 +84,7 @@ namespace TruckFlow.Application
         public async Task Delete(Guid id, CancellationToken token = default)
         {
             var localEncontrado = await _repo.GetById(id, token) 
-                ?? throw new ArgumentNullException("Local não encontrado");
+                ?? throw new NotFoundException("Local não encontrado");
 
             await _repo.Delete(localEncontrado.Id, token);
 
@@ -95,7 +96,7 @@ namespace TruckFlow.Application
             CancellationToken token = default)
         {
             var localEncontrado = await _repo.GetById(id, token)
-               ?? throw new ArgumentNullException("Local não encontrado");
+               ?? throw new NotFoundException("Local não encontrado");
 
             return MapToResponse(localEncontrado);
         }
@@ -114,7 +115,7 @@ namespace TruckFlow.Application
             }
 
             var localEncontrado = await _repo.GetById(id, token)
-               ?? throw new ArgumentNullException("Local não encontrado");
+               ?? throw new NotFoundException("Local não encontrado");
 
             localEncontrado.Nome = local.Nome;
             localEncontrado.UpdatedAt = DateTime.Now;

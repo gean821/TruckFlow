@@ -10,6 +10,7 @@ using TruckFlow.Application.Interfaces;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 using TruckFlow.Domain.Dto.Produto;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Application.Exceptions;
 
 namespace TruckFlow.Application
 {
@@ -65,7 +66,7 @@ namespace TruckFlow.Application
         public async Task<ProdutoResponse> GetById(Guid id, CancellationToken cancellationToken = default)
         {
             var produtoEncontrado = await _repo.GetById(id, cancellationToken) ?? 
-                throw new InvalidOperationException("Produto não encontrado"); //aqui vai ser implementado com Resources futuramente para mensagens do sistema.
+                throw new NotFoundException("Produto não encontrado");
 
             return new ProdutoResponse
             {
@@ -80,7 +81,7 @@ namespace TruckFlow.Application
         public async Task DeleteProduto(Guid id, CancellationToken cancellationToken = default)
         {
             var produtoEncontrado = await _repo.GetById(id, cancellationToken) 
-                ?? throw new InvalidOperationException("Produto não encontrado");
+                ?? throw new NotFoundException("Produto não encontrado");
 
             await _repo.DeleteProduto(produtoEncontrado.Id, cancellationToken);
             
@@ -115,7 +116,7 @@ namespace TruckFlow.Application
             CancellationToken cancellationToken = default)
         {
             var localDescarga = await _localRepo.GetById(produto.LocalDescargaId, cancellationToken) 
-                ?? throw new InvalidOperationException("Local de descarga não encontrado");
+                ?? throw new NotFoundException("Local de descarga não encontrado");
 
             ValidationResult validationResult = await _editValidator.ValidateAsync(produto, cancellationToken);
 
@@ -125,7 +126,7 @@ namespace TruckFlow.Application
             }
 
             var produtoEncontrado = await _repo.GetById(id, cancellationToken)
-                ?? throw new InvalidOperationException("Produto não encontrado");
+                ?? throw new NotFoundException("Produto não encontrado");
 
 
             produtoEncontrado.Nome = produto.Nome;

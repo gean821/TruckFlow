@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Domain.Dto.Veiculo;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -18,7 +19,7 @@ namespace TruckFlow.Application.Factories
         public async Task<Veiculo> CreateVeiculoFromDto(VeiculoCreateDto dto, CancellationToken token = default)
         {
             var motorista = await _repo.GetById(dto.MotoristaId, token)
-                ?? throw new ArgumentNullException("Não foi possível encontrar o motorista");
+                ?? throw new NotFoundException("Não foi possível encontrar o motorista");
 
             return new Veiculo
             {

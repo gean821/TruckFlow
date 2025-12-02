@@ -1,4 +1,5 @@
 ﻿
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Domain.Dto.Recebimento;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
@@ -26,13 +27,13 @@ namespace TruckFlow.Application.Factories
             ArgumentNullException.ThrowIfNull(dto);
 
             var fornecedor = await _fornecedorRepo.GetById(dto.FornecedorId, token)
-                ?? throw new InvalidOperationException("Fornecedor não encontrado.");
+                ?? throw new NotFoundException("Fornecedor não encontrado.");
 
             var produtoIds = dto.ItensPlanejamento!.Select(x => x.ProdutoId).ToList();
             var produtos = await _produtoRepo.GetByIdsAsync(produtoIds, token);
 
             if (produtos.Count != produtoIds.Count)
-                throw new InvalidOperationException("Um ou mais produtos informados não foram encontrados.");
+                throw new NotFoundException("Um ou mais produtos informados não foram encontrados.");
 
             var produtoDicionario = produtos.ToDictionary(p => p.Id);
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Domain.Dto.ItensPlanejamento;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -30,7 +31,7 @@ namespace TruckFlow.Application.Factories
             ArgumentNullException.ThrowIfNull(dto);
 
             var produto = await _produtoRepo.GetById(dto.ProdutoId)
-                ?? throw new InvalidOperationException("Produto não encontrado.");
+                ?? throw new NotFoundException("Produto não encontrado.");
 
             PlanejamentoRecebimento? recebimento = recebimentoPai;
 
@@ -38,7 +39,7 @@ namespace TruckFlow.Application.Factories
             if (recebimento is null && dto.PlanejamentoRecebimentoId.HasValue)
             {
                 recebimento = await _repo.GetById(dto.PlanejamentoRecebimentoId.Value, token)
-                    ?? throw new InvalidOperationException("Recebimento não encontrado.");
+                    ?? throw new NotFoundException("Recebimento não encontrado.");
             }
 
             var item = new ItemPlanejamento 

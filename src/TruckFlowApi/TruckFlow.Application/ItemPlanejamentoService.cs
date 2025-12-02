@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.ItensPlanejamento;
@@ -60,7 +61,7 @@ namespace TruckFlow.Application
         public async Task DeleteItem(Guid id, CancellationToken token = default)
         {
             var item = await _repo.GetById(id, token)
-                ?? throw new InvalidOperationException("item não encontrado");
+                ?? throw new NotFoundException("item não encontrado");
 
             var planejamentoId = item.PlanejamentoRecebimentoId;
             await _repo.DeleteItem(item.Id, token);
@@ -87,7 +88,7 @@ namespace TruckFlow.Application
         public async Task<ItemPlanejamentoResponseDto> GetById(Guid id, CancellationToken token = default)
         {
             var item = await _repo.GetById(id, token)
-                ?? throw new InvalidOperationException("Item não encontrado");
+                ?? throw new NotFoundException("Item não encontrado");
 
             return MapToResponse(item, token);
         }
@@ -107,12 +108,12 @@ namespace TruckFlow.Application
             }
 
             var item = await _repo.GetById(id, token)
-                ?? throw new InvalidOperationException("item não encontrado");
+                ?? throw new NotFoundException("item não encontrado");
 
             if (item.ProdutoId != dto.ProdutoId) {
                 
                 var produto = await _produtoRepo.GetById(dto.ProdutoId, token)
-                ?? throw new InvalidOperationException("produto não encontrado para ser atualizado");
+                ?? throw new NotFoundException("produto não encontrado para ser atualizado");
                 item.Produto = produto;
                 item.ProdutoId = produto.Id;
             }

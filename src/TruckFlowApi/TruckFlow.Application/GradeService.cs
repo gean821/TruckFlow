@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Fornecedor;
@@ -67,7 +68,7 @@ namespace TruckFlow.Application
         public async Task<GradeResponse> GetById(Guid id, CancellationToken cancellationToken = default)
         {
             var gradeEncontrada = await _repo.GetById(id, cancellationToken) ??
-                throw new InvalidOperationException("Grade não encontrado"); // lembra da implemnetacao em Resources Geanzada
+                throw new NotFoundException("Grade não encontrado"); // lembra da implemnetacao em Resources Geanzada
 
             return MapToResponse(gradeEncontrada);
         }
@@ -75,7 +76,7 @@ namespace TruckFlow.Application
         public async Task DeleteGrade(Guid id, CancellationToken cancellationToken = default)
         {
             var gradeEncontrada = await _repo.GetById(id, cancellationToken)
-                ?? throw new InvalidOperationException("Grade não encontrado");
+                ?? throw new NotFoundException("Grade não encontrado");
 
             await _repo.Delete(gradeEncontrada, cancellationToken);
 
@@ -116,10 +117,10 @@ namespace TruckFlow.Application
             CancellationToken cancellationToken = default)
         {
             var produto = await _produtoRepo.GetById(grade.ProdutoId, cancellationToken)
-                ?? throw new InvalidOperationException("Produto não encontrado");
+                ?? throw new NotFoundException("Produto não encontrado");
 
             var fornecedor = await _fornecedorRepo.GetById(grade.FornecedorId, cancellationToken)
-                ?? throw new InvalidOperationException("Fornecedor não encontrado");
+                ?? throw new NotFoundException("Fornecedor não encontrado");
 
             ValidationResult validationResult = await _updateValidator.ValidateAsync(grade, cancellationToken);
 
@@ -129,7 +130,7 @@ namespace TruckFlow.Application
             }
 
             var gradeEncontrada = await _repo.GetById(id, cancellationToken)
-                ?? throw new InvalidOperationException("Grade não encontrado");
+                ?? throw new NotFoundException("Grade não encontrado");
 
             gradeEncontrada.Produto = produto;
             gradeEncontrada.Fornecedor = fornecedor;

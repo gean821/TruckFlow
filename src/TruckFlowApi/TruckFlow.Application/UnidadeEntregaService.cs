@@ -10,6 +10,7 @@ using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Validators.UnidadeEntrega;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 using TruckFlow.Domain.Dto.UnidadeEntrega;
+using TruckFlow.Application.Exceptions;
 
 namespace TruckFlow.Application
 {
@@ -60,7 +61,7 @@ namespace TruckFlow.Application
         public async Task<UnidadeEntregaResponse> GetById(Guid id, CancellationToken cancellationToken = default)
         {
             var unidadeEncontrada = await _repo.GetById(id, cancellationToken)
-                ?? throw new ArgumentNullException("Unidade de entrega não encontrada");
+                ?? throw new NotFoundException("Unidade de entrega não encontrada");
 
             return new UnidadeEntregaResponse
             {
@@ -73,7 +74,7 @@ namespace TruckFlow.Application
         public async Task DeleteUnidadeEntrega(Guid id, CancellationToken cancellationToken = default)
         {
             var unidadeEncontrada = await _repo.GetById(id, cancellationToken)
-                ?? throw new ArgumentNullException("Unidade de entrega não encontrada");
+                ?? throw new NotFoundException("Unidade de entrega não encontrada");
 
             await _repo.Delete(unidadeEncontrada.Id, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
@@ -111,7 +112,7 @@ namespace TruckFlow.Application
             }
 
             var unidadeEncontrada = await _repo.GetById(id, cancellationToken)
-                ?? throw new ArgumentNullException("Unidade de entrega não encontrada");
+                ?? throw new NotFoundException("Unidade de entrega não encontrada");
 
             unidadeEncontrada.Nome = unidade.Nome;
             unidadeEncontrada.Localizacao = unidade.Localizacao;

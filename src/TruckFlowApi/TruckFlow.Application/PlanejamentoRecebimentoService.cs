@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.ItensPlanejamento;
@@ -67,7 +68,7 @@ namespace TruckFlow.Application
         public async Task<RecebimentoResponseDto> GetById(Guid id, CancellationToken token = default)
         {
             var recebimento = await _planeRepo.GetById(id, token) 
-                ?? throw new InvalidOperationException("Recebimento não encontrado");
+                ?? throw new NotFoundException("Recebimento não encontrado");
 
             return MapToResponse(recebimento);
         }
@@ -75,7 +76,7 @@ namespace TruckFlow.Application
         public async Task DeleteRecebimento(Guid id, CancellationToken token = default)
         {
             var recebimento = await _planeRepo.GetById(id, token) ?? 
-                throw new InvalidOperationException("Recebimento não encontrado");
+                throw new NotFoundException("Recebimento não encontrado");
 
             await _planeRepo.DeleteRecebimento(recebimento.Id, token);
             await _planeRepo.SaveChangesAsync(token);
@@ -96,10 +97,10 @@ namespace TruckFlow.Application
             }
 
             var recebimentoEncontrado = await _planeRepo.GetById(id, token)
-                ?? throw new InvalidOperationException("recebimento não encontrado.");
+                ?? throw new NotFoundException("recebimento não encontrado.");
 
             var fornecedor = await _forRepo.GetById(recebimento.FornecedorId, token)
-                ?? throw new InvalidOperationException("Fornecedor não encontrado.");
+                ?? throw new NotFoundException("Fornecedor não encontrado.");
 
             var produtosIds = recebimento.ItensPlanejamento!.Select(x => x.ProdutoId).ToList();
             var produtos = await _produtoRepositorio.GetByIdsAsync(produtosIds, token);
@@ -115,7 +116,7 @@ namespace TruckFlow.Application
                 .Select(x =>
                 {
                     var produto = produtos.FirstOrDefault(p => p.Id == x.ProdutoId)
-                        ?? throw new InvalidOperationException($"Produto com ID {x.ProdutoId} não encontrado.");
+                        ?? throw new NotFoundException($"Produto com ID {x.ProdutoId} não encontrado.");
 
                     return new ItemPlanejamento
                     {

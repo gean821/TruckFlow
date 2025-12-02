@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Fornecedor;
@@ -70,7 +71,7 @@ namespace TruckFlow.Application
         public async Task<FornecedorResponse> GetById(Guid id, CancellationToken cancellatioToken = default)
         {
             var fornecedorEncontrado = await _repo.GetById(id, cancellatioToken)
-                ?? throw new ArgumentNullException("Fornecedor não encontrado");
+                ?? throw new NotFoundException("Fornecedor não encontrado");
 
             return new FornecedorResponse
             {
@@ -82,7 +83,7 @@ namespace TruckFlow.Application
         public async Task DeleteFornecedor(Guid id, CancellationToken cancellationToken = default)
         {
             var fornecedorEncontrado = await _repo.GetById(id, cancellationToken)
-                ?? throw new ArgumentNullException("Fornecedor não encontrado");
+                ?? throw new NotFoundException("Fornecedor não encontrado");
 
             await _repo.Delete(fornecedorEncontrado.Id, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
@@ -116,7 +117,7 @@ namespace TruckFlow.Application
             }
 
             var fornecedorEncontrado = await _repo.GetById(id, cancellationToken)
-                ?? throw new ArgumentNullException("Fornecedor não encontrado.");
+                ?? throw new NotFoundException("Fornecedor não encontrado.");
 
             fornecedorEncontrado.Nome = fornecedor.Nome;
             
@@ -128,7 +129,7 @@ namespace TruckFlow.Application
         public async Task<FornecedorResponse> GetByNome(string nome, CancellationToken token = default)
         {
             var fornecedorEncontrado = await _repo.GetByNome(nome, token)
-               ?? throw new ArgumentNullException("Fornecedor não encontrado");
+               ?? throw new NotFoundException("Fornecedor não encontrado");
 
             return MapToResponse(fornecedorEncontrado);
         }
@@ -139,7 +140,7 @@ namespace TruckFlow.Application
             )
         {
             var fornecedorEncontrado = await _repo.GetById(id, token)
-               ?? throw new ArgumentNullException("Fornecedor não encontrado");
+               ?? throw new NotFoundException("Fornecedor não encontrado");
 
             return MapToResponse(fornecedorEncontrado);
         }
@@ -152,14 +153,14 @@ namespace TruckFlow.Application
 
         {
             var fornecedor = await _repo.GetByIdWithProdutosAsync(fornecedorId, token)
-                          ?? throw new ArgumentNullException("Fornecedor não encontrado");
+                          ?? throw new NotFoundException("Fornecedor não encontrado");
 
             var produto = await _produtoRepo.GetById(produtoId, token)
-                          ?? throw new ArgumentNullException("Produto não encontrado");
+                          ?? throw new NotFoundException("Produto não encontrado");
             
             if (fornecedor.Produtos.Any(p => p.Id == produto.Id))
             {
-                throw new InvalidOperationException("Produto já associado a este fornecedor.");
+                throw new BusinessException("Produto já associado a este fornecedor.");
             }
 
             fornecedor.Produtos.Add(produto);
@@ -176,10 +177,10 @@ namespace TruckFlow.Application
 
         {
             var fornecedor = await _repo.GetByIdWithProdutosAsync(fornecedorId, token)
-                ?? throw new ArgumentNullException("Fornecedor não encontrado");
+                ?? throw new NotFoundException("Fornecedor não encontrado");
 
             var produto = fornecedor.Produtos.FirstOrDefault(p => p.Id == produtoId)
-                ?? throw new InvalidOperationException("Produto não associado a este fornecedor");
+                ?? throw new NotFoundException("Produto não associado a este fornecedor");
 
             fornecedor.Produtos.Remove(produto);
             await _repo.SaveChangesAsync(token);
@@ -203,7 +204,7 @@ namespace TruckFlow.Application
 
             if (produtosEncontrados == null || produtosEncontrados.Count == 0)
             {
-                throw new ArgumentNullException("Nenhum produto encontrado para os IDs informados.");
+                throw new NotFoundException("Nenhum produto encontrado para os IDs informados.");
             }
 
             var fornecedores = produtosEncontrados
@@ -213,7 +214,7 @@ namespace TruckFlow.Application
                 .ToList();
 
             if (fornecedores.Count == 0) { 
-                throw new ArgumentNullException("Nenhum fornecedor associado encontrado para os produtos informados.");
+                throw new NotFoundException("Nenhum fornecedor associado encontrado para os produtos informados.");
             }
 
             return MapListToResponse(fornecedores);
