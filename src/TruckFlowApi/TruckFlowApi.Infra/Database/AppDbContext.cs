@@ -42,6 +42,7 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<Fornecedor> Fornecedor { get; set; }
         public DbSet<Carga> Carga { get; set; }
         public DbSet<UnidadeEntrega> UnidadeEntrega { get; set; }
+        public DbSet<Grade> Grade { get; set; }
         public DbSet<Agendamento> Agendamento { get; set; }
         public DbSet<Administrador> Administrador { get; set; }
         public DbSet<NotaFiscal> NotaFiscal { get; set; }

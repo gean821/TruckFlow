@@ -151,7 +151,7 @@ namespace TruckFlow.Application
 
             new ProdutoResponse
             {
-                Id = p.Id,
+                Id = p.Id, 
                 Nome = p.Nome,
                 LocalDescarga = p.LocalDescarga.Nome,
                 LocalDescargaId = p.LocalDescargaId,

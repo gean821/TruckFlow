@@ -18,7 +18,7 @@ namespace TruckFlowApi.Infra.Repositories
         public FornecedorRepositorio(AppDbContext db) => _db = db;
 
         public async Task<Fornecedor> CreateFornecedor(Fornecedor fornecedor, CancellationToken token = default)
-        { 
+        {
             await _db.Fornecedor.AddAsync(fornecedor, token);
             return fornecedor;
         }
@@ -26,8 +26,8 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task<List<Fornecedor>> GetAll(CancellationToken token = default)
         {
             return await _db.Fornecedor
-                .Include(x=> x.Produtos)
-                    .ThenInclude(x=> x.LocalDescarga)
+                .Include(x => x.Produtos)
+                    .ThenInclude(x => x.LocalDescarga)
                 .Include(x => x.NotaFiscal)
                 .Include(x => x.Agendamento)
                 .ToListAsync(token);
@@ -55,7 +55,7 @@ namespace TruckFlowApi.Infra.Repositories
             await SaveChangesAsync(token);
             return fornecedorEncontrado;
         }
-           
+
         public async Task Delete(Guid id, CancellationToken token)
         {
             var fornecedorEncontrado = await GetById(id, token);
@@ -81,7 +81,7 @@ namespace TruckFlowApi.Infra.Repositories
         {
             return await _db.Fornecedor
                 .Include(x => x.Produtos)
-                    .ThenInclude(x=> x.LocalDescarga)
+                    .ThenInclude(x => x.LocalDescarga)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
         }
     }
