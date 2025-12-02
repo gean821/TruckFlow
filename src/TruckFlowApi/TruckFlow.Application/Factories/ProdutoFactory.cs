@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Domain.Dto.Produto;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -18,7 +19,7 @@ namespace TruckFlow.Application.Factories
         public async Task<Produto> CreateProdutoFromDto(ProdutoCreateDto dto, CancellationToken token = default)
         {
             var localDescarga = await _repo.GetById(dto.LocalDescargaId, token) 
-                ?? throw new ArgumentNullException("Não foi possível encontrar o local de descarga.");
+                ?? throw new NotFoundException("Não foi possível encontrar o local de descarga.");
 
             return new Produto
             {

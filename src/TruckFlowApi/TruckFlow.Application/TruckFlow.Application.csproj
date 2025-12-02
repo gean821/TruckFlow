@@ -23,4 +23,12 @@
     <ProjectReference Include="..\TruckFlowApi.Infra\TruckFlowApi.Infra.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Resources\Alerta\" />
+    <Folder Include="Resources\Erro\" />
+    <Folder Include="Resources\Confirmacao\" />
+    <Folder Include="Resources\Sistema\" />
+    <Folder Include="Resources\Sucesso\" />
+  </ItemGroup>
+
 </Project>
