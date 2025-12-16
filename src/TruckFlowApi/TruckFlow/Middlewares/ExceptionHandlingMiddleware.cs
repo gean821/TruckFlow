@@ -53,17 +53,16 @@ namespace TruckFlow.Middlewares
 
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro inesperado");
+                _logger.LogError("Erro inesperado: {exception}", ex.ToString());
 
-                var result = new
+                context.Response.StatusCode = 500;
+
+                await context.Response.WriteAsJsonAsync(new
                 {
                     success = false,
-                    message = "Erro interno inesperado."
-                };
-
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-                await context.Response.WriteAsJsonAsync(result);
+                    message = ex.Message,
+                    stack = ex.StackTrace
+                });
             }
         }
     }

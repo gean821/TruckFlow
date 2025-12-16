@@ -8,6 +8,8 @@
 
         public ICollection<ItemPlanejamento>? ItemPlanejamentos { get; set; } = [];
 
+        public string? CodigoEan { get; set; }
+
         public ICollection<Fornecedor>? Fornecedores { get; set; } = [];
 
         public ICollection<Grade>? Grades { get; set; } = [];

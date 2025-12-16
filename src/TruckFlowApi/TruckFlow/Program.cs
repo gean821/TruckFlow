@@ -10,6 +10,7 @@ using TruckFlow.Extensions.Fornecedor;
 using TruckFlow.Extensions.Grade;
 using TruckFlow.Extensions.ItemPlanejamento;
 using TruckFlow.Extensions.LocalDescarga;
+using TruckFlow.Extensions.NotaFiscal;
 using TruckFlow.Extensions.Produto;
 using TruckFlow.Extensions.Recebimento;
 using TruckFlow.Filters;
@@ -37,11 +38,15 @@ namespace TruckFlow
             builder.Services.AddPlanejamentoRecebimento();
             builder.Services.AddItemPlanejameto();
             builder.Services.AddGrade();
+            builder.Services.AddNotaFiscal();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(x=>
+            {
+                x.OperationFilter<FileUploadOperationFilter>();
+            });
             builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
             {
                 optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -67,8 +72,18 @@ namespace TruckFlow
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
             });
 
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(56611); // HTTP
+                options.ListenAnyIP(56610, listenOptions =>
+                {
+                    listenOptions.UseHttps();
+                });
+            });
+
             var app = builder.Build();
-            
+
+            app.UseRouting();
             app.UseCors("AllowFrontend");
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseMiddleware<RequestLoggingMiddleware>();
@@ -79,8 +94,11 @@ namespace TruckFlow
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            else
+            {
+                app.UseHttpsRedirection();
+            }
 
-            app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
 

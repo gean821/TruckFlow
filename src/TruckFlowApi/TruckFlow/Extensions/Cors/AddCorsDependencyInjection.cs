@@ -11,7 +11,7 @@ namespace TruckFlow.Extensions.Cors
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173") // endereço do front atual no localhost!
+                    policy.AllowAnyOrigin()
                     .AllowAnyHeader()
                     .AllowAnyMethod();
                 });
