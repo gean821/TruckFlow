@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TruckFlowApi.Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class CriacaoBanco : Migration
+    public partial class novaMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,7 +30,10 @@ namespace TruckFlowApi.Infra.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -38,15 +41,18 @@ namespace TruckFlowApi.Infra.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Produto",
+                name: "LocalDescarga",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Produto", x => x.Id);
+                    table.PrimaryKey("PK_LocalDescarga", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -55,7 +61,10 @@ namespace TruckFlowApi.Infra.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Localizacao = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Localizacao = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -116,8 +125,26 @@ namespace TruckFlowApi.Infra.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Numero = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ChaveAcesso = table.Column<string>(type: "nvarchar(44)", maxLength: 44, nullable: false),
+                    Numero = table.Column<long>(type: "bigint", nullable: false),
+                    Serie = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DataEmissao = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EmitenteNome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    EmitenteCnpj = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    DestinatarioNome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    DestinatarioCpfCnpj = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ValorTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PesoBruto = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
+                    PesoLiquido = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
+                    VolumeQuantidade = table.Column<int>(type: "int", nullable: true),
+                    PlacaVeiculo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RawXml = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AgendamentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UploadedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ValidationMessages = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TipoCarga = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -135,20 +162,47 @@ namespace TruckFlowApi.Infra.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "LocalDescarga",
+                name: "PlanejamentoRecebimento",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DataInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StatusRecebimento = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlanejamentoRecebimento", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PlanejamentoRecebimento_Fornecedor_FornecedorId",
+                        column: x => x.FornecedorId,
+                        principalTable: "Fornecedor",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Produto",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    LocalDescargaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CodigoEan = table.Column<string>(type: "nvarchar(14)", maxLength: 14, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LocalDescarga", x => x.Id);
+                    table.PrimaryKey("PK_Produto", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_LocalDescarga_Produto_ProdutoId",
-                        column: x => x.ProdutoId,
-                        principalTable: "Produto",
+                        name: "FK_Produto_LocalDescarga_LocalDescargaId",
+                        column: x => x.LocalDescargaId,
+                        principalTable: "LocalDescarga",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -265,8 +319,9 @@ namespace TruckFlowApi.Infra.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Telefone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Nome = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    Telefone = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
+                    VeiculoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UsuarioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -327,6 +382,124 @@ namespace TruckFlowApi.Infra.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "NotaFiscalItem",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NotaFiscalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Codigo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Descricao = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    Quantidade = table.Column<decimal>(type: "decimal(18,3)", nullable: false),
+                    Unidade = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ValorUnitario = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ValorTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotaFiscalItem", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_NotaFiscalItem_NotaFiscal_NotaFiscalId",
+                        column: x => x.NotaFiscalId,
+                        principalTable: "NotaFiscal",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Grade",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DataInicio = table.Column<DateOnly>(type: "date", nullable: false),
+                    DataFim = table.Column<DateOnly>(type: "date", nullable: false),
+                    HoraInicial = table.Column<TimeOnly>(type: "time", nullable: false),
+                    HoraFinal = table.Column<TimeOnly>(type: "time", nullable: false),
+                    IntervaloMinutos = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Grade", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Grade_Fornecedor_FornecedorId",
+                        column: x => x.FornecedorId,
+                        principalTable: "Fornecedor",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Grade_Produto_ProdutoId",
+                        column: x => x.ProdutoId,
+                        principalTable: "Produto",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ItemPlanejamento",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PlanejamentoRecebimentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QuantidadeTotalPlanejada = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    CadenciaDiariaPlanejada = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    QuantidadeTotalRecebida = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ItemPlanejamento", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ItemPlanejamento_PlanejamentoRecebimento_PlanejamentoRecebimentoId",
+                        column: x => x.PlanejamentoRecebimentoId,
+                        principalTable: "PlanejamentoRecebimento",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ItemPlanejamento_Produto_ProdutoId",
+                        column: x => x.ProdutoId,
+                        principalTable: "Produto",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProdutoFornecedor",
+                columns: table => new
+                {
+                    FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProdutoFornecedor", x => new { x.ProdutoId, x.FornecedorId });
+                    table.ForeignKey(
+                        name: "FK_ProdutoFornecedor_Fornecedor_FornecedorId",
+                        column: x => x.FornecedorId,
+                        principalTable: "Fornecedor",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProdutoFornecedor_Produto_ProdutoId",
+                        column: x => x.ProdutoId,
+                        principalTable: "Produto",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Veiculo",
                 columns: table => new
                 {
@@ -334,7 +507,10 @@ namespace TruckFlowApi.Infra.Migrations
                     Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Placa = table.Column<string>(type: "nvarchar(7)", maxLength: 7, nullable: false),
                     TipoVeiculo = table.Column<int>(type: "int", nullable: false),
-                    MotoristaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    MotoristaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -353,7 +529,10 @@ namespace TruckFlowApi.Infra.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AgedamentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    TipoCarga = table.Column<int>(type: "int", nullable: false)
+                    TipoCarga = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -371,7 +550,10 @@ namespace TruckFlowApi.Infra.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Descricao = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AgendamentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    AgendamentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -445,15 +627,35 @@ namespace TruckFlowApi.Infra.Migrations
                 column: "AgedamentoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LocalDescarga_ProdutoId",
-                table: "LocalDescarga",
-                column: "ProdutoId",
-                unique: true);
+                name: "IX_Grade_FornecedorId",
+                table: "Grade",
+                column: "FornecedorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Grade_ProdutoId",
+                table: "Grade",
+                column: "ProdutoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ItemPlanejamento_PlanejamentoRecebimentoId",
+                table: "ItemPlanejamento",
+                column: "PlanejamentoRecebimentoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ItemPlanejamento_ProdutoId",
+                table: "ItemPlanejamento",
+                column: "ProdutoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Motorista_UsuarioId",
                 table: "Motorista",
                 column: "UsuarioId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NotaFiscal_ChaveAcesso",
+                table: "NotaFiscal",
+                column: "ChaveAcesso",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -463,9 +665,29 @@ namespace TruckFlowApi.Infra.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_NotaFiscalItem_NotaFiscalId",
+                table: "NotaFiscalItem",
+                column: "NotaFiscalId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notificacao_AgendamentoId",
                 table: "Notificacao",
                 column: "AgendamentoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlanejamentoRecebimento_FornecedorId",
+                table: "PlanejamentoRecebimento",
+                column: "FornecedorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Produto_LocalDescargaId",
+                table: "Produto",
+                column: "LocalDescargaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProdutoFornecedor_FornecedorId",
+                table: "ProdutoFornecedor",
+                column: "FornecedorId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -511,10 +733,19 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Carga");
 
             migrationBuilder.DropTable(
-                name: "LocalDescarga");
+                name: "Grade");
+
+            migrationBuilder.DropTable(
+                name: "ItemPlanejamento");
+
+            migrationBuilder.DropTable(
+                name: "NotaFiscalItem");
 
             migrationBuilder.DropTable(
                 name: "Notificacao");
+
+            migrationBuilder.DropTable(
+                name: "ProdutoFornecedor");
 
             migrationBuilder.DropTable(
                 name: "Veiculo");
@@ -523,10 +754,13 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Produto");
+                name: "PlanejamentoRecebimento");
 
             migrationBuilder.DropTable(
                 name: "Agendamento");
+
+            migrationBuilder.DropTable(
+                name: "Produto");
 
             migrationBuilder.DropTable(
                 name: "Motorista");
@@ -536,6 +770,9 @@ namespace TruckFlowApi.Infra.Migrations
 
             migrationBuilder.DropTable(
                 name: "UnidadeEntrega");
+
+            migrationBuilder.DropTable(
+                name: "LocalDescarga");
 
             migrationBuilder.DropTable(
                 name: "Usuario");

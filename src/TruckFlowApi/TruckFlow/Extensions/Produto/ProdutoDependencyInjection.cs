@@ -19,6 +19,7 @@ namespace TruckFlow.Extensions.Produto
             services.AddTransient<ProdutoFactory>();
             services.AddTransient<IValidator<ProdutoCreateDto>, ProdutoCreateValidator>();
             services.AddTransient<IValidator<ProdutoEditDto>, ProdutoEditValidator>();
+            services.AddScoped<ProdutoLearningService>();
 
             return services;
         }

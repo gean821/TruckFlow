@@ -14,6 +14,7 @@ namespace TruckFlow.Controllers
             _service = service;
 
         [HttpPost("parse")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> ParseNotaFiscalXml(
             IFormFile xmlFile,
             CancellationToken token)

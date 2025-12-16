@@ -20,6 +20,10 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.Nome)
                 .IsRequired();
 
+            builder.Property(x => x.CodigoEan)
+                .IsRequired(false)
+                .HasMaxLength(14);
+
             builder.HasOne(x => x.LocalDescarga)
                 .WithMany(x => x.Produtos)
                 .HasForeignKey(x => x.LocalDescargaId)
