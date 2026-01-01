@@ -29,7 +29,7 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Produtos)
                     .ThenInclude(x => x.LocalDescarga)
                 .Include(x => x.NotaFiscal)
-                .Include(x => x.Agendamento)
+                .Include(x => x.Agendamentos)
                 .ToListAsync(token);
         }
 
@@ -37,7 +37,7 @@ namespace TruckFlowApi.Infra.Repositories
         {
             var fornecedor = await _db.Fornecedor
                 .Include(x => x.NotaFiscal)
-                .Include(x => x.Agendamento)
+                .Include(x => x.Agendamentos)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
 
             return fornecedor!;
@@ -50,7 +50,7 @@ namespace TruckFlowApi.Infra.Repositories
             fornecedorEncontrado.Id = fornecedor.Id;
             fornecedorEncontrado.Nome = fornecedor.Nome;
             fornecedorEncontrado.NotaFiscal = fornecedor.NotaFiscal;
-            fornecedorEncontrado.Agendamento = fornecedor.Agendamento;
+            fornecedorEncontrado.Agendamentos = fornecedor.Agendamentos;
 
             await SaveChangesAsync(token);
             return fornecedorEncontrado;
@@ -67,7 +67,7 @@ namespace TruckFlowApi.Infra.Repositories
         {
             var fornecedor = await _db.Fornecedor
                 .Include(x => x.NotaFiscal)
-                .Include(x => x.Agendamento)
+                .Include(x => x.Agendamentos)
                 .FirstOrDefaultAsync(x => x.Nome == nome, token);
 
             return fornecedor!;

@@ -27,8 +27,8 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task<List<UnidadeEntrega>> GetAll(CancellationToken token = default)
         {
             return await _db.UnidadeEntrega
-            .Include(x => x.Agendamento)
-            .ToListAsync();
+            .Include(x => x.Agendamentos)
+            .ToListAsync(token);
         }
 
         public async Task<UnidadeEntrega> GetById(
@@ -44,22 +44,16 @@ namespace TruckFlowApi.Infra.Repositories
             UnidadeEntrega unidade,
             CancellationToken token = default)
         {
-            var unidadeEncontrada = await GetById(id, token);
-
-            unidadeEncontrada.Id = unidade.Id;
-            unidadeEncontrada.Localizacao = unidade.Localizacao;
-            unidadeEncontrada.Agendamento = unidade.Agendamento;
-
+            _db.UnidadeEntrega.Update(unidade);
             await SaveChangesAsync(token);
-            return unidadeEncontrada;
+            return unidade;
         }
 
         public async Task Delete(
             Guid id,
             CancellationToken token = default)
         {
-            var unidadeEncontrada = await GetById(id,token);
-            _db.Remove(unidadeEncontrada);
+            _db.Remove(id);
             await SaveChangesAsync(token);
         }
 

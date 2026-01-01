@@ -31,12 +31,6 @@ namespace TruckFlow.Controllers
             CancellationToken ct = default)
         {
             var grade = await _service.GetById(id, ct);
-
-            if (grade == null)
-            {
-                return NotFound();
-            }
-
             return Ok(grade);
         }
 

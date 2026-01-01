@@ -47,15 +47,24 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.UpdatedAt)
             .IsRequired(false);
 
+            builder.Property(x => x.DiasSemana)
+                .HasColumnType("varchar(20)")
+                .IsRequired();
+
+            builder.HasOne(x => x.UnidadeEntrega)
+                .WithMany(x => x.Grades)
+                .HasForeignKey(x => x.UnidadeEntregaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(g => g.Agendamentos)
+                .WithOne(a => a.Grade)
+                .HasForeignKey(a => a.GradeId)
+                .OnDelete(DeleteBehavior.Restrict); 
+
             builder.HasOne(x => x.Produto)
                .WithMany(x => x.Grades)
                .HasForeignKey(x => x.ProdutoId)
                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(x => x.Produto)
-                .WithMany(x => x.Grades)
-                .HasForeignKey(x => x.ProdutoId)
-                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -75,8 +75,8 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.HasOne<Agendamento>(x => x.Agendamento)
                 .WithOne(x => x.NotaFiscal)
                 .HasForeignKey<Agendamento>(x => x.NotaFiscalId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .IsRequired();
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(x => x.Itens)
                 .WithOne(x => x.NotaFiscal)

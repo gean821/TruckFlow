@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
@@ -20,6 +21,7 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task<Grade> CreateGrade(Grade grade, CancellationToken token = default)
         {
             await _db.Grade.AddAsync(grade, token);
+            await SaveChangesAsync(token);
             return grade;
         }
 
@@ -27,6 +29,7 @@ namespace TruckFlowApi.Infra.Repositories
         {
             return await _db.Grade
                 .Include(x => x.Produto)
+                .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Fornecedor)
                 .ToListAsync(token);
         }
@@ -36,6 +39,7 @@ namespace TruckFlowApi.Infra.Repositories
             var grade = await _db.Grade
                 .Include(x => x.Produto)
                 .Include(x => x.Fornecedor)
+                .Include(x => x.UnidadeEntrega)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
 
             return grade!;
@@ -49,8 +53,19 @@ namespace TruckFlowApi.Infra.Repositories
             return grade;
         }
 
+        public async Task<bool> CheckAppointmentExistence(Guid gradeId, CancellationToken token = default)
+        {
+            return await _db.Agendamento
+                .AsNoTracking()
+                .AnyAsync(
+                    x => x.GradeId == gradeId
+                    && x.StatusAgendamento != StatusAgendamento.Disponivel,
+                    token
+                );
+        }
+
         public async Task Delete(Grade grade, CancellationToken token = default)
-        { 
+        {
             _db.Remove(grade);
             await SaveChangesAsync(token);
         }

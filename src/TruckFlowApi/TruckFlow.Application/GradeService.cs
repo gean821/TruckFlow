@@ -14,6 +14,7 @@ using TruckFlow.Domain.Dto.Fornecedor;
 using TruckFlow.Domain.Dto.Grade;
 using TruckFlow.Domain.Dto.Produto;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
@@ -25,7 +26,10 @@ namespace TruckFlow.Application
         private readonly IValidator<GradeUpdateDto> _updateValidator;
         private readonly IProdutoRepositorio _produtoRepo;
         private readonly IFornecedorRepositorio _fornecedorRepo;
+        private readonly IUnidadeEntregaRepositorio _unidadeRepo;
+        private readonly IAgendamentoRepositorio _agendamentoRepo;
         private readonly GradeFactory _factory;
+
 
         public GradeService(
             IGradeRepositorio repo,
@@ -33,7 +37,9 @@ namespace TruckFlow.Application
             IValidator<GradeUpdateDto> updateValidator,
             GradeFactory factory,
             IProdutoRepositorio produtoRepo,
-            IFornecedorRepositorio fornecedorRepo
+            IFornecedorRepositorio fornecedorRepo,
+            IUnidadeEntregaRepositorio unidadeEntregaRepo,
+            IAgendamentoRepositorio agendamentoRepositorio
             )
         {
             _repo = repo;
@@ -42,6 +48,8 @@ namespace TruckFlow.Application
             _factory = factory;
             _produtoRepo = produtoRepo;
             _fornecedorRepo = fornecedorRepo;
+            _unidadeRepo = unidadeEntregaRepo;
+            _agendamentoRepo = agendamentoRepositorio;
         }
 
         public async Task<GradeResponse> CreateGrade
@@ -59,28 +67,20 @@ namespace TruckFlow.Application
 
             var gradeCriada = await _factory.CreateGradeFromDto(grade, cancellationToken);
 
-            await  _repo.CreateGrade(gradeCriada, cancellationToken);
-            await  _repo.SaveChangesAsync(cancellationToken);
+            await _repo.CreateGrade(gradeCriada, cancellationToken);
+            await _repo.SaveChangesAsync(cancellationToken);
 
-            return MapToResponse(gradeCriada);
-        }
+            var slots = gradeCriada.GerarSlots();
+            Console.WriteLine($"Slots gerados: {slots.Count}");
 
-        public async Task<GradeResponse> GetById(Guid id, CancellationToken cancellationToken = default)
-        {
-            var gradeEncontrada = await _repo.GetById(id, cancellationToken) ??
-                throw new NotFoundException("Grade não encontrado"); // lembra da implemnetacao em Resources Geanzada
-
-            return MapToResponse(gradeEncontrada);
-        }
-
-        public async Task DeleteGrade(Guid id, CancellationToken cancellationToken = default)
-        {
-            var gradeEncontrada = await _repo.GetById(id, cancellationToken)
-                ?? throw new NotFoundException("Grade não encontrado");
-
-            await _repo.Delete(gradeEncontrada, cancellationToken);
+            if (slots.Count > 0)
+            {
+                await _agendamentoRepo.AddRangeAsync(slots, cancellationToken);
+                await _repo.SaveChangesAsync(cancellationToken);
+            }
 
             await _repo.SaveChangesAsync(cancellationToken);
+            return MapToResponse(gradeCriada);
         }
 
         public async Task<List<GradeResponse>> GetAll(CancellationToken cancellationToken = default)
@@ -92,23 +92,15 @@ namespace TruckFlow.Application
                 return [];
             }
 
-            var listaGradesDto = listarGrades.Select(g => new GradeResponse
-            {
-                Id = g.Id,
-                Produto = g.Produto.Nome,
-                Fornecedor = g.Fornecedor.Nome,
-                ProdutoId = g.ProdutoId,
-                FornecedorId = g.FornecedorId,
-                DataInicio = g.DataInicio,
-                DataFim = g.DataFim,
-                HoraInicial = g.HoraInicial,
-                HoraFinal = g.HoraFinal,
-                IntervaloMinutos = g.IntervaloMinutos,
-                CreatedAt = g.CreatedAt,
-                UpdatedAt = g.UpdatedAt
-            }).ToList();
+            return listarGrades.Select(MapToResponse).ToList();
+        }
 
-            return listaGradesDto;
+        public async Task<GradeResponse> GetById(Guid id, CancellationToken cancellationToken = default)
+        {
+            var gradeEncontrada = await _repo.GetById(id, cancellationToken) ??
+                throw new NotFoundException("Grade não encontrado");
+
+            return MapToResponse(gradeEncontrada);
         }
 
         public async Task<GradeResponse> UpdateGrade(
@@ -145,7 +137,25 @@ namespace TruckFlow.Application
 
             var gradeAtualizada = await _repo.Update(gradeEncontrada, cancellationToken);
 
+            await _repo.SaveChangesAsync(cancellationToken);
             return MapToResponse(gradeAtualizada);
+        }
+
+        public async Task DeleteGrade(Guid id, CancellationToken cancellationToken = default)
+        {
+            var gradeEncontrada = await _repo.GetById(id, cancellationToken)
+                ?? throw new NotFoundException("Grade não encontrado");
+
+            var possuiSlotsConfirmados = await _repo.CheckAppointmentExistence(id, cancellationToken);
+
+            if (possuiSlotsConfirmados)
+            {
+                throw new BusinessException(
+                    "Não é possível remover uma grade com agendamentos confirmados.");
+            }
+
+            await _repo.Delete(gradeEncontrada, cancellationToken);
+            await _repo.SaveChangesAsync(cancellationToken);
         }
 
         private static GradeResponse MapToResponse(Grade g) =>
@@ -162,6 +172,8 @@ namespace TruckFlow.Application
                 HoraInicial = g.HoraInicial,
                 HoraFinal = g.HoraFinal,
                 IntervaloMinutos = g.IntervaloMinutos,
+                DiasSemana = g.DiasSemana,
+                UnidadeEntrega = g.UnidadeEntrega.Localizacao,
                 CreatedAt = g.CreatedAt,
                 UpdatedAt = g.UpdatedAt
             };

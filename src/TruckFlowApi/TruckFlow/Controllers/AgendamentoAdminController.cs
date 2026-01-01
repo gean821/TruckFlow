@@ -5,61 +5,69 @@ namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
-    public sealed class AgendamentoController : ControllerBase
+    public sealed class AgendamentoAdminController : ControllerBase
     {
-        private readonly IAgendamentoService _service;
+        private readonly IAgendamentoAdminService _service;
 
-        public AgendamentoController(IAgendamentoService service)
+        public AgendamentoAdminController(IAgendamentoAdminService service)
         {
             _service = service;
         }
 
         [HttpPost]
         public async Task<IActionResult> AddAgendamento(
-            [FromBody] AgendamentoCreateDto dto,
+            [FromBody] AgendamentoAdminCreateDto dto,
             CancellationToken token)
         {
-            var agendamentoCriado = await _service.AddAgendamento(dto, token);
+            var agendamentoCriado = await _service.CreateAvulso(dto, token);
             return Ok(agendamentoCriado);
         }
 
-        [HttpGet("id")]
-
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(
             [FromRoute] Guid id,
             CancellationToken token)
         {
             var agendamento = await _service.GetById(id, token);
-            
-            if (agendamento == null)
-            {
-                return NotFound();
-            }
-
             return Ok(agendamento);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken token)
+        public async Task<IActionResult> GetByFilters
+            (
+                [FromQuery] AgendamentoFilterDto filtros,
+                CancellationToken cancellationToken
+            )
         {
-            var agendamentos = await _service.GetAll(token);
-            return Ok(agendamentos);
+            var result = await _service.GetByFiltros(filtros, cancellationToken);
+            return Ok(result);
         }
 
-        [HttpPut("id")]
+
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAgendamento(
             [FromRoute] Guid id,
-            [FromBody] AgendamentoUpdateDto dto
+            [FromBody] AgendamentoAdminUpdateDto dto
             )
         {
             var agendamento = await _service.Update(id, dto);
-            
+
             if (agendamento == null)
             {
                 return NotFound();
             }
 
             return Ok(agendamento);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAgendamento(
+          [FromRoute] Guid id,
+          CancellationToken token = default
+          )
+        {
+            await _service.Delete(id, token);
+            return NoContent();
         }
     }
 }

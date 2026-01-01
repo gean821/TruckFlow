@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application.Auth;
 using TruckFlow.Configuration;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Extensions.Agendamento;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Cors;
 using TruckFlow.Extensions.Fornecedor;
@@ -13,6 +14,7 @@ using TruckFlow.Extensions.LocalDescarga;
 using TruckFlow.Extensions.NotaFiscal;
 using TruckFlow.Extensions.Produto;
 using TruckFlow.Extensions.Recebimento;
+using TruckFlow.Extensions.UnidadeEntrega;
 using TruckFlow.Filters;
 using TruckFlow.Middlewares;
 using TruckFlowApi.Infra.Database;
@@ -37,8 +39,11 @@ namespace TruckFlow
             builder.Services.AddFornecedor();
             builder.Services.AddPlanejamentoRecebimento();
             builder.Services.AddItemPlanejameto();
+            builder.Services.AddUnidadeEntrega();
             builder.Services.AddGrade();
             builder.Services.AddNotaFiscal();
+            builder.Services.AddAgendamento();
+            
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

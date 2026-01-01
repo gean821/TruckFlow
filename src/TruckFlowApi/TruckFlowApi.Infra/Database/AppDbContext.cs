@@ -33,6 +33,8 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new NotaFiscalItemConfiguracao());
             modelBuilder.ApplyConfiguration(new PlanejamentoRecebimentoConfiguracao());
             modelBuilder.ApplyConfiguration(new ItemPlanejamentoConfiguracao());
+            modelBuilder.ApplyConfiguration(new GradeConfiguracao());
+
         }
 
         public DbSet<Usuario> Usuario { get; set; }

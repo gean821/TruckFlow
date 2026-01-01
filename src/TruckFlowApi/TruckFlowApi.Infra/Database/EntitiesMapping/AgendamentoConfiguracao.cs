@@ -20,6 +20,12 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.StatusAgendamento)
                 .IsRequired();
 
+            builder.Property(x => x.DataInicio)
+                .IsRequired();
+
+            builder.Property(x => x.DataFim)
+                .IsRequired();
+
             builder.Property(x => x.CreatedAt)
                 .IsRequired();
 
@@ -29,29 +35,33 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.DeletedAt)
                 .IsRequired(false);
 
+            builder.Property(x => x.TipoCarga)
+                .IsRequired();
+
+            builder.Property(x => x.VolumeCarga)
+                .HasColumnType("decimal(18,2)");
+
             builder.HasOne<Usuario>(x => x.Usuario)
                 .WithMany(x => x.Agendamentos)
                 .HasForeignKey(x => x.UsuarioId)
                 .IsRequired(false);
 
             builder.HasOne<Fornecedor>(x => x.Fornecedor)
-                .WithOne(x => x.Agendamento)
-                .HasForeignKey<Agendamento>(x => x.FornecedorId)
-                .IsRequired();
-
-            builder.Property(x => x.TipoCarga)
-                .IsRequired();
-
-            builder.Property(x => x.VolumeCarga)
+                .WithMany(x => x.Agendamentos)
+                .HasForeignKey(x => x.FornecedorId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
 
             builder.HasOne<UnidadeEntrega>(x => x.UnidadeEntrega)
-                .WithOne(x => x.Agendamento)
+                .WithMany(x => x.Agendamentos)
+                .HasForeignKey(x=> x.UnidadeEntregaId)
                 .IsRequired();
+
 
             builder.HasOne(x => x.NotaFiscal)
                 .WithOne(x => x.Agendamento)
                 .HasForeignKey<Agendamento>(x => x.NotaFiscalId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

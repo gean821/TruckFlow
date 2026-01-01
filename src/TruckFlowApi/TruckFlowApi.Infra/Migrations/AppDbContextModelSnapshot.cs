@@ -196,13 +196,22 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("DataFim")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataInicio")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("FornecedorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("NotaFiscalId")
+                    b.Property<Guid?>("GradeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("NotaFiscalId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("StatusAgendamento")
@@ -217,23 +226,23 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("UsuarioId")
+                    b.Property<Guid?>("UsuarioId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("VolumeCarga")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal?>("VolumeCarga")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FornecedorId")
-                        .IsUnique();
+                    b.HasIndex("FornecedorId");
+
+                    b.HasIndex("GradeId");
 
                     b.HasIndex("NotaFiscalId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[NotaFiscalId] IS NOT NULL");
 
-                    b.HasIndex("UnidadeEntregaId")
-                        .IsUnique();
+                    b.HasIndex("UnidadeEntregaId");
 
                     b.HasIndex("UsuarioId");
 
@@ -310,6 +319,10 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DiasSemana")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)");
+
                     b.Property<Guid>("FornecedorId")
                         .HasColumnType("uniqueidentifier");
 
@@ -325,6 +338,9 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<Guid>("ProdutoId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("UnidadeEntregaId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -334,7 +350,9 @@ namespace TruckFlowApi.Infra.Migrations
 
                     b.HasIndex("ProdutoId");
 
-                    b.ToTable("Grade");
+                    b.HasIndex("UnidadeEntregaId");
+
+                    b.ToTable("Grade", (string)null);
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.ItemPlanejamento", b =>
@@ -915,20 +933,24 @@ namespace TruckFlowApi.Infra.Migrations
             modelBuilder.Entity("TruckFlow.Domain.Entities.Agendamento", b =>
                 {
                     b.HasOne("TruckFlow.Domain.Entities.Fornecedor", "Fornecedor")
-                        .WithOne("Agendamento")
-                        .HasForeignKey("TruckFlow.Domain.Entities.Agendamento", "FornecedorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithMany("Agendamentos")
+                        .HasForeignKey("FornecedorId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("TruckFlow.Domain.Entities.Grade", "Grade")
+                        .WithMany("Agendamentos")
+                        .HasForeignKey("GradeId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TruckFlow.Domain.Entities.NotaFiscal", "NotaFiscal")
                         .WithOne("Agendamento")
                         .HasForeignKey("TruckFlow.Domain.Entities.Agendamento", "NotaFiscalId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TruckFlow.Domain.Entities.UnidadeEntrega", "UnidadeEntrega")
-                        .WithOne("Agendamento")
-                        .HasForeignKey("TruckFlow.Domain.Entities.Agendamento", "UnidadeEntregaId")
+                        .WithMany("Agendamentos")
+                        .HasForeignKey("UnidadeEntregaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -937,6 +959,8 @@ namespace TruckFlowApi.Infra.Migrations
                         .HasForeignKey("UsuarioId");
 
                     b.Navigation("Fornecedor");
+
+                    b.Navigation("Grade");
 
                     b.Navigation("NotaFiscal");
 
@@ -965,12 +989,20 @@ namespace TruckFlowApi.Infra.Migrations
                     b.HasOne("TruckFlow.Domain.Entities.Produto", "Produto")
                         .WithMany("Grades")
                         .HasForeignKey("ProdutoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TruckFlow.Domain.Entities.UnidadeEntrega", "UnidadeEntrega")
+                        .WithMany("Grades")
+                        .HasForeignKey("UnidadeEntregaId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Fornecedor");
 
                     b.Navigation("Produto");
+
+                    b.Navigation("UnidadeEntrega");
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.ItemPlanejamento", b =>
@@ -1091,11 +1123,16 @@ namespace TruckFlowApi.Infra.Migrations
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.Fornecedor", b =>
                 {
-                    b.Navigation("Agendamento");
+                    b.Navigation("Agendamentos");
 
                     b.Navigation("NotaFiscal");
 
                     b.Navigation("Recebimentos");
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.Grade", b =>
+                {
+                    b.Navigation("Agendamentos");
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.LocalDescarga", b =>
@@ -1129,7 +1166,9 @@ namespace TruckFlowApi.Infra.Migrations
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.UnidadeEntrega", b =>
                 {
-                    b.Navigation("Agendamento");
+                    b.Navigation("Agendamentos");
+
+                    b.Navigation("Grades");
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.Usuario", b =>

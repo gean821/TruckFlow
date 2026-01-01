@@ -33,10 +33,6 @@
     <ProjectReference Include="..\TruckFlowApi.Infra\TruckFlowApi.Infra.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Extensions\NovaPasta\" />
-  </ItemGroup>
-
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

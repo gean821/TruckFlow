@@ -6,6 +6,6 @@
         public ICollection<Produto> Produtos { get; set; } = [];
         public ICollection<PlanejamentoRecebimento>? Recebimentos { get; set; } = [];
         public NotaFiscal? NotaFiscal { get; set; }
-        public Agendamento? Agendamento { get; set; }
+        public ICollection<Agendamento>? Agendamentos { get; set; } = [];
     }
 }

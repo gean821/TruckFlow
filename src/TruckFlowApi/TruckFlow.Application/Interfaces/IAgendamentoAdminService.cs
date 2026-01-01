@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TruckFlow.Domain.Dto.Agendamento;
+
+namespace TruckFlow.Application.Interfaces
+{
+    public interface IAgendamentoAdminService
+    {
+        Task<AgendamentoAdminResponse> CreateAvulso(AgendamentoAdminCreateDto dto, CancellationToken token = default);
+        Task<List<AgendamentoAdminResponse>> GetByFiltros(AgendamentoFilterDto filtros, CancellationToken token = default);
+        Task<AgendamentoAdminResponse> GetById(Guid id, CancellationToken token = default);
+
+        Task<AgendamentoAdminResponse> Update(Guid id, AgendamentoAdminUpdateDto dto, CancellationToken token = default);
+
+        Task Delete(Guid id, CancellationToken token = default);
+    }
+}

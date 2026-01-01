@@ -15,6 +15,7 @@ namespace TruckFlow.Domain.Dto.Grade
         public required TimeOnly HoraInicial { get; set; }
         public required TimeOnly HoraFinal { get; set; }
         public required int IntervaloMinutos { get; set; }
+        public string DiasSemana { get; set; } = string.Empty;
         public DateTime? UpdatedAt { get; set; }
     }
 }
