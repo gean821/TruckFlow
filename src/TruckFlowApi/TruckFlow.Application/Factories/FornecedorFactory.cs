@@ -11,7 +11,7 @@ namespace TruckFlow.Application.Factories
 {
     public class FornecedorFactory
     {
-        private readonly IProdutoRepositorio _repo; //caso precise futuramente a injeção.
+        private readonly IProdutoRepositorio _repo;
 
         public FornecedorFactory(IProdutoRepositorio repo) => _repo = repo;
 
@@ -27,9 +27,9 @@ namespace TruckFlow.Application.Factories
             var fornecedor = new Fornecedor
             {
                 Nome = dto.Nome,
+                Cnpj = dto.Cnpj,
                 Produtos = produtos?? new List<Produto>(),
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = dto.UpdatedAt
             };
 
             return Task.FromResult(fornecedor);

@@ -53,13 +53,22 @@ namespace TruckFlow.Application
                 throw new ValidationException(validationResult.Errors);
             }
 
+            var cnpjLimpo = new string(fornecedor.Cnpj.Where(char.IsDigit).ToArray());
+            var existente = await _repo.GetByCnpj(cnpjLimpo, token);
+            
+            if (existente != null)
+            {
+                throw new BusinessException($"Já Existe um Fornecedor cadastrado com o CNPJ: {fornecedor.Cnpj}");
+            }
+
             List<Produto> produtos = new();
 
             if (fornecedor.ProdutoIds?.Count > 0)
             {
                 produtos = await _produtoRepo.GetByIdsAsync(fornecedor.ProdutoIds, token);
             }
-            
+
+            fornecedor.Cnpj = cnpjLimpo;
             var fornecedorCriado = await _factory.CreateFornecedorFromDto(fornecedor, produtos, token);
 
             await _repo.CreateFornecedor(fornecedorCriado, token);
@@ -73,13 +82,18 @@ namespace TruckFlow.Application
             var fornecedorEncontrado = await _repo.GetById(id, cancellatioToken)
                 ?? throw new NotFoundException("Fornecedor não encontrado");
 
-            return new FornecedorResponse
-            {
-                Id = fornecedorEncontrado.Id,
-                Nome = fornecedorEncontrado.Nome,
-                CreatedAt = fornecedorEncontrado.CreatedAt
-            };
+            return MapToResponse(fornecedorEncontrado);
         }
+
+        public async Task<FornecedorResponse> GetByCnpj(string cnpj, CancellationToken token = default)
+        {
+            var fornecedorEncontrado = await _repo.GetByCnpj(cnpj, token)
+               ?? throw new NotFoundException("Fornecedor não encontrado");
+
+            return MapToResponse(fornecedorEncontrado);
+        }
+
+
         public async Task DeleteFornecedor(Guid id, CancellationToken cancellationToken = default)
         {
             var fornecedorEncontrado = await _repo.GetById(id, cancellationToken)
@@ -120,6 +134,8 @@ namespace TruckFlow.Application
                 ?? throw new NotFoundException("Fornecedor não encontrado.");
 
             fornecedorEncontrado.Nome = fornecedor.Nome;
+            fornecedorEncontrado.Cnpj = fornecedor.Cnpj;
+            
             
             var fornecedorAtualizado = await _repo.Update(id, fornecedorEncontrado, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
@@ -226,6 +242,7 @@ namespace TruckFlow.Application
                 Id = f.Id,
                 Nome = f.Nome,
                 CreatedAt = f.CreatedAt,
+                Cnpj = f.Cnpj,
                 Produtos = f.Produtos?.Select(x => new ProdutoResponse
                 {
                     Id = x.Id,

@@ -18,9 +18,12 @@ namespace TruckFlow.Application.Validators.Fornecedor
                 .MinimumLength(2)
                 .WithMessage("O nome precisa de ao menos 2 caracteres");
 
-            //RuleFor(x => x.ProdutoIds)
-            //    .NotEmpty()
-            //    .WithMessage("Deve ser selecionado ao menos 1 produto associado");
+            RuleFor(x => x.Cnpj)
+                .NotEmpty()
+                .WithMessage("O CNPJ do fornecedor precisa ser informado para o seu cadastro.")
+                .Length(14)
+                .WithMessage("O CNPJ deve conter exatamente 14 dígitos numéricos.");
+
         }
     }
 }

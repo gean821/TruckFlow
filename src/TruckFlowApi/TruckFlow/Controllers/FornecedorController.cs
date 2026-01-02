@@ -37,6 +37,21 @@ namespace TruckFlow.Controllers
             return Ok(fornecedor);
         }
 
+        [HttpGet("cnpj/{cnpj}")]
+        public async Task<IActionResult> GetByCnpj(
+            [FromRoute] string cnpj,
+            CancellationToken ct)
+        {
+            var fornecedor = await _service.GetByCnpj(cnpj, ct);
+
+            if (fornecedor == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(fornecedor);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {

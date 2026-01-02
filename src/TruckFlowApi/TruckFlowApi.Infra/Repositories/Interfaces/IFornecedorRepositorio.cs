@@ -10,6 +10,8 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
     public interface IFornecedorRepositorio
     {
         public Task<Fornecedor> GetById(Guid id, CancellationToken token = default);
+        public Task<Fornecedor> GetByCnpj(string cnpj, CancellationToken token = default);
+        
         public Task<Fornecedor> GetByNome(string nome, CancellationToken token = default);
         public Task<List<Fornecedor>> GetAll(CancellationToken token = default);
         public Task<Fornecedor> CreateFornecedor(Fornecedor fornecedor, CancellationToken token = default);

@@ -13,6 +13,7 @@ namespace TruckFlow.Domain.Dto.NotaFiscal
         public required string ChaveAcesso { get; set; }
         public required long Numero { get; set; }
         public required string Fornecedor { get; set; }
+        public Guid FornecedorId { get; set; }
         public required string Serie { get; set; }
         public required DateTime DataEmissao { get; set; }
         public required string EmitenteNome { get; set; }

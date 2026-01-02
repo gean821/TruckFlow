@@ -57,16 +57,17 @@ namespace TruckFlow.Application.Validators.NotaFiscal
                 .GreaterThan(0).WithMessage("O valor total da nota fiscal deve ser maior que zero.");
 
             RuleFor(x => x.PesoBruto)
-                .NotNull().WithMessage("O peso bruto deve ser informado.")
-                .GreaterThan(0).WithMessage("O peso bruto deve ser maior que zero.");
+             .GreaterThan(0)
+             .When(x => x.PesoBruto.HasValue)
+             .WithMessage("O peso bruto deve ser maior que zero quando informado.");
 
             RuleFor(x => x.VolumeQuantidade)
                 .GreaterThanOrEqualTo(0).When(x => x.VolumeQuantidade.HasValue)
                 .WithMessage("A quantidade de volumes deve ser positiva.");
 
             RuleFor(x => x.PlacaVeiculo)
-                .NotEmpty().WithMessage("A placa do veículo é obrigatória.")
                 .Matches(@"^[A-Z]{3}\d{1}[A-Z0-9]{1}\d{2}$")
+                .When(x => !string.IsNullOrWhiteSpace(x.PlacaVeiculo))
                 .WithMessage("A placa do veículo deve estar no formato válido (ex: ABC1D23).");
 
             RuleFor(x => x.Itens)

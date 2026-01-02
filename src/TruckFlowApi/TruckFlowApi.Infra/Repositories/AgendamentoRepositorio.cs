@@ -37,17 +37,24 @@ namespace TruckFlowApi.Infra.Repositories
             CancellationToken token = default
             )
         {
-            return await _db.Agendamento
-                 .Where(x => x.FornecedorId == fornecedorId
-                        && x.StatusAgendamento == StatusAgendamento.Disponivel
-                        && x.DataInicio >= dataInicio
-                        && x.DataInicio <= dataFim)
-                         .OrderBy(x => x.DataInicio)
-                         .Include(x => x.Grade)
-                            .ThenInclude(x => x.Produto)
-                         .Include(x => x.UnidadeEntrega)
-                         .Include(x => x.Fornecedor)
-                         .ToListAsync(token);
+            var agora = DateTime.UtcNow;
+            Console.WriteLine($"[DEBUG] Buscando vagas para FornecedorId: {fornecedorId} entre {dataInicio} e {dataFim}");
+
+            IQueryable<Agendamento> query = _db.Agendamento
+                .Where(x =>
+                    x.FornecedorId == fornecedorId &&
+                    x.StatusAgendamento == StatusAgendamento.Disponivel &&
+                    x.DataInicio >= dataInicio &&
+                    x.DataInicio <= dataFim
+                );
+
+            return await query
+                .OrderBy(x => x.DataInicio)
+                .Include(x => x.Grade)
+                    .ThenInclude(x => x.Produto)
+                .Include(x => x.UnidadeEntrega)
+                .Include(x => x.Fornecedor)
+                .ToListAsync(token);
         }
 
         public async Task<List<AgendamentoAdminResponse>> GetAdminViewAsync(
@@ -65,7 +72,8 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Usuario)
                     .ThenInclude(u => u.Motorista)
-                    .Where(x => x.DataInicio >= dataInicio && x.DataInicio <= dataFim);
+                .Include(x=> x.NotaFiscal)
+                .Where(x => x.DataInicio >= dataInicio && x.DataInicio <= dataFim);
 
             if (fornecedorId.HasValue)
             {

@@ -28,9 +28,9 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task<NotaFiscal?> ObterPorChaveAsync(string chaveAcesso, CancellationToken token)
         {
             return await _db.NotaFiscal
-                .Include(x=> x.FornecedorId)
+                .Include(x=> x.Fornecedor)
                 .Include(x=> x.Itens)
-                .Include(x=> x.AgendamentoId)
+                .Include(x=> x.Agendamento)
                 .FirstOrDefaultAsync(x => x.ChaveAcesso == chaveAcesso, token);
         }
         

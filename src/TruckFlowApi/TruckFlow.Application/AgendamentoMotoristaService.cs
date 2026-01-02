@@ -30,7 +30,6 @@ namespace TruckFlow.Application
             _notaRepo = notaRepo;
         }
 
-
         public async Task<List<AgendamentoMotoristaResponse>> GetDriverAppointments(
             Guid motoristaId,
             CancellationToken token = default)
@@ -40,7 +39,6 @@ namespace TruckFlow.Application
             return meusAgendamentos.Select(MapToResponse).ToList();
         }
 
-
         public async Task<AgendamentoMotoristaResponse> BookAppointment
             (
                 Guid agendamentoId,
@@ -49,7 +47,7 @@ namespace TruckFlow.Application
                 CancellationToken token = default
             )
         {
-            var vaga = await _repo.GetById(agendamentoId, token) 
+            var vaga = await _repo.GetById(agendamentoId, token)
                 ?? throw new NotFoundException("Horário não encontrado para o agendamento.");
 
             var nota = await _notaRepo.ObterPorChaveAsync(chaveAcesso, token)
@@ -70,10 +68,19 @@ namespace TruckFlow.Application
             )
         {
 
-            var inicioDia = data.Date;
-            var fimDia = data.Date.AddDays(1).AddTicks(-1);
+            var inicioDia = DateTime.SpecifyKind(data.Date,DateTimeKind.Utc);
 
-            var vagas = await _repo.GetAvailable(fornecedorId, inicioDia, fimDia, token);
+            var fimDia = inicioDia
+                .AddDays(1)
+                .AddTicks(-1);
+
+            var vagas = await _repo.GetAvailable(
+                fornecedorId,
+                inicioDia,
+                fimDia,
+                token
+            );
+
             return vagas.Select(MapToResponse).ToList();
         }
 
@@ -88,6 +95,7 @@ namespace TruckFlow.Application
                 Id = agendamento.Id,
                 UnidadeDescarga = unidadeNome,
                 Fornecedor = agendamento.Fornecedor?.Nome ?? "N/A",
+                HorarioInicio = agendamento.DataInicio,
                 Produto = produtoNome,
                 PesoCarga = agendamento.VolumeCarga > 0 ? agendamento.VolumeCarga : null,
                 NotaFiscal = agendamento.NotaFiscal?.Numero.ToString() ?? "-",

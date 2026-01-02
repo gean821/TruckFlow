@@ -33,6 +33,17 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(token);
         }
 
+        public async Task<Fornecedor> GetByCnpj(string cnpj, CancellationToken token = default)
+        {
+            var cnpjLimpo = new string(cnpj.Where(char.IsDigit).ToArray());
+
+            return await _db.Fornecedor.
+                Include(x=> x.NotaFiscal)
+                .Include(x=> x.Produtos)
+                .Include(x=> x.Agendamentos)
+                .FirstOrDefaultAsync(x => x.Cnpj == cnpjLimpo, token);
+        }
+
         public async Task<Fornecedor> GetById(Guid id, CancellationToken token = default)
         {
             var fornecedor = await _db.Fornecedor
@@ -49,6 +60,7 @@ namespace TruckFlowApi.Infra.Repositories
 
             fornecedorEncontrado.Id = fornecedor.Id;
             fornecedorEncontrado.Nome = fornecedor.Nome;
+            fornecedorEncontrado.Cnpj = fornecedor.Cnpj;
             fornecedorEncontrado.NotaFiscal = fornecedor.NotaFiscal;
             fornecedorEncontrado.Agendamentos = fornecedor.Agendamentos;
 

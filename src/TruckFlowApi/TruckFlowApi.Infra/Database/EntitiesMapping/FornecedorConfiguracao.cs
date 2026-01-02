@@ -16,7 +16,10 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.ToTable(nameof(Fornecedor));
             
             builder.HasKey(x => x.Id);
-            
+
+            builder.HasIndex(x => x.Cnpj)
+                .IsUnique();
+                
             builder.Property(x => x.Nome)
                 .IsRequired().
                 HasMaxLength(250);

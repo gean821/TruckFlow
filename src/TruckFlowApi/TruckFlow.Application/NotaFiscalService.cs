@@ -130,7 +130,7 @@ namespace TruckFlow.Application
                 var codigoFornecedor = det.prod.cProd;
                 Produto? produtoEncontrado = null;
 
-                bool temEanValido = !string.IsNullOrWhiteSpace(eanDaNota) 
+                bool temEanValido = !string.IsNullOrWhiteSpace(eanDaNota)
                     && eanDaNota.ToUpper() != "SEM GTIN";
 
                 //Tentativa 1 --> por codigo de barras
@@ -207,7 +207,7 @@ namespace TruckFlow.Application
             )
         {
             ValidationResult validationResult = await _parsedValidator.ValidateAsync(dto, token);
-    
+
             if (!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);
@@ -225,12 +225,42 @@ namespace TruckFlow.Application
             }
 
 
-            foreach(var item in dto.Itens)
+            foreach (var item in dto.Itens)
             {
                 await _learningService.TryLearnEanAsync(item, token);
             }
- 
-            var fornecedor = await _fornecedorRepo.GetByNome(dto.Fornecedor,token);
+
+            var cnpjNota = new string(dto.EmitenteCnpj.Where(char.IsDigit).ToArray());
+            Console.WriteLine($"[DEBUG] Buscando Fornecedor pelo CNPJ: '{cnpjNota}'"); // <--- VÊ O QUE ESTÁ BUSCANDO
+
+            var fornecedor = await _fornecedorRepo.GetByCnpj(cnpjNota, token)
+                    ?? await _fornecedorRepo.GetByNome(dto.EmitenteNome, token);
+
+            if (fornecedor == null)
+            {
+                _logger.LogInformation("Novo Fornecedor identificado: {Nome} ({Cnpj})", dto.Fornecedor, cnpjNota);
+
+                fornecedor = new Fornecedor
+                {
+                    Nome = dto.EmitenteNome,
+                    Cnpj = cnpjNota,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+
+                await _fornecedorRepo.CreateFornecedor(fornecedor, token);
+                await _fornecedorRepo.SaveChangesAsync(token);
+            }
+            else
+            {
+                // ATUALIZAÇÃO OPCIONAL (Self-Healing)
+                // Se achou o fornecedor mas ele estava sem CNPJ no banco, atualiza agora!
+                if (string.IsNullOrEmpty(fornecedor.Cnpj))
+                {
+                    fornecedor.Cnpj = cnpjNota;
+                    await _fornecedorRepo.Update(fornecedor.Id, fornecedor, token);
+                }
+            }
 
             var nota = new NotaFiscal
             {
@@ -243,17 +273,24 @@ namespace TruckFlow.Application
                 DestinatarioNome = dto.DestinatarioNome,
                 DestinatarioCpfCnpj = dto.DestinatarioCpfCnpj,
                 Fornecedor = fornecedor,
+                FornecedorId = fornecedor.Id,
                 ValorTotal = dto.ValorTotal,
                 PesoBruto = dto.PesoBruto,
                 VolumeQuantidade = dto.VolumeQuantidade,
                 PlacaVeiculo = dto.PlacaVeiculo,
-                FornecedorId = fornecedor.Id, 
-                TipoCarga = dto.TipoCarga 
+                TipoCarga = dto.TipoCarga
             };
 
-            var notaSalva = await _repo.SaveParsedNotaAsync(nota,token);
+            _logger.LogInformation(
+            "Fornecedor final vinculado | ID: {Id} | Nome: {Nome} | CNPJ: {Cnpj}",
+            fornecedor.Id,
+            fornecedor.Nome,
+            fornecedor.Cnpj
+            );
+
+            var notaSalva = await _repo.SaveParsedNotaAsync(nota, token);
             await _repo.SaveChangesAsync(token);
-            
+
             return new NotaFiscalParsedDto
             {
                 ChaveAcesso = notaSalva.ChaveAcesso,
@@ -264,13 +301,14 @@ namespace TruckFlow.Application
                 EmitenteCnpj = notaSalva.EmitenteCnpj,
                 DestinatarioNome = notaSalva.DestinatarioNome,
                 DestinatarioCpfCnpj = notaSalva.DestinatarioCpfCnpj,
-                Fornecedor = notaSalva.Fornecedor?.Nome ?? string.Empty,
+                Fornecedor = fornecedor.Nome,
+                FornecedorId = notaSalva.FornecedorId,
                 ValorTotal = notaSalva.ValorTotal,
                 PesoBruto = notaSalva.PesoBruto,
                 VolumeQuantidade = notaSalva.VolumeQuantidade,
                 PlacaVeiculo = notaSalva.PlacaVeiculo!,
                 TipoCarga = notaSalva.TipoCarga,
-                Itens = notaSalva.Itens.Select(x=> new NotaFiscalItemDto
+                Itens = notaSalva.Itens.Select(x => new NotaFiscalItemDto
                 {
                     Codigo = x.Codigo,
                     Descricao = x.Descricao,
@@ -288,7 +326,7 @@ namespace TruckFlow.Application
             )
         {
             var nota = await _repo.ObterPorChaveAsync(chaveAcesso, token);
-            
+
             if (nota == null)
             {
                 return null;
@@ -297,7 +335,7 @@ namespace TruckFlow.Application
             return new NotaFiscalParsedDto
             {
                 ChaveAcesso = nota.ChaveAcesso,
-                Numero =  nota.Numero,
+                Numero = nota.Numero,
                 Serie = nota.Serie,
                 DataEmissao = nota.DataEmissao,
                 EmitenteNome = nota.EmitenteNome,
@@ -305,6 +343,7 @@ namespace TruckFlow.Application
                 DestinatarioNome = nota.DestinatarioNome,
                 DestinatarioCpfCnpj = nota.DestinatarioCpfCnpj,
                 Fornecedor = nota.Fornecedor?.Nome ?? string.Empty,
+                FornecedorId = nota.FornecedorId,
                 ValorTotal = nota.ValorTotal,
                 PesoBruto = nota.PesoBruto,
                 VolumeQuantidade = nota.VolumeQuantidade,
@@ -324,5 +363,5 @@ namespace TruckFlow.Application
         }
     }
 }
-    
-  
+
+

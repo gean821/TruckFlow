@@ -91,12 +91,15 @@ namespace TruckFlow.Application
         {
 
             var dataInicio = filtros.DataInicio == default
-                    ? DateTime.Today
-                    : filtros.DataInicio.Date;
+                ? DateTime.UtcNow.Date
+                : DateTime.SpecifyKind(filtros.DataInicio.Date, DateTimeKind.Utc);
 
             var dataFim = filtros.DataFim == default
                 ? dataInicio.AddDays(7).AddDays(1).AddTicks(-1)
-                : filtros.DataFim.Date.AddDays(1).AddTicks(-1);
+                : DateTime.SpecifyKind(
+                    filtros.DataFim.Date.AddDays(1).AddTicks(-1),
+                    DateTimeKind.Utc
+                  );
 
             if (dataFim < dataInicio)
             {

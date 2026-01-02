@@ -5,7 +5,7 @@ using TruckFlow.Domain.Dto.Agendamento;
 namespace TruckFlow.Controllers
 {
     [ApiController]
-    [Route("v1/agendamento-motorista")]
+    [Route("v1/[Controller]")]
     public class AgendamentoMotoristaController : ControllerBase
     {
         private readonly IAgendamentoMotoristaService _service;
@@ -58,8 +58,8 @@ namespace TruckFlow.Controllers
             [FromBody] ReservarAgendamentoDto dto,
             CancellationToken token = default)
         {
-           
-            var resultado = await _service.BookAppointment(dto.AgendamentoId, dto.NotaFiscalChaveAcesso, dto.UsuarioId, token);
+            var usuarioId = dto.UsuarioId ?? Guid.NewGuid(); // ou usuário fake
+            var resultado = await _service.BookAppointment(dto.AgendamentoId, dto.NotaFiscalChaveAcesso,usuarioId, token);
             return Ok(resultado);
         }
     }

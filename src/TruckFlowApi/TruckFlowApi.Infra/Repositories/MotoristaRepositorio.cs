@@ -25,19 +25,15 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task<List<Motorista>> GetAll(CancellationToken token = default)
         {
             return await _db.Motorista
-                .Include(x => x.Nome)
-                .Include(x => x.Telefone)
                 .Include(x => x.Veiculo)
+                .Include(x=> x.Usuario)
                 .ToListAsync(token);
         }
-
-
         public async Task<Motorista> GetById(Guid id, CancellationToken token = default)
         {
             var motorista = await _db.Motorista
-                .Include(x => x.Nome)
-                .Include(x => x.Telefone)
                 .Include(x => x.Veiculo)
+                .Include(x => x.Usuario)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
 
             return motorista!;
