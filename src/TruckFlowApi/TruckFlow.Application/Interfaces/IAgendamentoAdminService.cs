@@ -15,6 +15,12 @@ namespace TruckFlow.Application.Interfaces
 
         Task<AgendamentoAdminResponse> Update(Guid id, AgendamentoAdminUpdateDto dto, CancellationToken token = default);
 
+        Task RegistrarChegadaAsync(Guid agendamentoId, CancellationToken token = default);
+
+        Task FinalizarOperacao(Guid agendamentoId, CancellationToken token = default);
+
+        Task CancelarAgendamento(Guid agendamentoId, CancellationToken token = default);
+
         Task Delete(Guid id, CancellationToken token = default);
     }
 }

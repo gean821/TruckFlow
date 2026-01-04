@@ -146,16 +146,15 @@ namespace TruckFlow.Application
             var gradeEncontrada = await _repo.GetById(id, cancellationToken)
                 ?? throw new NotFoundException("Grade não encontrado");
 
-            var possuiSlotsConfirmados = await _repo.CheckAppointmentExistence(id, cancellationToken);
+            var existeAgendamentoBloqueante = await _agendamentoRepo.ExisteAgendamentoBloqueantePorGrade(id, cancellationToken);
 
-            if (possuiSlotsConfirmados)
+            if (existeAgendamentoBloqueante)
             {
                 throw new BusinessException(
-                    "Não é possível remover uma grade com agendamentos confirmados.");
+                    "Não é possível remover a grade pois existem agendamentos ativos, em andamento ou finalizados.");
             }
 
             await _repo.Delete(gradeEncontrada, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
         }
 
         private static GradeResponse MapToResponse(Grade g) =>

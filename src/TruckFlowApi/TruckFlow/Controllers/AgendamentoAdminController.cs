@@ -44,6 +44,27 @@ namespace TruckFlow.Controllers
         }
 
 
+        [HttpPatch("{agendamentoId}/check-in")]
+        public async Task<IActionResult> CheckIn([FromRoute] Guid agendamentoId, CancellationToken token = default)
+        {
+            await _service.RegistrarChegadaAsync(agendamentoId, token);
+            return NoContent();
+        }
+
+        [HttpPatch("{agendamentoId}/check-out")]
+        public async Task<IActionResult> CheckOut([FromRoute] Guid agendamentoId, CancellationToken token = default)
+        {
+            await _service.FinalizarOperacao(agendamentoId, token);
+            return NoContent();
+        }
+
+        [HttpPatch("{agendamentoId}/cancelar")]
+        public async Task<IActionResult> CancelarAgendamento([FromRoute] Guid agendamentoId, CancellationToken token = default)
+        {
+            await _service.CancelarAgendamento(agendamentoId, token);
+            return NoContent();
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAgendamento(
             [FromRoute] Guid id,

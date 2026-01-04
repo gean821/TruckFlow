@@ -36,6 +36,12 @@ namespace TruckFlow.Application
         {
 
             var meusAgendamentos = await _repo.GetByMotoristaId(motoristaId, token);
+
+            if (meusAgendamentos.Count == 0)
+            {
+                return [];
+            }
+
             return meusAgendamentos.Select(MapToResponse).ToList();
         }
 

@@ -71,7 +71,7 @@ namespace TruckFlow.Application
                 DataFim = dto.DataInicio.AddHours(1),
                 UsuarioId = dto.MotoristaId,
                 NotaFiscalId = dto.NotaFiscalId,
-                StatusAgendamento = dto.MotoristaId.HasValue ? StatusAgendamento.Confirmado : StatusAgendamento.Disponivel,
+                StatusAgendamento = dto.MotoristaId.HasValue ? StatusAgendamento.Agendado : StatusAgendamento.Disponivel,
                 Grade = null,
                 GradeId = null,
                 VolumeCarga = dto.VolumeCarga
@@ -126,6 +126,33 @@ namespace TruckFlow.Application
             return MapToResponse(agendamento);
         }
 
+        public async Task RegistrarChegadaAsync(Guid agendamentoId, CancellationToken token = default)
+        {
+            var agendamento = await _repo.GetById(agendamentoId, token)
+                ?? throw new NotFoundException("Agendamento não encontrado");
+
+            agendamento.RegistrarChegada();
+            await _repo.Update(agendamento, token);
+        }
+
+        public async Task FinalizarOperacao(Guid agendamentoId, CancellationToken token = default)
+        {
+            var agendamento = await _repo.GetById(agendamentoId, token)
+                ?? throw new NotFoundException("Agendamento não encontrado");
+
+            agendamento.FinalizarOperacao();
+            await _repo.Update(agendamento, token);
+        }
+
+        public async Task CancelarAgendamento(Guid agendamentoId, CancellationToken token = default)
+        {
+            var agendamento = await _repo.GetById(agendamentoId, token)
+                ?? throw new NotFoundException("Agendamento não encontrado.");
+
+            agendamento.Cancelar();
+            await _repo.Update(agendamento, token);
+        }
+
         public async Task<AgendamentoAdminResponse> Update(Guid id, AgendamentoAdminUpdateDto dto, CancellationToken token = default)
         {
             await _updateValidator.ValidateAndThrowAsync(dto, token);
@@ -152,12 +179,6 @@ namespace TruckFlow.Application
             // Permite ao admin "chutar" um motorista ou alocar outro manualmente
             agendamento.UsuarioId = dto.MotoristaId;
             agendamento.NotaFiscalId = dto.NotaFiscalId;
-
-            // Se o admin trocou o status manualmente
-            if (Enum.TryParse<StatusAgendamento>(dto.Status, out var novoStatus))
-            {
-                agendamento.AlterarStatus(novoStatus);
-            }
 
             agendamento.UpdatedAt = DateTime.UtcNow;
 

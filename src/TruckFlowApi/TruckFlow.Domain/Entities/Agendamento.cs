@@ -37,9 +37,9 @@ namespace TruckFlow.Domain.Entities
 
         public void Reservar(Guid usuarioId, NotaFiscal notaFiscal)
         {
-            if (!StatusAgendamento.PodeTransitarPara(StatusAgendamento.Confirmado))
+            if (StatusAgendamento != StatusAgendamento.Disponivel)
             {
-                throw new Exception("Transição de status inválida.");
+                throw new Exception("A vaga não está disponível para reserva.");
             }
 
             if (FornecedorId != notaFiscal.FornecedorId)
@@ -47,11 +47,20 @@ namespace TruckFlow.Domain.Entities
                 throw new Exception("A Nota Fiscal não pertence ao fornecedor desta vaga.");
             }
 
-            StatusAgendamento = StatusAgendamento.Confirmado;
+            StatusAgendamento = StatusAgendamento.Agendado;
             UsuarioId = usuarioId;
             NotaFiscalId = notaFiscal.Id;
             VolumeCarga = notaFiscal.PesoBruto ?? 0;
             UpdatedAt = DateTime.UtcNow;
         }
+
+        public void RegistrarChegada()
+        => AlterarStatus(StatusAgendamento.EmAndamento);
+
+        public void FinalizarOperacao()
+         => AlterarStatus(StatusAgendamento.Finalizado);
+
+        public void Cancelar()
+            => AlterarStatus(StatusAgendamento.Cancelado);
     }
 }

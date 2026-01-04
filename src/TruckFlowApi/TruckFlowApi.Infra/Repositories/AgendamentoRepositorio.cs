@@ -72,7 +72,7 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Usuario)
                     .ThenInclude(u => u.Motorista)
-                .Include(x=> x.NotaFiscal)
+                .Include(x => x.NotaFiscal)
                 .Where(x => x.DataInicio >= dataInicio && x.DataInicio <= dataFim);
 
             if (fornecedorId.HasValue)
@@ -130,7 +130,7 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task<List<Agendamento>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default)
         {
             return await _db.Agendamento
-                .Where(x => x.UsuarioId == motoristaId)
+                .Where(x => x.Usuario.Motorista.Id == motoristaId)
                 .OrderByDescending(x => x.DataInicio)
                 .Include(x => x.Fornecedor)
                 .Include(x => x.NotaFiscal)
@@ -139,6 +139,18 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(token);
         }
 
+
+        public async Task<bool> ExisteAgendamentoBloqueantePorGrade(
+            Guid gradeId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _db.Agendamento
+                .AnyAsync(a =>
+                    a.GradeId == gradeId &&
+                    a.StatusAgendamento != StatusAgendamento.Disponivel &&
+                    a.StatusAgendamento != StatusAgendamento.Cancelado,
+                    cancellationToken);
+        }
         public async Task Delete(Agendamento agendamento, CancellationToken token = default)
         {
             _db.Agendamento.Remove(agendamento);
@@ -169,6 +181,5 @@ namespace TruckFlowApi.Infra.Repositories
         {
             await _db.SaveChangesAsync(token);
         }
-
     }
 }

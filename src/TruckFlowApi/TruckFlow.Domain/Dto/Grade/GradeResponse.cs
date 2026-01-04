@@ -21,6 +21,7 @@ namespace TruckFlow.Domain.Dto.Grade
         public required DateOnly DataFim { get; set; }
         public required TimeOnly HoraInicial { get; set; }
         public required TimeOnly HoraFinal { get; set; }
+        public string? TempoDuracao { get; set; }
         public required int IntervaloMinutos { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

@@ -34,6 +34,10 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         public Task<List<Agendamento>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default);
         public Task<Agendamento> Update(Agendamento Agendamento, CancellationToken token = default);
         public Task Delete(Agendamento agendamento, CancellationToken token = default);
+
+        Task<bool> ExisteAgendamentoBloqueantePorGrade(
+            Guid gradeId,
+            CancellationToken cancellationToken = default);
         public Task SaveChangesAsync(CancellationToken token = default);
     }
 }
