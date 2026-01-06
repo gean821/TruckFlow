@@ -4,16 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TruckFlow.Domain.Dto.User
+namespace TruckFlow.Domain.Dto.User.Administrador
 {
-    public class UserCreateDto
+    public class UserAdminResponseDto 
     {
-        public required Guid Id { get; set; } = Guid.NewGuid();
+        public required Guid Id { get; set; }
         public required string Email { get; set; }
-        
-        public required string Password { get; set; }
         public required string Username { get; set; }
-        public required string Telefone { get; set; }
         public required DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }

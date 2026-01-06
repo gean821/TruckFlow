@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TruckFlow.Domain.Dto.User
+namespace TruckFlow.Domain.Dto.User.Administrador
 {
-    public class UserEditDto 
+    public class UserAdminRegisterDto
     {
+        public required Guid Id { get; set; }
         public required string Email { get; set; }
-        
         public required string Password { get; set; }
         public required string Username { get; set; }
         public required string Telefone { get; set; }
+        public required DateTime CreatedAt { get; set; }
     }
 }

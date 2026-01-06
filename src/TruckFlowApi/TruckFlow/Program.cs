@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TruckFlow.Application.Auth;
+using TruckFlow.Application;
 using TruckFlow.Configuration;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Extensions.Agendamento;
@@ -32,7 +32,6 @@ namespace TruckFlow
             
             // Add services to the container.
 
-            builder.Services.AddTransient<AuthService>();
             builder.Services.AddCorsDependency();
             builder.Services.AddProduto();
             builder.Services.AddLocalDescarga();
@@ -43,6 +42,7 @@ namespace TruckFlow
             builder.Services.AddGrade();
             builder.Services.AddNotaFiscal();
             builder.Services.AddAgendamento();
+            builder.Services.AddUserAuth();
             
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

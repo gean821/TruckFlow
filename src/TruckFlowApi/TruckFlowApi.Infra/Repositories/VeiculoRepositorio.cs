@@ -25,7 +25,6 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task<List<Veiculo>> GetAll(CancellationToken token = default)
         {
             return await _db.Veiculo
-                .Include(x => x.TipoVeiculo)
                 .Include(x => x.Motorista)
                 .ToListAsync(token);
         }
@@ -33,7 +32,6 @@ namespace TruckFlowApi.Infra.Repositories
         public async Task<Veiculo> GetById(Guid id, CancellationToken token = default)
         {
             var veiculo =  await _db.Veiculo
-                .Include(x => x.TipoVeiculo)
                 .Include(x => x.Motorista)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
 
@@ -44,12 +42,7 @@ namespace TruckFlowApi.Infra.Repositories
         {
             var veiculoEncontrado = await GetById(id, token);
 
-            veiculoEncontrado.Nome = veiculo.Nome;
-            veiculoEncontrado.Placa = veiculo.Placa;
-            veiculoEncontrado.TipoVeiculo = veiculo.TipoVeiculo;
-            veiculoEncontrado.Motorista = veiculo.Motorista;
-            veiculoEncontrado.MotoristaId = veiculo.MotoristaId;
-
+            _db.Update(veiculoEncontrado);
             await SaveChangesAsync(token);
             return veiculoEncontrado;
         }

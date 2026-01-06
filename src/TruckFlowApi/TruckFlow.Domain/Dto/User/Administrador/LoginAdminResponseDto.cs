@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 
-namespace TruckFlow.Domain.Dto.User
+namespace TruckFlow.Domain.Dto.User.Administrador
 {
-    public class LoginResponseDto
+    public class LoginAdminResponseDto
     {
         public required string Token { get; set; }
         public required Usuario Usuario{ get; set; }

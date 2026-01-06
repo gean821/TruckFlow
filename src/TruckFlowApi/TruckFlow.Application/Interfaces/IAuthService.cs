@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 
-namespace TruckFlow.Interfaces
+namespace TruckFlow.Application.Interfaces
 {
     public interface IAuthService
     {
-        public string GenerateToken(Usuario usuario);
+        public Task<string> GenerateTokenAsync(Usuario usuario, CancellationToken token = default);
     }
 }
