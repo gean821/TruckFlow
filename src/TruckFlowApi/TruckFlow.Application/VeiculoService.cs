@@ -47,7 +47,7 @@ namespace TruckFlow.Application
             {
                 throw new ValidationException(validationResult.Errors);
             }
-             
+
             var veiculoCriado = await _factory.CreateVeiculoFromDto(veiculo, cancellationToken);
 
             await _repo.CreateVeiculo(veiculoCriado, cancellationToken);
@@ -92,7 +92,7 @@ namespace TruckFlow.Application
             VeiculoUpdateDto veiculo,
             CancellationToken cancellationToken = default)
         {
-            var motorista = await _motoristaRepo.GetById(veiculo.MotoristaId, cancellationToken)
+            var motorista = await _motoristaRepo.GetByUsuarioId(veiculo.MotoristaId, cancellationToken)
                 ?? throw new NotFoundException("Motorista não encontrado.");
 
             ValidationResult validationResult = await _updateValidator.ValidateAsync(veiculo, cancellationToken);
@@ -105,7 +105,6 @@ namespace TruckFlow.Application
             var veiculoEncontrado = await _repo.GetById(id, cancellationToken)
                 ?? throw new NotFoundException("Veículo não encontrado.");
 
-            veiculoEncontrado.Nome = veiculo.Nome;
             veiculoEncontrado.Placa = veiculo.Placa;
             veiculoEncontrado.TipoVeiculo = veiculo.TipoVeiculo;
             veiculoEncontrado.Motorista = motorista;

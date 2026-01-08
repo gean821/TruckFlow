@@ -23,6 +23,9 @@ namespace TruckFlow.Domain.Entities
         public Guid? NotaFiscalId { get; set; }
         public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
 
+        public string? PlacaVeiculo { get; set; }
+        public TipoVeiculo? TipoVeiculo { get; set; }
+
         public void AlterarStatus(StatusAgendamento novoStatus)
         {
             if (!StatusAgendamento.PodeTransitarPara(novoStatus))
@@ -35,7 +38,7 @@ namespace TruckFlow.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void Reservar(Guid usuarioId, NotaFiscal notaFiscal)
+        public void Reservar(Guid usuarioId, NotaFiscal notaFiscal, TipoVeiculo? tipoVeiculo, string? placaVeiculo)
         {
             if (StatusAgendamento != StatusAgendamento.Disponivel)
             {
@@ -51,6 +54,12 @@ namespace TruckFlow.Domain.Entities
             UsuarioId = usuarioId;
             NotaFiscalId = notaFiscal.Id;
             VolumeCarga = notaFiscal.PesoBruto ?? 0;
+            PlacaVeiculo =
+         !string.IsNullOrWhiteSpace(notaFiscal.PlacaVeiculo)
+             ? notaFiscal.PlacaVeiculo
+             : placaVeiculo;
+
+            TipoVeiculo = tipoVeiculo;
             UpdatedAt = DateTime.UtcNow;
         }
 

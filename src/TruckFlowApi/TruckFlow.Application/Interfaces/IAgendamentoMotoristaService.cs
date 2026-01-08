@@ -11,10 +11,8 @@ namespace TruckFlow.Application.Interfaces
     {
         public Task<AgendamentoMotoristaResponse> BookAppointment
             (
-            Guid agendamentoId,
-            string chaveAcesso,
-            Guid usuarioId,
-            CancellationToken token = default
+                ReservarAgendamentoDto dto,
+                CancellationToken token = default
             );
 
         public Task<List<AgendamentoMotoristaResponse>> GetAvailableAppointments(

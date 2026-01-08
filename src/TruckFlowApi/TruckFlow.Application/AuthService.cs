@@ -58,17 +58,6 @@ namespace TruckFlow.Application
                 new Claim("UserId", usuario.Id.ToString())
             };
 
-            if (usuario.Motorista != null)
-            {
-                claims.Add(new Claim("Telefone", usuario.Motorista.Telefone));
-
-                if (usuario.Motorista.Veiculo != null)
-                {
-                    claims.Add(new Claim("Placa", usuario.Motorista.Veiculo.Placa));
-                    claims.Add(new Claim("TipoVeiculo", usuario.Motorista.Veiculo.TipoVeiculo.ToString()));
-                }
-            }
-
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));

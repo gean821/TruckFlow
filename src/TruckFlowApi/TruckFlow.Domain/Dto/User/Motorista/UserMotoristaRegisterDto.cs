@@ -12,7 +12,5 @@ namespace TruckFlow.Domain.Dto.User.Motorista
         public required string Email { get; set; }
         public required string Password { get; set; }
         public required string Telefone { get; set; }
-        public string? PlacaVeiculo { get; set; }
-        public string? TipoVeiculo { get; set; }
     }
 }

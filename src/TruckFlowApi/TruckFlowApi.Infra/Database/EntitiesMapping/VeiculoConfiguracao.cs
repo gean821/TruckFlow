@@ -18,9 +18,6 @@ namespace TruckFlowApi.Infra.Database.Configurations
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Nome)
-                .IsRequired();
-
             builder.Property(x => x.Placa)
                 .IsRequired()
                 .HasMaxLength(7);
@@ -29,8 +26,8 @@ namespace TruckFlowApi.Infra.Database.Configurations
                 .IsRequired();
 
             builder.HasOne<Motorista>(x => x.Motorista)
-                .WithOne(x => x.Veiculo)
-                .HasForeignKey<Veiculo>(x => x.MotoristaId)
+                .WithMany(x => x.Veiculos)
+                .HasForeignKey(x => x.MotoristaId)
                 .IsRequired();
         }
     }

@@ -8,11 +8,12 @@ namespace TruckFlow.Domain.Dto.User.Administrador
 {
     public class UserAdminRegisterDto
     {
-        public required Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public required string Email { get; set; }
         public required string Password { get; set; }
         public required string Username { get; set; }
+        public required string NomeReal { get; set; }
         public required string Telefone { get; set; }
-        public required DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

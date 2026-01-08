@@ -102,7 +102,7 @@ namespace TruckFlowApi.Infra.Repositories
                                 ? x.Grade.Produto.Nome : x.TipoCarga.ToString(),
 
                     PesoCarga = x.NotaFiscal!.PesoBruto ?? x.VolumeCarga ?? 0m,
-                    PlacaVeiculo = x.NotaFiscal.PlacaVeiculo,
+                    PlacaVeiculo = x.PlacaVeiculo ?? x.NotaFiscal.PlacaVeiculo,
                     UnidadeEntrega = x.UnidadeEntrega.Localizacao,
                     Status = x.StatusAgendamento.ToString(),
                     CreatedAt = x.CreatedAt,

@@ -10,6 +10,6 @@ namespace TruckFlow.Domain.Dto.User.Administrador
     public class LoginAdminResponseDto
     {
         public required string Token { get; set; }
-        public required Usuario Usuario{ get; set; }
+        public required UserAdminResponseDto Usuario { get; set; }
     }
 }

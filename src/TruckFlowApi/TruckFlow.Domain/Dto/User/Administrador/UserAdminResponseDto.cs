@@ -11,7 +11,9 @@ namespace TruckFlow.Domain.Dto.User.Administrador
         public required Guid Id { get; set; }
         public required string Email { get; set; }
         public required string Username { get; set; }
-        public required DateTime CreatedAt { get; set; }
+        public string? NomeReal { get; set; }
+        public required string Role { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
     }

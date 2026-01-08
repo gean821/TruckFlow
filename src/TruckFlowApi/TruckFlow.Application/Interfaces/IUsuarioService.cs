@@ -22,7 +22,6 @@ namespace TruckFlow.Application.Interfaces
         public Task<UserMotoristaResponseDto> RegisterMotoristaAsync(UserMotoristaRegisterDto Usuario, CancellationToken token = default);
         public Task<LoginMotoristaResponseDto> LoginMotoristaAsync(UserMotoristaLoginDto dto, CancellationToken token = default);
         public Task<UserMotoristaResponseDto> GetMotoristaByIdAsync(Guid id, CancellationToken token);
-        public Task<List<UserMotoristaResponseDto>> GetAllMotoristaAsync(CancellationToken token = default);
         public Task<UserMotoristaResponseDto> UpdateMotoristaAsync(Guid id, UserMotoristaUpdateDto dto, CancellationToken token = default);
         public Task DeleteMotoristaAsync(Guid id, CancellationToken token = default);
 
