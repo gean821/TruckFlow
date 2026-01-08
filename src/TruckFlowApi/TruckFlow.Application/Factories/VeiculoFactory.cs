@@ -18,12 +18,11 @@ namespace TruckFlow.Application.Factories
 
         public async Task<Veiculo> CreateVeiculoFromDto(VeiculoCreateDto dto, CancellationToken token = default)
         {
-            var motorista = await _repo.GetById(dto.MotoristaId, token)
+            var motorista = await _repo.GetByUsuarioId(dto.MotoristaId, token)
                 ?? throw new NotFoundException("Não foi possível encontrar o motorista");
 
             return new Veiculo
             {
-                Nome = dto.Nome,
                 Placa = dto.Placa,
                 TipoVeiculo = dto.TipoVeiculo,
                 Motorista = motorista,

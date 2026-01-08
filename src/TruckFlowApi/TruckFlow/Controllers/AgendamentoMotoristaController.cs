@@ -58,8 +58,8 @@ namespace TruckFlow.Controllers
             [FromBody] ReservarAgendamentoDto dto,
             CancellationToken token = default)
         {
-            var usuarioId = dto.UsuarioId ?? Guid.NewGuid(); // ou usuário fake
-            var resultado = await _service.BookAppointment(dto.AgendamentoId, dto.NotaFiscalChaveAcesso,usuarioId, token);
+            //var usuarioId = dto.UsuarioId ?? Guid.NewGuid(); // ou usuário fake
+            var resultado = await _service.BookAppointment(dto,token);
             return Ok(resultado);
         }
     }

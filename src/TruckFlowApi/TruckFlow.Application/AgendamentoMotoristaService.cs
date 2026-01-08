@@ -47,19 +47,23 @@ namespace TruckFlow.Application
 
         public async Task<AgendamentoMotoristaResponse> BookAppointment
             (
-                Guid agendamentoId,
-                string chaveAcesso,
-                Guid usuarioId,
+                ReservarAgendamentoDto dto,
                 CancellationToken token = default
             )
         {
-            var vaga = await _repo.GetById(agendamentoId, token)
+            var vaga = await _repo.GetById(dto.AgendamentoId,token)
                 ?? throw new NotFoundException("Horário não encontrado para o agendamento.");
 
-            var nota = await _notaRepo.ObterPorChaveAsync(chaveAcesso, token)
+            var nota = await _notaRepo.ObterPorChaveAsync(dto.NotaFiscalChaveAcesso, token)
                 ?? throw new NotFoundException("Nota Fiscal não encontrada.");
 
-            vaga.Reservar(usuarioId, nota);
+            vaga.Reservar(
+                usuarioId: dto.UsuarioId,
+                notaFiscal: nota,
+                placaVeiculo: dto.PlacaVeiculo,
+                tipoVeiculo: dto.TipoVeiculo
+            );
+
 
             await _repo.Update(vaga, token);
 
@@ -105,7 +109,7 @@ namespace TruckFlow.Application
                 Produto = produtoNome,
                 PesoCarga = agendamento.VolumeCarga > 0 ? agendamento.VolumeCarga : null,
                 NotaFiscal = agendamento.NotaFiscal?.Numero.ToString() ?? "-",
-                PlacaVeiculo = agendamento.NotaFiscal?.PlacaVeiculo ?? "-",
+                PlacaVeiculo = agendamento.NotaFiscal?.PlacaVeiculo ?? agendamento.PlacaVeiculo ?? "-",
                 CreatedAt = agendamento.CreatedAt,
                 Status = agendamento.StatusAgendamento.ToString()
             };

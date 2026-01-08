@@ -2,7 +2,7 @@
 {
          public enum FuncaoAdministrador
         {
-            Colaborador,
+            Colaborador = 0,
             Supervisor = 1,
             Gerente = 2,
         }

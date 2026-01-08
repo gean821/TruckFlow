@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Domain.Enums;
 namespace TruckFlow.Domain.Dto.Agendamento
 {
     //esse response será o responsável por mostrar os dados para o MOTORISTA no app mobile. Há dois tipos:
@@ -19,6 +20,7 @@ namespace TruckFlow.Domain.Dto.Agendamento
         public required string FornecedorNome { get; set; }
 
         public string? PlacaVeiculo { get; set; }
+        public TipoVeiculo? TipoVeiculo {get;set;}
         
         public decimal PesoCarga { get; set; }
 

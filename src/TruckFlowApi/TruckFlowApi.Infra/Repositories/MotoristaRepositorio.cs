@@ -15,52 +15,21 @@ namespace TruckFlowApi.Infra.Repositories
         private readonly AppDbContext _db;
 
         public MotoristaRepositorio(AppDbContext db) => _db = db;
-    
-        public async Task<Motorista> CreateMotorista(Motorista motorista, CancellationToken token = default)
-        {
-            await _db.Motorista.AddAsync(motorista, token);
-            return motorista;
-        }
-
-        public async Task<List<Motorista>> GetAll(CancellationToken token = default)
+        
+        public async Task<Motorista?> GetByUsuarioId(Guid usuarioId, CancellationToken token = default)
         {
             return await _db.Motorista
-                .Include(x => x.Veiculo)
-                .Include(x=> x.Usuario)
-                .ToListAsync(token);
+                .Include(x => x.Veiculos)
+                .FirstOrDefaultAsync(x => x.UsuarioId == usuarioId);
         }
-        public async Task<Motorista> GetById(Guid id, CancellationToken token = default)
+
+        public async Task<List<Veiculo>> GetMeusVeiculos(Guid usuarioId, CancellationToken token = default)
         {
-            var motorista = await _db.Motorista
-                .Include(x => x.Veiculo)
-                .Include(x => x.Usuario)
-                .FirstOrDefaultAsync(x => x.Id == id, token);
-
-            return motorista!;
+            return await _db.Veiculo
+               .Where(x => x.Motorista.UsuarioId == usuarioId)
+               .ToListAsync(token);
         }
 
-        public async Task<Motorista> UpdateMotorista(Guid id, Motorista motorista, CancellationToken token = default)
-        {
-            var motoristaEncontrado = await GetById(id, token);
-
-            motoristaEncontrado.Id = motorista.Id;
-            motoristaEncontrado.Nome = motorista.Nome;
-            motoristaEncontrado.Telefone = motorista.Telefone;
-            motoristaEncontrado.Veiculo = motorista.Veiculo;
-            motoristaEncontrado.VeiculoId = motorista.VeiculoId;
-            motoristaEncontrado.UpdatedAt = DateTime.Now;
-
-            await SaveChangesAsync(token);
-            return motoristaEncontrado;
-        }
-
-        public async Task Delete(Guid id, CancellationToken token = default)
-        {
-            var motoristaEncontrado = await GetById(id, token);
-
-            _db.Remove(motoristaEncontrado);
-            await SaveChangesAsync(token);
-        }
 
         public async Task SaveChangesAsync(CancellationToken token = default)
         {

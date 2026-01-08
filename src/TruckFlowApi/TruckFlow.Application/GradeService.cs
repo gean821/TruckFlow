@@ -172,7 +172,7 @@ namespace TruckFlow.Application
                 HoraFinal = g.HoraFinal,
                 IntervaloMinutos = g.IntervaloMinutos,
                 DiasSemana = g.DiasSemana,
-                UnidadeEntrega = g.UnidadeEntrega.Localizacao,
+                UnidadeEntrega = g.UnidadeEntrega.Nome,
                 CreatedAt = g.CreatedAt,
                 UpdatedAt = g.UpdatedAt
             };

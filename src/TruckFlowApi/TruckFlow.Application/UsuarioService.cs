@@ -43,14 +43,15 @@ namespace TruckFlow.Application
         {
             var usuario = new Usuario
             {
-                Id = dto.Id,
+                Id = Guid.NewGuid(),
                 UserName = dto.Username,
                 Email = dto.Email,
                 CreatedAt = DateTime.UtcNow,
+                PhoneNumber = dto.Telefone,
             };
 
             var usuarioCriado = await _userManager.CreateAsync(usuario, dto.Password);
-
+            
             if (!usuarioCriado.Succeeded)
             {
                 throw new Exception(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
@@ -65,35 +66,39 @@ namespace TruckFlow.Application
 
             var administrador = new Administrador
             {
-                Nome = dto.Username,
+                UserName = usuario.UserName,
+                Nome = dto.NomeReal,
                 UsuarioId = usuario.Id,
                 Usuario = usuario,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = usuario.CreatedAt,
                 FuncaoAdm = FuncaoAdministrador.Colaborador,
             };
 
             _db.Administrador.Add(administrador);
             await _db.SaveChangesAsync(token);
 
-            return new UserAdminResponseDto
-            {
-                Id = usuario.Id,
-                Email = usuario.Email!,
-                Username = usuario.UserName!,
-                CreatedAt = usuario.CreatedAt
-            };
+            return await MapUsuarioAsync(usuario);
         }
 
         public async Task<LoginAdminResponseDto> LoginAdminAsync(UserAdminLoginDto dto, CancellationToken ct = default)
         {
-            var usuario = await _userManager.FindByNameAsync(dto.Username);
+            Usuario? usuario;
 
-            if (usuario!.DeletedAt != null)
+            if (dto.Login.Contains('@'))
             {
-                throw new UnauthorizedAccessException("Usuário desativado.");
+                usuario = await _userManager.FindByEmailAsync(dto.Login);
+            }
+            else
+            {
+                usuario = await _userManager.FindByNameAsync(dto.Login);
             }
 
-            if (usuario == null || !await _userManager.CheckPasswordAsync(usuario, dto.Password))
+            if (usuario == null || usuario.DeletedAt != null)
+            {
+                throw new UnauthorizedAccessException("Usuário ou senha inválidos");
+            }
+
+            if (!await _userManager.CheckPasswordAsync(usuario, dto.Password))
             {
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
@@ -103,7 +108,7 @@ namespace TruckFlow.Application
             return new LoginAdminResponseDto
             {
                 Token = token,
-                Usuario = usuario
+                Usuario = await MapUsuarioAsync(usuario)
             };
         }
 
@@ -111,8 +116,6 @@ namespace TruckFlow.Application
         {
             throw new NotImplementedException();
         }
-
-
         public Task<UserAdminResponseDto> GetAdminByIdAsync(Guid id, CancellationToken token)
         {
             throw new NotImplementedException();
@@ -133,15 +136,16 @@ namespace TruckFlow.Application
             usuario.UpdatedAt = DateTime.UtcNow;
 
             await _userManager.UpdateAsync(usuario);
+            return await MapUsuarioAsync(usuario);
 
-            return new UserAdminResponseDto
-            {
-                Id = usuario.Id,
-                Email = usuario.Email!,
-                Username = usuario.UserName!,
-                CreatedAt = usuario.CreatedAt,
-                UpdatedAt = usuario.UpdatedAt
-            };
+            //return new UserAdminResponseDto
+            //{
+            //    Id = usuario.Id,
+            //    Email = usuario.Email!,
+            //    Username = usuario.UserName!,
+            //    CreatedAt = usuario.CreatedAt,
+            //    UpdatedAt = usuario.UpdatedAt
+            //};
 
         }
         public async Task DeleteAdminAsync(Guid id, CancellationToken token = default)
@@ -252,12 +256,7 @@ namespace TruckFlow.Application
                 UpdatedAt = usuario.UpdatedAt
             };
         }
-
-        public async Task<List<UserMotoristaResponseDto>> GetAllMotoristaAsync(CancellationToken token = default)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public async Task<UserMotoristaResponseDto> UpdateMotoristaAsync
             (
                 Guid id,        
@@ -321,6 +320,23 @@ namespace TruckFlow.Application
             {
                 throw new Exception(string.Join(" | ", result.Errors.Select(e => e.Description)));
             }
+        }
+
+        private async Task<UserAdminResponseDto> MapUsuarioAsync(Usuario usuario)
+        {
+            var roles = await _userManager.GetRolesAsync(usuario);
+
+            return new UserAdminResponseDto
+            {
+                Id = usuario.Id,
+                Username = usuario.UserName!,
+                Email = usuario.Email!,
+                Role = roles.First(),
+                CreatedAt = usuario.CreatedAt,
+                UpdatedAt = usuario.UpdatedAt,
+                DeletedAt = usuario.DeletedAt,
+                NomeReal = usuario?.Administrador?.Nome
+            };
         }
     }
 }

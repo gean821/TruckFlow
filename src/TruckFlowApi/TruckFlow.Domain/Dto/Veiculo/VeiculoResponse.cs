@@ -12,8 +12,9 @@ namespace TruckFlow.Domain.Dto.Veiculo
         public required Guid Id { get; set; }
         public string? Nome { get; set; }
         public required string Placa { get; set; }
-        public required TipoVeiculo TipoVeiculo { get; set; }
-        public required string Motorista { get; set; }
+        public  TipoVeiculo? TipoVeiculo { get; set; }
+        public string? Motorista { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

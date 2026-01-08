@@ -40,27 +40,29 @@ namespace TruckFlow.Controllers
         }
 
         [Authorize(Roles = Roles.Motorista)]
-        [HttpPut("{id}")]
+        [HttpPut("me")]
         public async Task<IActionResult> UpdateMotorista
             (
-                [FromRoute] Guid id,
                 [FromBody] UserMotoristaUpdateDto dto,
                 CancellationToken token = default
             )
         {
-            var usuarioAtualizado = await _service.UpdateMotoristaAsync(id, dto, token);
+            var usuarioId = Guid.Parse(User.FindFirst("UserId")!.Value);
+            var usuarioAtualizado = await _service.UpdateMotoristaAsync(usuarioId, dto, token);
+            
             return Ok(usuarioAtualizado);
         }
 
         [Authorize(Roles = Roles.Motorista)]
-        [HttpDelete("{id}")]
+        [HttpDelete("me")]
         public async Task<IActionResult> Delete
            (
-               [FromRoute] Guid id,
                CancellationToken token = default
            )
         {
-            await _service.DeleteMotoristaAsync(id, token);
+            var usuarioId = Guid.Parse(User.FindFirst("UserId")!.Value);
+            await _service.DeleteMotoristaAsync(usuarioId, token);
+            
             return NoContent();
         }
     }
