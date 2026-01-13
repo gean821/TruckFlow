@@ -122,7 +122,7 @@ namespace TruckFlow.Application
                 Id = v.Id,
                 Placa = v.Placa,
                 TipoVeiculo = v.TipoVeiculo,
-                Motorista = v.Motorista.Nome,
+                Motorista = v.Motorista.NomeReal,
                 CreatedAt = v.CreatedAt
             };
     }

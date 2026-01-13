@@ -92,7 +92,7 @@ namespace TruckFlowApi.Infra.Repositories
                     FornecedorNome = x.Fornecedor.Nome,
                     MotoristaNome = x.Usuario != null
                                      ? x.Usuario.Motorista != null
-                                     ? x.Usuario.Motorista.Nome
+                                     ? x.Usuario.Motorista.NomeReal
                                     : null
                                     : null,
 

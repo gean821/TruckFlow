@@ -9,7 +9,9 @@ namespace TruckFlow.Domain.Dto.User.Motorista
     public class UserMotoristaResponseDto
     {
         public required Guid Id { get; set; }
+        public Guid MotoristaId { get; set; }
         public required string Username { get; set; }
+        public string? NomeReal { get; set; }
         public required string Email { get; set; }
         public required string Telefone { get; set; }
         public string? PlacaVeiculo { get; set; }

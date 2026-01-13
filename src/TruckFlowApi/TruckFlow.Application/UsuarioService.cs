@@ -51,7 +51,7 @@ namespace TruckFlow.Application
             };
 
             var usuarioCriado = await _userManager.CreateAsync(usuario, dto.Password);
-            
+
             if (!usuarioCriado.Succeeded)
             {
                 throw new Exception(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
@@ -137,16 +137,6 @@ namespace TruckFlow.Application
 
             await _userManager.UpdateAsync(usuario);
             return await MapUsuarioAsync(usuario);
-
-            //return new UserAdminResponseDto
-            //{
-            //    Id = usuario.Id,
-            //    Email = usuario.Email!,
-            //    Username = usuario.UserName!,
-            //    CreatedAt = usuario.CreatedAt,
-            //    UpdatedAt = usuario.UpdatedAt
-            //};
-
         }
         public async Task DeleteAdminAsync(Guid id, CancellationToken token = default)
         {
@@ -189,7 +179,8 @@ namespace TruckFlow.Application
 
             var motorista = new Motorista
             {
-                Nome = dto.UserName,
+                NomeReal = dto.NomeReal,
+                Username = dto.UserName,
                 UsuarioId = usuario.Id,
                 Usuario = usuario,
                 Telefone = usuario.PhoneNumber,
@@ -199,14 +190,7 @@ namespace TruckFlow.Application
             _db.Motorista.Add(motorista);
             await _db.SaveChangesAsync(token);
 
-            return new UserMotoristaResponseDto
-            {
-                Id = usuario.Id,
-                Email = usuario.Email!,
-                Username = usuario.UserName!,
-                Telefone = usuario.PhoneNumber,
-                CreatedAt = usuario.CreatedAt
-            };
+            return await MapMotoristaAsync(usuario);
         }
 
         public async Task<LoginMotoristaResponseDto> LoginMotoristaAsync
@@ -215,25 +199,39 @@ namespace TruckFlow.Application
                 CancellationToken ct = default
             )
         {
-            
-            var usuario = await _userManager.FindByNameAsync(dto.Username);
+            Usuario? usuario;
 
-            if (usuario!.DeletedAt != null)
+            
+
+            if (dto.Login.Contains('@'))
             {
-                throw new UnauthorizedAccessException("Usuário desativado.");
+                usuario = await _userManager.FindByEmailAsync(dto.Login);
+            }
+            else
+            {
+                usuario = await _userManager.FindByNameAsync(dto.Login);
             }
 
-            if (usuario == null || !await _userManager.CheckPasswordAsync(usuario, dto.Password))
+            if (usuario == null || usuario.DeletedAt != null)
             {
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
-            var token = await _authService.GenerateTokenAsync(usuario, ct);
+            if (!await _userManager.CheckPasswordAsync(usuario, dto.Password))
+            {
+                throw new UnauthorizedAccessException("Usuário ou senha inválidos");
+            }
 
+            var usuarioComMotorista = await _db.Users
+                .Include(u => u.Motorista) 
+                .FirstOrDefaultAsync(u => u.Id == usuario.Id, ct);
+
+            var token = await _authService.GenerateTokenAsync(usuarioComMotorista!, ct);
+            
             return new LoginMotoristaResponseDto
             {
                 Token = token,
-                Usuario = usuario
+                Usuario = await MapMotoristaAsync(usuarioComMotorista!)
             };
         }
 
@@ -246,20 +244,12 @@ namespace TruckFlow.Application
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuario não encontrado.");
 
-            return new UserMotoristaResponseDto
-            {
-                Id = usuario.Id,
-                Email = usuario.Email!,
-                Username = usuario.UserName!,
-                Telefone = usuario.PhoneNumber!,
-                CreatedAt = usuario.CreatedAt,
-                UpdatedAt = usuario.UpdatedAt
-            };
+            return await MapMotoristaAsync(usuario);
         }
-        
+
         public async Task<UserMotoristaResponseDto> UpdateMotoristaAsync
             (
-                Guid id,        
+                Guid id,
                 UserMotoristaUpdateDto dto,
                 CancellationToken token = default
             )
@@ -278,21 +268,14 @@ namespace TruckFlow.Application
 
             await _userManager.UpdateAsync(usuario);
 
-            motorista.Nome = dto.Username;
+            motorista.Username = dto.Username;
+            motorista.NomeReal = dto.NomeReal;
             motorista.Telefone = dto.Telefone;
             motorista.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync(token);
 
-            return new UserMotoristaResponseDto
-            {
-                Id = usuario.Id,
-                Username = usuario.UserName!,
-                Email = usuario.Email!,
-                Telefone = usuario.PhoneNumber!,
-                CreatedAt = usuario.CreatedAt,
-                UpdatedAt = usuario.UpdatedAt
-            };
+            return await MapMotoristaAsync(usuario);
         }
 
         public async Task DeleteMotoristaAsync(Guid id, CancellationToken token = default)
@@ -338,5 +321,23 @@ namespace TruckFlow.Application
                 NomeReal = usuario?.Administrador?.Nome
             };
         }
+
+            private async Task<UserMotoristaResponseDto> MapMotoristaAsync(Usuario usuario)
+            {
+            var roles = await _userManager.GetRolesAsync(usuario);
+
+            return new UserMotoristaResponseDto
+            {
+                Id = usuario.Id,
+                MotoristaId = usuario.Motorista!.Id,
+                Username = usuario.UserName!,
+                Email = usuario.Email!,
+                NomeReal = usuario.Motorista?.NomeReal,
+                Telefone = usuario.PhoneNumber!,
+                CreatedAt = usuario.CreatedAt,
+                UpdatedAt = usuario.UpdatedAt,                
+            };
+        }
     }
 }
+

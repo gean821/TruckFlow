@@ -17,7 +17,7 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Nome)
+            builder.Property(x => x.NomeReal)
                 .IsRequired()
                 .HasMaxLength(250);
 

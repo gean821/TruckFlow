@@ -56,7 +56,7 @@ namespace TruckFlow.Application
             return new UserMotoristaResponseDto
             {
                 Id = motorista.Id,
-                Username = motorista.Nome,
+                Username = motorista.NomeReal,
                 Email = motorista.Usuario.Email!,
                 Telefone = motorista.Telefone,
                 DeletedAt = motorista.DeletedAt,

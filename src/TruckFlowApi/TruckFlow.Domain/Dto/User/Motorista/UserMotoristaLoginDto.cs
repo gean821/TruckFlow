@@ -8,7 +8,7 @@ namespace TruckFlow.Domain.Dto.User.Motorista
 {
     public class UserMotoristaLoginDto
     {
-        public required string Username { get; set; }
+        public required string Login { get; set; } = null!;
         public required string Password { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace TruckFlow.Domain.Dto.User.Motorista
     public class UserMotoristaUpdateDto
     {
         public required string Username { get; set; }
+        public string? NomeReal { get; set; }
         public required string Email { get; set; }
         public required string Password { get; set; }
         public required string Telefone { get; set; }
