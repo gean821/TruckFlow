@@ -7,6 +7,7 @@ using TruckFlow.Domain.Entities;
 using TruckFlow.Extensions.Agendamento;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Cors;
+using TruckFlow.Extensions.Dashboard;
 using TruckFlow.Extensions.Fornecedor;
 using TruckFlow.Extensions.Grade;
 using TruckFlow.Extensions.ItemPlanejamento;
@@ -43,7 +44,8 @@ namespace TruckFlow
             builder.Services.AddNotaFiscal();
             builder.Services.AddAgendamento();
             builder.Services.AddUserAuth();
-            
+            builder.Services.AddDashboard();
+
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

@@ -45,14 +45,14 @@ namespace TruckFlow.Application
         {
             await _createValidator.ValidateAndThrowAsync(dto, token);
 
-            var fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId);
+            var fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId, token);
 
             if (fornecedor == null)
             {
                 throw new NotFoundException("Fornecedor não encontrado");
             }
 
-            var unidade = await _unidadeRepo.GetById(dto.UnidadeEntregaId);
+            var unidade = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token);
 
             if (unidade == null)
             {
@@ -203,7 +203,7 @@ namespace TruckFlow.Application
             await _repo.Delete(agendamento, token);
         }
 
-        private AgendamentoAdminResponse MapToResponse(Agendamento agendamento)
+        private static AgendamentoAdminResponse MapToResponse(Agendamento agendamento)
         {
             return new AgendamentoAdminResponse
             {
@@ -215,8 +215,8 @@ namespace TruckFlow.Application
                 Produto = agendamento.Grade?.Produto?.Nome ?? agendamento.TipoCarga.ToString(),
                 PesoCarga = agendamento.VolumeCarga ?? agendamento.NotaFiscal?.PesoBruto ?? 0,
                 PlacaVeiculo = agendamento.PlacaVeiculo ?? agendamento.NotaFiscal?.PlacaVeiculo,
-                TipoVeiculo = agendamento.TipoVeiculo,
-                UnidadeEntrega = agendamento.UnidadeEntrega.Localizacao,
+                TipoVeiculo = agendamento.TipoVeiculo.ToString(),
+                UnidadeEntrega = agendamento.UnidadeEntrega.Nome,
                 CreatedAt = agendamento.CreatedAt,
                 Status = agendamento.StatusAgendamento.ToString(),
                 UpdatedAt = agendamento.UpdatedAt,

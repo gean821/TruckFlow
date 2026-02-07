@@ -67,6 +67,24 @@ namespace TruckFlow.Application
 
             var gradeCriada = await _factory.CreateGradeFromDto(grade, cancellationToken);
 
+            var diasSolicitados = gradeCriada.DiasSemana.Split(',').Select(int.Parse).ToList();
+            var temDiaValidoNoIntervalo = false;
+
+            for (var date = gradeCriada.DataInicio; date <= gradeCriada.DataFim; date = date.AddDays(1))
+            {
+                if (diasSolicitados.Contains((int)date.DayOfWeek))
+                {
+                    temDiaValidoNoIntervalo = true;
+                    break;
+                }
+            }
+
+            if (!temDiaValidoNoIntervalo)
+            {
+                throw new BusinessException(
+                    "O intervalo de datas informado não contém nenhum dos dias da semana selecionados. Nenhuma vaga seria gerada.");
+            }
+
             await _repo.CreateGrade(gradeCriada, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
 

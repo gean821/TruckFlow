@@ -231,7 +231,7 @@ namespace TruckFlow.Application
             }
 
             var cnpjNota = new string(dto.EmitenteCnpj.Where(char.IsDigit).ToArray());
-            Console.WriteLine($"[DEBUG] Buscando Fornecedor pelo CNPJ: '{cnpjNota}'"); // <--- VÊ O QUE ESTÁ BUSCANDO
+            Console.WriteLine($"[DEBUG] Buscando Fornecedor pelo CNPJ: '{cnpjNota}'"); 
 
             var fornecedor = await _fornecedorRepo.GetByCnpj(cnpjNota, token)
                     ?? await _fornecedorRepo.GetByNome(dto.EmitenteNome, token);
@@ -246,7 +246,6 @@ namespace TruckFlow.Application
                     Cnpj = cnpjNota,
                     CreatedAt = DateTime.UtcNow
                 };
-
 
                 await _fornecedorRepo.CreateFornecedor(fornecedor, token);
                 await _fornecedorRepo.SaveChangesAsync(token);

@@ -20,7 +20,7 @@ namespace TruckFlow.Domain.Dto.Agendamento
         public required string FornecedorNome { get; set; }
 
         public string? PlacaVeiculo { get; set; }
-        public TipoVeiculo? TipoVeiculo {get;set;}
+        public string? TipoVeiculo {get;set;}
         
         public decimal PesoCarga { get; set; }
 
