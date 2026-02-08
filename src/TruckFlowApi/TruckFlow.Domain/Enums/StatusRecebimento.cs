@@ -8,7 +8,6 @@ namespace TruckFlow.Domain.Enums
 {
     public enum StatusRecebimento
     {
-        Indefinido = 0,
         Planejado = 1,
         EmAndamento = 2,
         Concluido = 3

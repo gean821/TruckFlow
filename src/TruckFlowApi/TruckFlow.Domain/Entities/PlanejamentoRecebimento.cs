@@ -12,7 +12,7 @@ namespace TruckFlow.Domain.Entities
         public required Fornecedor Fornecedor { get; set; }
         public required Guid FornecedorId { get; set; }
         public DateTime DataInicio { get; set; }
-        public StatusRecebimento StatusRecebimento { get; set; } = StatusRecebimento.Indefinido;
+        public StatusRecebimento StatusRecebimento { get; set; } = StatusRecebimento.Planejado;
         public ICollection<ItemPlanejamento> ItemPlanejamentos { get; set; } = [];
     }
 }

@@ -137,26 +137,7 @@ namespace TruckFlow.Application
         public async Task<List<RecebimentoResponseDto>> GetAll(CancellationToken token = default)
         {
             var listaRecebimento = await _planeRepo.GetAll(token);
-
-            return listaRecebimento.Select(recebimento => new RecebimentoResponseDto
-            {
-                Id = recebimento.Id,
-                DataInicio = recebimento.DataInicio,
-                FornecedorNome = recebimento.Fornecedor.Nome,
-                TotalItens = recebimento.ItemPlanejamentos.Count,
-                CreatedAt = recebimento.CreatedAt,
-                Itens = recebimento.ItemPlanejamentos.Select(item => new ItemPlanejamentoResponseDto
-                {
-                    Id = item.Id,
-                    Produto = item.Produto!.Nome,
-                    CadenciaDiariaPlanejada = item.CadenciaDiariaPlanejada,
-                    QuantidadeTotalPlanejada = item.QuantidadeTotalPlanejada,
-                    QuantidadeTotalRecebida = item.QuantidadeTotalRecebida,
-                    FaltaReceber = item.QuantidadeTotalPlanejada - item.QuantidadeTotalRecebida,
-                    Fornecedor = recebimento.Fornecedor.Nome,
-                    CreatedAt = item.CreatedAt
-                }).ToList()
-            }).ToList();
+            return listaRecebimento.Select(MapToResponse).ToList();
         }
 
         private static RecebimentoResponseDto MapToResponse(PlanejamentoRecebimento recebimento) =>

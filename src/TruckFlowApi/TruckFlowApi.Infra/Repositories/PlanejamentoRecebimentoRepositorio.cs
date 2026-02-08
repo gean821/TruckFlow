@@ -40,6 +40,7 @@ namespace TruckFlowApi.Infra.Repositories
             var recebimento = await _db.PlanejamentosRecebimento
                 .Include(x => x.Fornecedor)
                 .Include(x => x.ItemPlanejamentos)
+                    .ThenInclude(x=> x.Produto)
                 .FirstOrDefaultAsync(x=> x.Id == id, token);
             
             return recebimento!;

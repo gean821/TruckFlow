@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Domain.Enums;
 
 namespace TruckFlowApi.Infra.Database.EntitiesMapping
 {
@@ -20,7 +21,9 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.DataInicio)
                 .IsRequired();
 
-            builder.Property(x => x.StatusRecebimento);
+            builder.Property(x => x.StatusRecebimento)
+    .HasDefaultValue(StatusRecebimento.Planejado)
+    .IsRequired();
 
             builder.Property(x => x.CreatedAt)
              .IsRequired();
