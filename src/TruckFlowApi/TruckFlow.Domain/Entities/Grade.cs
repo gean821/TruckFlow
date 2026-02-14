@@ -11,8 +11,10 @@ namespace TruckFlow.Domain.Entities
     {
         public required Produto Produto { get; set; }
         public required Guid ProdutoId { get; set; }
-        public required UnidadeEntrega UnidadeEntrega { get; set; }
-        public required Guid UnidadeEntregaId { get; set; }
+        public UnidadeEntrega? UnidadeEntrega { get; set; }
+        public LocalDescarga? LocalDescarga { get; set; }
+        public Guid? LocalDescargaId { get; set; }
+        public  Guid? UnidadeEntregaId { get; set; }
         public required Fornecedor Fornecedor { get; set; }
         public required Guid FornecedorId { get; set; }
         public DateOnly DataInicio { get; set; }
@@ -20,7 +22,7 @@ namespace TruckFlow.Domain.Entities
         public TimeOnly HoraInicial { get; set; }
         public TimeOnly HoraFinal { get; set; }
         public int IntervaloMinutos { get; set; }
-        public string DiasSemana { get; private set; } = string.Empty;
+        public string DiasSemana { get; set; } = string.Empty;
 
         public ICollection<Agendamento> Agendamentos { get; set; } = [];
 

@@ -68,6 +68,12 @@ namespace TruckFlow.Application
             var gradeCriada = await _factory.CreateGradeFromDto(grade, cancellationToken);
 
             var diasSolicitados = gradeCriada.DiasSemana.Split(',').Select(int.Parse).ToList();
+
+            if (string.IsNullOrWhiteSpace(gradeCriada.DiasSemana))
+            {
+                throw new BusinessException("Dias da semana não informados.");
+            }
+
             var temDiaValidoNoIntervalo = false;
 
             for (var date = gradeCriada.DataInicio; date <= gradeCriada.DataFim; date = date.AddDays(1))

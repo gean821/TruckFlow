@@ -63,6 +63,14 @@ namespace TruckFlowApi.Infra.Repositories
             _db.Remove(item);
             await SaveChangesAsync(token);
         }
+
+        public async Task<ItemPlanejamento> GetByIdWithPlanejamento(Guid id, CancellationToken token = default)
+        {
+            return await _db.ItensPlanejamento
+                .Include(x => x.PlanejamentoRecebimento)
+                .ThenInclude(x => x.ItemPlanejamentos)
+                .FirstOrDefaultAsync(i => i.Id == id, token);
+        }
         public async Task SaveChangesAsync(CancellationToken token = default)
         {
             await _db.SaveChangesAsync(token);

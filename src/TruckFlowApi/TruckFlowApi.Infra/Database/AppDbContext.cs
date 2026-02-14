@@ -34,7 +34,6 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new PlanejamentoRecebimentoConfiguracao());
             modelBuilder.ApplyConfiguration(new ItemPlanejamentoConfiguracao());
             modelBuilder.ApplyConfiguration(new GradeConfiguracao());
-
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -53,6 +52,7 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<NotaFiscalItem> NotaFiscalItems { get; set; }
         public DbSet<PlanejamentoRecebimento> PlanejamentosRecebimento { get; set; }
         public DbSet<ItemPlanejamento> ItensPlanejamento{ get; set; }
+        public DbSet<RecebimentoEvento> RecebimentoEvento{ get; set; }
     }
 }
     

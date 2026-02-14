@@ -14,5 +14,16 @@ namespace TruckFlow.Domain.Entities
         public DateTime DataInicio { get; set; }
         public StatusRecebimento StatusRecebimento { get; set; } = StatusRecebimento.Planejado;
         public ICollection<ItemPlanejamento> ItemPlanejamentos { get; set; } = [];
+
+        public void RecalcularStatus()
+        {
+            if (ItemPlanejamentos.All(i => i.EstaConcluido()))
+                StatusRecebimento = StatusRecebimento.Concluido;
+            else if (ItemPlanejamentos.Any(i => i.QuantidadeTotalRecebida > 0))
+                StatusRecebimento = StatusRecebimento.EmAndamento;
+            else
+                StatusRecebimento = StatusRecebimento.Planejado;
+        }
+
     }
 }

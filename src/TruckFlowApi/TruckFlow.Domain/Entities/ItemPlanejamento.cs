@@ -10,10 +10,24 @@ namespace TruckFlow.Domain.Entities
     {
         public required Produto Produto { get; set; }
         public required Guid ProdutoId { get; set; }
-        public required PlanejamentoRecebimento PlanejamentoRecebimento {get;set;}
+        public required PlanejamentoRecebimento PlanejamentoRecebimento { get; set; }
         public required Guid PlanejamentoRecebimentoId { get; set; }
         public required decimal QuantidadeTotalPlanejada { get; set; }
         public required decimal CadenciaDiariaPlanejada { get; set; }
         public decimal QuantidadeTotalRecebida { get; set; }
+
+        public ICollection<RecebimentoEvento>? RecebimentoEventos { get; set; } = [];
+
+        public void RegistrarRecebimento(decimal quantidade)
+        {
+            if (quantidade <= 0)
+                throw new Exception("Quantidade inválida.");
+
+            QuantidadeTotalRecebida += quantidade;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public bool EstaConcluido()
+            => QuantidadeTotalRecebida >= QuantidadeTotalPlanejada;
     }
 }

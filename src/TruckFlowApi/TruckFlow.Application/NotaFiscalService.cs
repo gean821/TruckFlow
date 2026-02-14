@@ -29,7 +29,6 @@ namespace TruckFlow.Application
         private readonly ProdutoLearningService _learningService;
         private readonly ILogger<NotaFiscalService> _logger;
 
-
         public NotaFiscalService(
             INotaFiscalRepositorio repo,
             IFornecedorRepositorio fornecedorRepo,
@@ -48,7 +47,6 @@ namespace TruckFlow.Application
             _learningService = learningService;
             _logger = logger;
         }
-
         public async Task<NotaFiscalParsedDto> ParseXmlAsync(
             Stream xmlStream,
             CancellationToken token
@@ -68,6 +66,7 @@ namespace TruckFlow.Application
                 Console.WriteLine($"✅ XML RECEBIDO ({xml.Length} chars)");
                 Console.WriteLine(xml.Substring(0, Math.Min(200, xml.Length)));
             }
+
             Console.WriteLine("=================================");
 
             NFe.Classes.NFe nfe;
@@ -115,7 +114,6 @@ namespace TruckFlow.Application
             //essa parte precisa ser melhorada para otimizar processo.
             var produtosDoSistema = await _produtoRepositorio.GetAll(token);
             var itensDto = new List<NotaFiscalItemDto>();
-
 
             foreach (var det in infNFe.det!)
             {
@@ -362,5 +360,3 @@ namespace TruckFlow.Application
         }
     }
 }
-
-

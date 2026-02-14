@@ -22,6 +22,8 @@ namespace TruckFlow.Application
         private readonly ILocalDescargaRepositorio _descargaRepo;
         private readonly IFornecedorRepositorio _fornecedorRepositorio;
         private readonly IUnidadeEntregaRepositorio _unidadeRepo;
+        private readonly IRecebimentoEventoRepositorio _eventoRepo;
+        private readonly IPlanejamentoRecebimentoRepositorio _recebimentoRepo;
 
         public AgendamentoAdminService
            (
@@ -30,7 +32,9 @@ namespace TruckFlow.Application
             IValidator<AgendamentoAdminUpdateDto> updateValidator,
             ILocalDescargaRepositorio descargaRepositorio,
             IFornecedorRepositorio fornecedorRepositorio,
-            IUnidadeEntregaRepositorio entregaRepositorio
+            IUnidadeEntregaRepositorio entregaRepositorio,
+            IRecebimentoEventoRepositorio eventoRepo,
+            IPlanejamentoRecebimentoRepositorio recebimentoRepositorio
             )
         {
             _repo = repo;
@@ -39,9 +43,14 @@ namespace TruckFlow.Application
             _descargaRepo = descargaRepositorio;
             _fornecedorRepositorio = fornecedorRepositorio;
             _unidadeRepo = entregaRepositorio;
+            _eventoRepo = eventoRepo;
+            _recebimentoRepo = recebimentoRepositorio;
         }
 
-        public async Task<AgendamentoAdminResponse> CreateAvulso(AgendamentoAdminCreateDto dto, CancellationToken token = default)
+        public async Task<AgendamentoAdminResponse> CreateAvulso(
+            AgendamentoAdminCreateDto dto,
+            CancellationToken token = default
+            )
         {
             await _createValidator.ValidateAndThrowAsync(dto, token);
 
@@ -81,7 +90,6 @@ namespace TruckFlow.Application
             await _repo.AddAgendamento(vaga, token);
             return MapToResponse(vaga);
         }
-
 
         public async Task<List<AgendamentoAdminResponse>> GetByFiltros
             (
@@ -186,6 +194,56 @@ namespace TruckFlow.Application
             return MapToResponse(agendamento);
         }
 
+        public async Task FinalizarAgendamento(
+            Guid agendamentoId,
+            decimal quantidadeRecebida,
+            CancellationToken token = default
+            )
+        {
+            var agendamento = await _repo.GetByIdWithFornecedor(agendamentoId, token)
+                    ?? throw new NotFoundException("Agendamento não encontrado.");
+
+            agendamento.FinalizarOperacao();
+
+            var planejamento = await _recebimentoRepo
+                .GetPlanejamentoAtivoPorFornecedor(
+                    agendamento.FornecedorId,
+                    token)
+                ?? throw new BusinessException(
+                    "Não existe planejamento ativo para este fornecedor.");
+
+            Guid produtoId;
+
+            if (agendamento.ProdutoId.HasValue)
+            {
+                produtoId = agendamento.Grade!.ProdutoId;
+            }
+            else
+            {
+                throw new BusinessException("Não foi possível identificar o produto deste agendamento.");
+            }
+
+            var item = planejamento.ItemPlanejamentos
+                .FirstOrDefault(i => i.ProdutoId == produtoId)
+             ?? throw new BusinessException(
+                 "Nenhum item do planejamento compatível com a carga."
+             );
+
+            var evento = new RecebimentoEvento(
+                item,
+                quantidadeRecebida,
+                agendamento.Id,
+                "Recebimento via agendamento (admin)"
+            );
+
+            await _eventoRepo.AddAsync(evento, token);
+
+            item.RegistrarRecebimento(quantidadeRecebida);
+            planejamento.RecalcularStatus();
+
+            await _repo.Update(agendamento, token);
+        }
+
         public async Task Delete(Guid id, CancellationToken token = default)
         {
             var agendamento = await _repo.GetById(id, token);
@@ -202,7 +260,6 @@ namespace TruckFlow.Application
 
             await _repo.Delete(agendamento, token);
         }
-
         private static AgendamentoAdminResponse MapToResponse(Agendamento agendamento)
         {
             return new AgendamentoAdminResponse

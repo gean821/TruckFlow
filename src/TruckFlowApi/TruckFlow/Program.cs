@@ -15,6 +15,7 @@ using TruckFlow.Extensions.LocalDescarga;
 using TruckFlow.Extensions.NotaFiscal;
 using TruckFlow.Extensions.Produto;
 using TruckFlow.Extensions.Recebimento;
+using TruckFlow.Extensions.RecebimentoEvento;
 using TruckFlow.Extensions.UnidadeEntrega;
 using TruckFlow.Filters;
 using TruckFlow.Middlewares;
@@ -45,9 +46,8 @@ namespace TruckFlow
             builder.Services.AddAgendamento();
             builder.Services.AddUserAuth();
             builder.Services.AddDashboard();
+            builder.Services.AddRecebimentoEvento();
 
-
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             
             builder.Services.AddSwaggerGen(x=>

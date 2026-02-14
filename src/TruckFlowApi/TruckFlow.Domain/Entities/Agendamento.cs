@@ -6,6 +6,10 @@ namespace TruckFlow.Domain.Entities
 {
     public class Agendamento : EntidadeBase
     {
+
+        public Produto? Produto { get; set; }
+        public Guid? ProdutoId { get; set; }
+        
         public Grade? Grade { get; set; }
         public Guid? GradeId { get; set; }
         public Usuario? Usuario { get; set; }
@@ -17,8 +21,8 @@ namespace TruckFlow.Domain.Entities
         public DateTime DataInicio { get; set; }
         public DateTime DataFim { get; set; }
         public StatusAgendamento StatusAgendamento { get; set; }
-        public required UnidadeEntrega UnidadeEntrega { get; set; }
-        public required Guid UnidadeEntregaId { get; set; }
+        public UnidadeEntrega? UnidadeEntrega { get; set; }
+        public Guid? UnidadeEntregaId { get; set; }
         public NotaFiscal? NotaFiscal { get; set; }
         public Guid? NotaFiscalId { get; set; }
         public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();

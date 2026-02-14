@@ -22,6 +22,7 @@ namespace TruckFlow.Application
         private readonly IValidator<ItemPlanejamentoUpdateDto> _updateValidator;
         private readonly ItemPlanejamentoFactory _factory;
         private readonly IProdutoRepositorio _produtoRepo;
+        private readonly IRecebimentoEventoRepositorio _eventoRepo;
 
         public ItemPlanejamentoService
             (
@@ -29,7 +30,8 @@ namespace TruckFlow.Application
                 IValidator<ItemPlanejamentoCreateDto> createValidator,
                 IValidator<ItemPlanejamentoUpdateDto> updateValidator,
                 ItemPlanejamentoFactory factory,
-                IProdutoRepositorio produtoRepo
+                IProdutoRepositorio produtoRepo,
+                IRecebimentoEventoRepositorio eventoRepositorio
             )
         {
             _repo = repo;
@@ -37,6 +39,7 @@ namespace TruckFlow.Application
             _updateValidator = updateValidator;
             _factory = factory;
             _produtoRepo = produtoRepo;
+            _eventoRepo = eventoRepositorio;
         }
 
         public async Task<ItemPlanejamentoResponseDto> CreateItem
@@ -124,6 +127,29 @@ namespace TruckFlow.Application
 
             var itemAtualizado = await _repo.UpdateItem(id, item, token);
             return MapToResponse(itemAtualizado, token);
+        }
+
+        public async Task RegistrarRecebimentoManual(
+                Guid itemPlanejamentoId,
+                decimal quantidade,
+                string? observacao,
+                CancellationToken token = default)
+        {
+            var item = await _repo.GetByIdWithPlanejamento(itemPlanejamentoId, token)
+                ?? throw new NotFoundException("Item não encontrado.");
+
+            var evento = new RecebimentoEvento(
+                item,
+                quantidade,
+                agendamentoId: null,
+                observacao
+            );
+
+            await _eventoRepo.AddAsync(evento, token);
+
+            // 2️⃣ Atualiza domínio
+            item.RegistrarRecebimento(quantidade);
+            item.PlanejamentoRecebimento.RecalcularStatus();
         }
 
         private static ItemPlanejamentoResponseDto MapToResponse(ItemPlanejamento item, CancellationToken token = default) =>

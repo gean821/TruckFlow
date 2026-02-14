@@ -160,6 +160,5 @@ namespace TruckFlow.Application
                     CreatedAt = x.CreatedAt
                 }).ToList()
             };
-            
     }
 }

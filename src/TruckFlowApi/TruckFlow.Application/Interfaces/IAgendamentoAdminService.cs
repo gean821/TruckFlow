@@ -17,6 +17,8 @@ namespace TruckFlow.Application.Interfaces
 
         Task RegistrarChegadaAsync(Guid agendamentoId, CancellationToken token = default);
 
+        Task FinalizarAgendamento(Guid id, decimal quantidadeRecebida, CancellationToken token = default);
+
         Task FinalizarOperacao(Guid agendamentoId, CancellationToken token = default);
 
         Task CancelarAgendamento(Guid agendamentoId, CancellationToken token = default);

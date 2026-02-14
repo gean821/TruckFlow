@@ -16,16 +16,19 @@ namespace TruckFlow.Application.Factories
         private readonly IProdutoRepositorio _repo;
         private readonly IFornecedorRepositorio _fornecedorRepositorio;
         private readonly IUnidadeEntregaRepositorio _unidadeRepo;
+        private readonly ILocalDescargaRepositorio _descargaRepositorio;
 
         public GradeFactory(
             IProdutoRepositorio repo,
             IFornecedorRepositorio fornecedorRepositorio,
-            IUnidadeEntregaRepositorio unidadeRepo
+            ILocalDescargaRepositorio descargaRepositorio
+            //IUnidadeEntregaRepositorio unidadeRepo
             )
         {
             _repo = repo;
             _fornecedorRepositorio = fornecedorRepositorio;
-            _unidadeRepo = unidadeRepo;
+            //_unidadeRepo = unidadeRepo;
+            _descargaRepositorio = descargaRepositorio;
         }
 
         public async Task<Grade> CreateGradeFromDto(GradeCreateDto dto, CancellationToken token = default)
@@ -36,9 +39,10 @@ namespace TruckFlow.Application.Factories
             var Fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId, token)
                 ?? throw new NotFoundException("Não foi possível encontrar o fornecedor.");
 
-            var unidade = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token)
-                ?? throw new NotFoundException("Não foi encontrada a unidade para a grade.");
-
+            var unidade = await _descargaRepositorio.GetById(
+                dto.LocalDescargaId,
+                token);
+                //?? throw new NotFoundException("Não foi encontrada a o local de descarga para a grade.");
 
             return new Grade
             {
@@ -52,9 +56,10 @@ namespace TruckFlow.Application.Factories
                 DataFim = dto.DataFim,
                 HoraInicial = dto.HoraInicial,
                 HoraFinal = dto.HoraFinal,
-                UnidadeEntrega = unidade,
-                UnidadeEntregaId = dto.UnidadeEntregaId,
+                LocalDescarga = unidade,
+                LocalDescargaId = dto.LocalDescargaId,
                 IntervaloMinutos = dto.IntervaloMinutos,
+                DiasSemana = dto.DiasSemana
             };
         }
     }
