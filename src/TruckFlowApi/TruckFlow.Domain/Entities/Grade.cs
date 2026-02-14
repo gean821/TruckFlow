@@ -20,7 +20,7 @@ namespace TruckFlow.Domain.Entities
         public TimeOnly HoraInicial { get; set; }
         public TimeOnly HoraFinal { get; set; }
         public int IntervaloMinutos { get; set; }
-        public string DiasSemana { get; private set; } = string.Empty;
+        public string DiasSemana { get; set; } = string.Empty;
 
         public ICollection<Agendamento> Agendamentos { get; set; } = [];
 
@@ -57,7 +57,6 @@ namespace TruckFlow.Domain.Entities
                             TipoCarga = TipoCarga.Indefinido,
                             CreatedAt = DateTime.UtcNow
                         });
-
                         horaAtual = horaAtual.AddMinutes(IntervaloMinutos);
                     }
                 }
@@ -83,7 +82,6 @@ namespace TruckFlow.Domain.Entities
                     .ToList();
             }
         }
-
         public void DefinirDiasSemana(IEnumerable<DayOfWeek> dias)
         {
             DiasSemana = string.Join(",", dias.Select(d => (int)d));

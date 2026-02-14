@@ -168,7 +168,6 @@ namespace TruckFlowApi.Infra.Repositories
                         .ThenInclude(g => g.Produto)
                 .ToListAsync(token);
         }
-
         public async Task<Agendamento> Update(
             Agendamento agendamento,
             CancellationToken token = default)

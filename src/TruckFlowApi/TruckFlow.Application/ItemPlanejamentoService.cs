@@ -67,7 +67,6 @@ namespace TruckFlow.Application
             await _repo.DeleteItem(item.Id, token);
 
         }
-
         public async Task<List<ItemPlanejamentoResponseDto>> GetAll(CancellationToken token = default)
         {
             var itens = await _repo.GetAll(token);
@@ -125,7 +124,6 @@ namespace TruckFlow.Application
             var itemAtualizado = await _repo.UpdateItem(id, item, token);
             return MapToResponse(itemAtualizado, token);
         }
-
         private static ItemPlanejamentoResponseDto MapToResponse(ItemPlanejamento item, CancellationToken token = default) =>
             new ItemPlanejamentoResponseDto
             {

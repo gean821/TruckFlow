@@ -55,6 +55,7 @@ namespace TruckFlow.Application.Factories
                 UnidadeEntrega = unidade,
                 UnidadeEntregaId = dto.UnidadeEntregaId,
                 IntervaloMinutos = dto.IntervaloMinutos,
+                DiasSemana = dto.DiasSemana
             };
         }
     }
