@@ -1,6 +1,8 @@
-﻿namespace TruckFlow.Domain.Entities
+﻿using TruckFlow.Domain.Contracts;
+
+namespace TruckFlow.Domain.Entities
 {
-    public class RecebimentoEvento : EntidadeBase
+    public class RecebimentoEvento : EntidadeBase, IEmpresaScoped
     {
         protected RecebimentoEvento() { }
 
@@ -8,7 +10,8 @@
             ItemPlanejamento item,
             decimal quantidade,
             Guid? agendamentoId,
-            string? observacao
+            string? observacao,
+            Guid? empresaId
         )
         {
             ItemPlanejamento = item ?? throw new ArgumentNullException(nameof(item));
@@ -33,5 +36,8 @@
         public decimal Quantidade { get; private set; }
         public DateTime DataRecebimento { get; private set; }
         public string? Observacao { get; private set; }
+
+        public Guid EmpresaId { get; set; }
+        public Empresa? Empresa { get; set; }
     }
 }

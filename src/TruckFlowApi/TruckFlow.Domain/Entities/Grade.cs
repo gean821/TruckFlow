@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Enums;
 
 namespace TruckFlow.Domain.Entities
 {
-    public sealed class Grade : EntidadeBase
+    public sealed class Grade : EntidadeBase, IEmpresaScoped
     {
         public required Produto Produto { get; set; }
         public required Guid ProdutoId { get; set; }
@@ -23,6 +24,9 @@ namespace TruckFlow.Domain.Entities
         public TimeOnly HoraFinal { get; set; }
         public int IntervaloMinutos { get; set; }
         public string DiasSemana { get; set; } = string.Empty;
+
+        public Guid EmpresaId { get; set; }
+        public required Empresa Empresa { get; set; }
 
         public ICollection<Agendamento> Agendamentos { get; set; } = [];
 
@@ -47,6 +51,7 @@ namespace TruckFlow.Domain.Entities
                         slots.Add(new Agendamento
                         {
                             GradeId = Id,
+                            Empresa = Empresa,
                             Fornecedor = Fornecedor,
                             FornecedorId = FornecedorId,
                             UnidadeEntrega = UnidadeEntrega,

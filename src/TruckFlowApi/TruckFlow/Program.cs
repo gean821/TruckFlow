@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application;
 using TruckFlow.Configuration;
+using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Extensions.Agendamento;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Cors;
 using TruckFlow.Extensions.Dashboard;
+using TruckFlow.Extensions.Empresa;
 using TruckFlow.Extensions.Fornecedor;
 using TruckFlow.Extensions.Grade;
 using TruckFlow.Extensions.ItemPlanejamento;
@@ -17,6 +19,7 @@ using TruckFlow.Extensions.Produto;
 using TruckFlow.Extensions.Recebimento;
 using TruckFlow.Extensions.RecebimentoEvento;
 using TruckFlow.Extensions.UnidadeEntrega;
+using TruckFlow.Extensions.UserContext;
 using TruckFlow.Filters;
 using TruckFlow.Middlewares;
 using TruckFlowApi.Infra.Database;
@@ -47,6 +50,10 @@ namespace TruckFlow
             builder.Services.AddUserAuth();
             builder.Services.AddDashboard();
             builder.Services.AddRecebimentoEvento();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<IEmpresaContext, EmpresaContext>();
+            builder.Services.AddEmpresa();
+            builder.Services.AddUserContext();
 
             builder.Services.AddEndpointsApiExplorer();
             

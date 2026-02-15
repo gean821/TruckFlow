@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.Agendamento;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Application.Interfaces
 {
@@ -17,7 +18,10 @@ namespace TruckFlow.Application.Interfaces
 
         Task RegistrarChegadaAsync(Guid agendamentoId, CancellationToken token = default);
 
-        Task FinalizarAgendamento(Guid id, decimal quantidadeRecebida, CancellationToken token = default);
+        Task FinalizarAgendamento(
+            Guid id,
+            decimal quantidadeRecebida,
+            CancellationToken token = default);
 
         Task FinalizarOperacao(Guid agendamentoId, CancellationToken token = default);
 

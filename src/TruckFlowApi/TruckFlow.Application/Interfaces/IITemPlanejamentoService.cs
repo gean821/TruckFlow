@@ -29,6 +29,7 @@ namespace TruckFlow.Application.Interfaces
             Guid itemId,
             decimal quantidade,
             string? observacao,
+            Usuario usuario,
             CancellationToken token = default);
     }
 }

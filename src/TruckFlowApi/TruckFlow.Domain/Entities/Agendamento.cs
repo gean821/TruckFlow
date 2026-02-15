@@ -1,10 +1,11 @@
-﻿using TruckFlow.Domain.Enums;
+﻿using TruckFlow.Domain.Contracts;
+using TruckFlow.Domain.Enums;
 using TruckFlow.Domain.Rules;
 
 
 namespace TruckFlow.Domain.Entities
 {
-    public class Agendamento : EntidadeBase
+    public class Agendamento : EntidadeBase, IEmpresaScoped
     {
 
         public Produto? Produto { get; set; }
@@ -26,6 +27,9 @@ namespace TruckFlow.Domain.Entities
         public NotaFiscal? NotaFiscal { get; set; }
         public Guid? NotaFiscalId { get; set; }
         public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
+
+        public Guid EmpresaId { get; set; }
+        public required Empresa Empresa { get; set; }
 
         public string? PlacaVeiculo { get; set; }
         public TipoVeiculo? TipoVeiculo { get; set; }

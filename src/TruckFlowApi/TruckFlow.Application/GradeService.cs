@@ -182,7 +182,7 @@ namespace TruckFlow.Application
         }
 
         private static GradeResponse MapToResponse(Grade g) =>
-
+            
             new GradeResponse
             {
                 Id = g.Id,

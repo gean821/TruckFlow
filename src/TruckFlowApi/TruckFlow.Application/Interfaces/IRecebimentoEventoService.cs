@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Application.Interfaces
 {
@@ -13,6 +14,6 @@ namespace TruckFlow.Application.Interfaces
        decimal quantidade,
        string? observacao,
        CancellationToken token
-        );
+       );
     }
 }

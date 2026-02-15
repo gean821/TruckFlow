@@ -24,6 +24,8 @@ namespace TruckFlow.Application
         private readonly IValidator<RecebimentoUpdateDto> _updateValidator;
         private readonly RecebimentoFactory _factory;
         private readonly IProdutoRepositorio _produtoRepositorio;
+        private readonly IEmpresaRepositorio _empresaRepo;
+
 
         public PlanejamentoRecebimentoService
             (
@@ -32,7 +34,8 @@ namespace TruckFlow.Application
                 IValidator<RecebimentoUpdateDto> updateValidator,
                 RecebimentoFactory factory,
                 IFornecedorRepositorio repo,
-                IProdutoRepositorio produtoRepositorio
+                IProdutoRepositorio produtoRepositorio,
+                IEmpresaRepositorio empresaRepo
             )
         {
             _planeRepo = planeRepo;
@@ -41,6 +44,7 @@ namespace TruckFlow.Application
             _factory = factory;
             _forRepo = repo;
             _produtoRepositorio = produtoRepositorio;
+            _empresaRepo = empresaRepo;
         }
 
         public async Task<RecebimentoResponseDto> CreateRecebimento
@@ -105,6 +109,9 @@ namespace TruckFlow.Application
             var produtosIds = recebimento.ItensPlanejamento!.Select(x => x.ProdutoId).ToList();
             var produtos = await _produtoRepositorio.GetByIdsAsync(produtosIds, token);
 
+            var empresa = await _empresaRepo.GetById(recebimento.EmpresaId, token)
+                ?? throw new NotFoundException("Empresa não encontrada.");
+
 
             recebimentoEncontrado.Fornecedor = fornecedor;
             recebimentoEncontrado.FornecedorId = fornecedor.Id;
@@ -122,6 +129,7 @@ namespace TruckFlow.Application
                     {
                         ProdutoId = produto.Id,
                         Produto = produto,
+                        Empresa = empresa,
                         PlanejamentoRecebimentoId = recebimentoEncontrado.Id,
                         PlanejamentoRecebimento = recebimentoEncontrado,
                         QuantidadeTotalPlanejada = x.QuantidadeTotalPlanejada,

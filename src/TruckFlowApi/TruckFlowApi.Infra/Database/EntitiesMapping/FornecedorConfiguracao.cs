@@ -17,12 +17,23 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             
             builder.HasKey(x => x.Id);
 
-            builder.HasIndex(x => x.Cnpj)
-                .IsUnique();
-                
             builder.Property(x => x.Nome)
                 .IsRequired().
                 HasMaxLength(250);
+
+            builder.Property(x => x.Cnpj)
+                .IsRequired()
+                .HasMaxLength(18);
+
+            builder.HasOne(x => x.Empresa)
+                .WithMany(x => x.Fornecedores)
+                .HasForeignKey(x => x.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(x => x.ProdutoFornecedores)
+                    .WithOne(x => x.Fornecedor)
+                    .HasForeignKey(x => x.FornecedorId)
+                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -24,6 +24,8 @@ namespace TruckFlow.Application
         private readonly IUnidadeEntregaRepositorio _unidadeRepo;
         private readonly IRecebimentoEventoRepositorio _eventoRepo;
         private readonly IPlanejamentoRecebimentoRepositorio _recebimentoRepo;
+        private readonly IEmpresaRepositorio _empresaRepo;
+        private readonly ICurrentUserService _currentUser;
 
         public AgendamentoAdminService
            (
@@ -34,7 +36,10 @@ namespace TruckFlow.Application
             IFornecedorRepositorio fornecedorRepositorio,
             IUnidadeEntregaRepositorio entregaRepositorio,
             IRecebimentoEventoRepositorio eventoRepo,
-            IPlanejamentoRecebimentoRepositorio recebimentoRepositorio
+            IPlanejamentoRecebimentoRepositorio recebimentoRepositorio,
+            IEmpresaRepositorio empresaRepo,
+            IUsuarioService usuarioService,
+            ICurrentUserService currentUser
             )
         {
             _repo = repo;
@@ -45,6 +50,8 @@ namespace TruckFlow.Application
             _unidadeRepo = entregaRepositorio;
             _eventoRepo = eventoRepo;
             _recebimentoRepo = recebimentoRepositorio;
+            _empresaRepo = empresaRepo;
+            _currentUser = currentUser;
         }
 
         public async Task<AgendamentoAdminResponse> CreateAvulso(
@@ -68,6 +75,9 @@ namespace TruckFlow.Application
                 throw new NotFoundException("Unidade de entrega não encontrada.");
             }
 
+            var empresa = await _empresaRepo.GetById(dto.EmpresaId, token)
+                ?? throw new NotFoundException("Empresa não encontrada.");
+
             var vaga = new Agendamento
             {
                 FornecedorId = dto.FornecedorId,
@@ -83,7 +93,8 @@ namespace TruckFlow.Application
                 StatusAgendamento = dto.MotoristaId.HasValue ? StatusAgendamento.Agendado : StatusAgendamento.Disponivel,
                 Grade = null,
                 GradeId = null,
-                VolumeCarga = dto.VolumeCarga
+                VolumeCarga = dto.VolumeCarga,
+                Empresa = empresa
                 // Avulso não tem grade pai
             };
 
@@ -134,7 +145,10 @@ namespace TruckFlow.Application
             return MapToResponse(agendamento);
         }
 
-        public async Task RegistrarChegadaAsync(Guid agendamentoId, CancellationToken token = default)
+        public async Task RegistrarChegadaAsync(
+            Guid agendamentoId,
+            CancellationToken token = default
+            )
         {
             var agendamento = await _repo.GetById(agendamentoId, token)
                 ?? throw new NotFoundException("Agendamento não encontrado");
@@ -143,7 +157,9 @@ namespace TruckFlow.Application
             await _repo.Update(agendamento, token);
         }
 
-        public async Task FinalizarOperacao(Guid agendamentoId, CancellationToken token = default)
+        public async Task FinalizarOperacao(
+            Guid agendamentoId,
+            CancellationToken token = default)
         {
             var agendamento = await _repo.GetById(agendamentoId, token)
                 ?? throw new NotFoundException("Agendamento não encontrado");
@@ -152,7 +168,10 @@ namespace TruckFlow.Application
             await _repo.Update(agendamento, token);
         }
 
-        public async Task CancelarAgendamento(Guid agendamentoId, CancellationToken token = default)
+        public async Task CancelarAgendamento(
+            Guid agendamentoId,
+            CancellationToken token = default
+            )
         {
             var agendamento = await _repo.GetById(agendamentoId, token)
                 ?? throw new NotFoundException("Agendamento não encontrado.");
@@ -161,7 +180,11 @@ namespace TruckFlow.Application
             await _repo.Update(agendamento, token);
         }
 
-        public async Task<AgendamentoAdminResponse> Update(Guid id, AgendamentoAdminUpdateDto dto, CancellationToken token = default)
+        public async Task<AgendamentoAdminResponse> Update(
+            Guid id,
+            AgendamentoAdminUpdateDto dto,
+            CancellationToken token = default
+            )
         {
             await _updateValidator.ValidateAndThrowAsync(dto, token);
 
@@ -200,6 +223,10 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
+
+            var empresaId = _currentUser.EmpresaId
+                ?? throw new BusinessException("Usuário não vinculado a empresa.");
+
             var agendamento = await _repo.GetByIdWithFornecedor(agendamentoId, token)
                     ?? throw new NotFoundException("Agendamento não encontrado.");
 
@@ -233,7 +260,8 @@ namespace TruckFlow.Application
                 item,
                 quantidadeRecebida,
                 agendamento.Id,
-                "Recebimento via agendamento (admin)"
+                "Recebimento via agendamento (admin)",
+                empresaId
             );
 
             await _eventoRepo.AddAsync(evento, token);

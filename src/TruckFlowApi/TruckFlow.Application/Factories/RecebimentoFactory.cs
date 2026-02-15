@@ -11,13 +11,17 @@ namespace TruckFlow.Application.Factories
     {
         private readonly IFornecedorRepositorio _fornecedorRepo;
         private readonly IProdutoRepositorio _produtoRepo;
+        private readonly IEmpresaRepositorio _empresaRepo;
 
         public RecebimentoFactory(
             IFornecedorRepositorio fornecedorRepo,
-            IProdutoRepositorio produtoRepo)
+            IProdutoRepositorio produtoRepo,
+            IEmpresaRepositorio empresaRepo
+            )
         {
             _fornecedorRepo = fornecedorRepo;
             _produtoRepo = produtoRepo;
+            _empresaRepo = empresaRepo;
         }
 
         public async Task<PlanejamentoRecebimento> CreateRecebimentoFromDto(
@@ -37,6 +41,9 @@ namespace TruckFlow.Application.Factories
 
             var produtoDicionario = produtos.ToDictionary(p => p.Id);
 
+            var empresa = await _empresaRepo.GetById(dto.EmpresaId, token)
+                ?? throw new NotFoundException("Empresa não encontrada.");
+
             var recebimento = new PlanejamentoRecebimento
             {
                 Id = Guid.NewGuid(),
@@ -45,6 +52,7 @@ namespace TruckFlow.Application.Factories
                 Fornecedor = fornecedor,
                 FornecedorId = fornecedor.Id,
                 StatusRecebimento = StatusRecebimento.Planejado,
+                Empresa = empresa
             };
 
             recebimento.ItemPlanejamentos = dto.ItensPlanejamento!.Select(itemDto => new ItemPlanejamento
@@ -57,7 +65,8 @@ namespace TruckFlow.Application.Factories
                 QuantidadeTotalPlanejada = itemDto.QuantidadeTotalPlanejada,
                 CadenciaDiariaPlanejada = itemDto.CadenciaDiariaPlanejada,
                 QuantidadeTotalRecebida = 0,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Empresa = empresa
             }).ToList();
 
             return recebimento;

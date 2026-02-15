@@ -15,20 +15,20 @@ namespace TruckFlow.Application.Factories
     {
         private readonly IProdutoRepositorio _repo;
         private readonly IFornecedorRepositorio _fornecedorRepositorio;
-        private readonly IUnidadeEntregaRepositorio _unidadeRepo;
         private readonly ILocalDescargaRepositorio _descargaRepositorio;
+        private readonly IEmpresaRepositorio _empresaRepo;
 
         public GradeFactory(
             IProdutoRepositorio repo,
             IFornecedorRepositorio fornecedorRepositorio,
-            ILocalDescargaRepositorio descargaRepositorio
-            //IUnidadeEntregaRepositorio unidadeRepo
+            ILocalDescargaRepositorio descargaRepositorio,
+            IEmpresaRepositorio empresaRepo
             )
         {
             _repo = repo;
             _fornecedorRepositorio = fornecedorRepositorio;
-            //_unidadeRepo = unidadeRepo;
             _descargaRepositorio = descargaRepositorio;
+            _empresaRepo = empresaRepo;
         }
 
         public async Task<Grade> CreateGradeFromDto(GradeCreateDto dto, CancellationToken token = default)
@@ -42,7 +42,10 @@ namespace TruckFlow.Application.Factories
             var unidade = await _descargaRepositorio.GetById(
                 dto.LocalDescargaId,
                 token);
-                //?? throw new NotFoundException("Não foi encontrada a o local de descarga para a grade.");
+            //?? throw new NotFoundException("Não foi encontrada a o local de descarga para a grade.");
+
+            var empresa = await _empresaRepo.GetById(dto.EmpresaId, token)
+                ?? throw new NotFoundException("Empresa não encontrada.");
 
             return new Grade
             {
@@ -59,7 +62,8 @@ namespace TruckFlow.Application.Factories
                 LocalDescarga = unidade,
                 LocalDescargaId = dto.LocalDescargaId,
                 IntervaloMinutos = dto.IntervaloMinutos,
-                DiasSemana = dto.DiasSemana
+                Empresa = empresa,
+                DiasSemana = dto.DiasSemana,
             };
         }
     }

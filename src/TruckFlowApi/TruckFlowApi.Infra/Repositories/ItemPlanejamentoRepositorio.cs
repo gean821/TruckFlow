@@ -35,7 +35,10 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(token);
         }
 
-        public async Task<ItemPlanejamento> GetById(Guid id, CancellationToken token = default)
+        public async Task<ItemPlanejamento> GetById(
+            Guid id,
+            CancellationToken token = default
+            )
         {
             var item = await _db.ItensPlanejamento
                   .Include(x => x.Produto)
@@ -57,14 +60,20 @@ namespace TruckFlowApi.Infra.Repositories
             await SaveChangesAsync(token);
             return item;
         }
-        public async Task DeleteItem(Guid id, CancellationToken token = default)
+        public async Task DeleteItem(
+            Guid id,
+            CancellationToken token = default
+            )
         {
             var item = await GetById(id, token);
             _db.Remove(item);
             await SaveChangesAsync(token);
         }
 
-        public async Task<ItemPlanejamento> GetByIdWithPlanejamento(Guid id, CancellationToken token = default)
+        public async Task<ItemPlanejamento> GetByIdWithPlanejamento(
+            Guid id,
+            CancellationToken token = default
+            )
         {
             return await _db.ItensPlanejamento
                 .Include(x => x.PlanejamentoRecebimento)

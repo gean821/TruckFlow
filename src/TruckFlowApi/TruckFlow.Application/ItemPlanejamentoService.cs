@@ -23,23 +23,24 @@ namespace TruckFlow.Application
         private readonly ItemPlanejamentoFactory _factory;
         private readonly IProdutoRepositorio _produtoRepo;
         private readonly IRecebimentoEventoRepositorio _eventoRepo;
+        private readonly IUsuarioService _usuarioService;
 
-        public ItemPlanejamentoService
-            (
-                IItemPlanejamentoRepositorio repo,
-                IValidator<ItemPlanejamentoCreateDto> createValidator,
-                IValidator<ItemPlanejamentoUpdateDto> updateValidator,
-                ItemPlanejamentoFactory factory,
-                IProdutoRepositorio produtoRepo,
-                IRecebimentoEventoRepositorio eventoRepositorio
-            )
+        public ItemPlanejamentoService(
+            IItemPlanejamentoRepositorio repo,
+            IValidator<ItemPlanejamentoCreateDto> createValidator,
+            IValidator<ItemPlanejamentoUpdateDto> updateValidator,
+            ItemPlanejamentoFactory factory,
+            IProdutoRepositorio produtoRepo,
+            IRecebimentoEventoRepositorio eventoRepo,
+            IUsuarioService usuarioService)
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _factory = factory;
             _produtoRepo = produtoRepo;
-            _eventoRepo = eventoRepositorio;
+            _eventoRepo = eventoRepo;
+            _usuarioService = usuarioService;
         }
 
         public async Task<ItemPlanejamentoResponseDto> CreateItem
@@ -133,16 +134,23 @@ namespace TruckFlow.Application
                 Guid itemPlanejamentoId,
                 decimal quantidade,
                 string? observacao,
+                Usuario user,
                 CancellationToken token = default)
         {
             var item = await _repo.GetByIdWithPlanejamento(itemPlanejamentoId, token)
                 ?? throw new NotFoundException("Item não encontrado.");
 
+            var usuario = await _usuarioService.GetAdminByIdAsync(user.Id, token)
+                ?? throw new NotFoundException("Usuário não encontrado.");
+
+            var empresa = usuario.EmpresaId;
+            
             var evento = new RecebimentoEvento(
                 item,
                 quantidade,
                 agendamentoId: null,
-                observacao
+                observacao,
+                empresa
             );
 
             await _eventoRepo.AddAsync(evento, token);

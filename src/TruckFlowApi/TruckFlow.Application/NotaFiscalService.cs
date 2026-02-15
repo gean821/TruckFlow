@@ -28,6 +28,8 @@ namespace TruckFlow.Application
         private readonly IProdutoRepositorio _produtoRepositorio;
         private readonly ProdutoLearningService _learningService;
         private readonly ILogger<NotaFiscalService> _logger;
+        private readonly IEmpresaRepositorio _empresaRepo;
+
 
         public NotaFiscalService(
             INotaFiscalRepositorio repo,
@@ -36,7 +38,8 @@ namespace TruckFlow.Application
             IValidator<NotaFiscalItemDto> itemValidator,
             ProdutoLearningService learningService,
             IProdutoRepositorio produtoRepositorio,
-            ILogger<NotaFiscalService> logger
+            ILogger<NotaFiscalService> logger,
+            IEmpresaRepositorio empresaRepo
             )
         {
             _repo = repo;
@@ -46,6 +49,7 @@ namespace TruckFlow.Application
             _itemValidator = itemValidator;
             _learningService = learningService;
             _logger = logger;
+            _empresaRepo = empresaRepo;
         }
         public async Task<NotaFiscalParsedDto> ParseXmlAsync(
             Stream xmlStream,
@@ -259,10 +263,20 @@ namespace TruckFlow.Application
                 }
             }
 
+            var cnpjDestinatario = new string(dto.DestinatarioCpfCnpj
+    .Where(char.IsDigit)
+    .ToArray());
+
+            var empresa = await _empresaRepo.GetByCnpj(cnpjDestinatario, token);
+
+            if (empresa == null)
+                throw new BusinessException("Empresa destinatária não cadastrada.");
+
             var nota = new NotaFiscal
             {
                 ChaveAcesso = dto.ChaveAcesso,
                 Numero = dto.Numero,
+                Empresa = empresa,
                 Serie = dto.Serie,
                 DataEmissao = dto.DataEmissao,
                 EmitenteNome = dto.EmitenteNome,

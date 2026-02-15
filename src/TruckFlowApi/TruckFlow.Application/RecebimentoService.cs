@@ -14,15 +14,19 @@ namespace TruckFlow.Application
     {
         private readonly IItemPlanejamentoRepositorio _itemRepo;
         private readonly IRecebimentoEventoRepositorio _eventoRepo;
+        private readonly IEmpresaRepositorio _empresaRepo;
+        private readonly ICurrentUserService _currentUser;
 
-        public RecebimentoService
-            (
+        public RecebimentoService(
             IItemPlanejamentoRepositorio itemRepo,
-            IRecebimentoEventoRepositorio eventoRepo
-            )
+            IRecebimentoEventoRepositorio eventoRepo,
+            IEmpresaRepositorio empresaRepo,
+            ICurrentUserService currentUser)
         {
             _itemRepo = itemRepo;
             _eventoRepo = eventoRepo;
+            _empresaRepo = empresaRepo;
+            _currentUser = currentUser;
         }
 
         public async Task RegistrarRecebimentoManual(
@@ -35,11 +39,15 @@ namespace TruckFlow.Application
             var item = await _itemRepo.GetByIdWithPlanejamento(itemPlanejamentoId, token)
                 ?? throw new NotFoundException("Item do planejamento não encontrado.");
 
+            var empresaId = _currentUser.EmpresaId
+                ?? throw new BusinessException("Usuário não vinculado a empresa.");
+
             var evento = new RecebimentoEvento(
                 item,
                 quantidade,
                 agendamentoId: null,
-                observacao
+                observacao,
+                empresaId
             );
             
             await _eventoRepo.AddAsync(evento, token);

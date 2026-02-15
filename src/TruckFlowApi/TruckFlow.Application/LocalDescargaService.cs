@@ -20,15 +20,18 @@ namespace TruckFlow.Application
         private readonly ILocalDescargaRepositorio _repo;
         private readonly IValidator<LocalDescargaCreateDto> _createValidator;
         private readonly IValidator<LocalDescargaUpdateDto> _updateValidator;
+        private readonly IUnidadeEntregaRepositorio _unidadeEntregaRepositorio;
 
         public LocalDescargaService(
             ILocalDescargaRepositorio repo,
             IValidator<LocalDescargaCreateDto> createValidator,
-            IValidator<LocalDescargaUpdateDto> updateValidator)
+            IValidator<LocalDescargaUpdateDto> updateValidator,
+            IUnidadeEntregaRepositorio unidadeEntregaRepositorio)
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
+            _unidadeEntregaRepositorio = unidadeEntregaRepositorio;
         }
 
         public async Task<LocalDescargaResponse> CreateLocalDescarga(
@@ -42,10 +45,15 @@ namespace TruckFlow.Application
                 throw new ValidationException(validation.Errors);
             }
 
+            var unidade = await _unidadeEntregaRepositorio.GetById(local.UnidadeEntregaId, token)
+                ?? throw new NotFoundException("Unidade de entrega não encontrada.");
+
+
             var entity = new LocalDescarga
             {
                 Nome = local.Nome,
-                CreatedAt = DateTime.Now
+                UnidadeEntrega = unidade,
+                CreatedAt = DateTime.Now,
             };
 
             await _repo.CreateLocalDescarga(entity, token);

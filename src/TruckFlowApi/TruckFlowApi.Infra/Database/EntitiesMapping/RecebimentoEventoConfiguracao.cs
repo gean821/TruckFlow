@@ -14,11 +14,9 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
         public void Configure(EntityTypeBuilder<RecebimentoEvento> builder)
         {
             builder.ToTable(nameof(RecebimentoEvento));
-
-            // 🔑 PK
+           
             builder.HasKey(x => x.Id);
 
-            // 📦 Quantidade recebida
             builder.Property(x => x.Quantidade)
                 .IsRequired()
                 .HasPrecision(18, 3);
@@ -41,6 +39,11 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .WithMany()
                 .HasForeignKey(x => x.AgendamentoId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne(x => x.Empresa)
+                .WithMany()
+                .HasForeignKey(x => x.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             
             builder.Property(x => x.CreatedAt)

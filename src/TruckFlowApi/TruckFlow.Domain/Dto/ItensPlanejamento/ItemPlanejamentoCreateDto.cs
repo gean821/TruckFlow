@@ -10,6 +10,8 @@ namespace TruckFlow.Domain.Dto.ItensPlanejamento
     {
         public required Guid ProdutoId { get; set; }
         public Guid? PlanejamentoRecebimentoId {get;set;}
+
+        public Guid EmpresaId { get; set; }
         public required decimal QuantidadeTotalPlanejada { get; set; }
         public required decimal CadenciaDiariaPlanejada { get; set; }
     }

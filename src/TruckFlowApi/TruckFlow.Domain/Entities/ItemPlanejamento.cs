@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Domain.Contracts;
 
 namespace TruckFlow.Domain.Entities
 {
-    public class ItemPlanejamento : EntidadeBase
+    public class ItemPlanejamento : EntidadeBase, IEmpresaScoped
     {
         public required Produto Produto { get; set; }
         public required Guid ProdutoId { get; set; }
@@ -17,6 +18,9 @@ namespace TruckFlow.Domain.Entities
         public decimal QuantidadeTotalRecebida { get; set; }
 
         public ICollection<RecebimentoEvento>? RecebimentoEventos { get; set; } = [];
+
+        public Guid EmpresaId { get; set; }
+        public required Empresa Empresa { get; set; }
 
         public void RegistrarRecebimento(decimal quantidade)
         {

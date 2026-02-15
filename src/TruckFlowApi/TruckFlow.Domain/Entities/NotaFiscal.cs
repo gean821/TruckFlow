@@ -1,9 +1,10 @@
-﻿using TruckFlow.Domain.Entities;
+﻿using TruckFlow.Domain.Contracts;
+using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 
 namespace TruckFlow.Domain.Entities
 {
-    public class NotaFiscal : EntidadeBase
+    public class NotaFiscal : EntidadeBase, IEmpresaScoped
     {
         public required string ChaveAcesso { get; set; } // 44 chars - único
         public required long Numero { get; set; }
@@ -24,6 +25,10 @@ namespace TruckFlow.Domain.Entities
         public required Fornecedor Fornecedor { get; set; }
         public Guid? AgendamentoId { get; set; }
         public Agendamento? Agendamento { get; set; }
+
+        public Guid EmpresaId { get; set; }
+        public required Empresa Empresa { get; set; }
+
         public ICollection<NotaFiscalItem> Itens { get; set; } = new List<NotaFiscalItem>();
         public Guid UploadedByUserId { get; set; }       // quem enviou (motorista)
         public DateTime? UploadedAt { get; set; }

@@ -203,39 +203,40 @@ namespace TruckFlow.Application
 
             return MapToResponse(fornecedor);
         }
-        public async Task<List<FornecedorResponse>> GetByIdWithProdutosAsync
-            (
-                IEnumerable<Guid> produtoIds,
-                CancellationToken token = default
-            )
+        public Task<List<FornecedorResponse>> GetByIdWithProdutosAsync
+        (
+        IEnumerable<Guid> produtoIds,
+        CancellationToken token = default
+        )
         {
 
-            if (produtoIds == null || !produtoIds.Any())
-            {
-                throw new ArgumentException("Nenhum ID de produto fornecido.");
-            }
+            throw new NotImplementedException();
+            //    if (produtoIds == null || !produtoIds.Any())
+            //    {
+            //        throw new ArgumentException("Nenhum ID de produto fornecido.");
+            //    }
 
-            var produtosEncontrados = await _produtoRepo.GetByIdsAsync(produtoIds, token);
+            //    var produtosEncontrados = await _produtoRepo.GetByIdsAsync(produtoIds, token);
 
 
-            if (produtosEncontrados == null || produtosEncontrados.Count == 0)
-            {
-                throw new NotFoundException("Nenhum produto encontrado para os IDs informados.");
-            }
+            //    if (produtosEncontrados == null || produtosEncontrados.Count == 0)
+            //    {
+            //        throw new NotFoundException("Nenhum produto encontrado para os IDs informados.");
+            //    }
 
-            var fornecedores = produtosEncontrados
-            .Where(p => p.Fornecedores != null)
-                .SelectMany(p => p.Fornecedores!)
-                .Distinct()
-                .ToList();
+            //    //var fornecedores = produtosEncontrados
+            //    //.Where(p => p.Fornecedores != null)
+            //    //    .SelectMany(p => p.Fornecedores!)
+            //    //    .Distinct()
+            //    //    .ToList();
 
-            if (fornecedores.Count == 0) { 
-                throw new NotFoundException("Nenhum fornecedor associado encontrado para os produtos informados.");
-            }
+            //    //if (fornecedores.Count == 0) { 
+            //    //    throw new NotFoundException("Nenhum fornecedor associado encontrado para os produtos informados.");
+            //    //}
 
-            return MapListToResponse(fornecedores);
+            //    return MapListToResponse(fornecedores);
+            //}
         }
-
         private static FornecedorResponse MapToResponse(Fornecedor f) => 
             new FornecedorResponse
         {
