@@ -19,9 +19,9 @@ namespace TruckFlow.Application
 
         public Guid? EmpresaId =>
             _http.HttpContext!.User
-                .FindFirst("empresaId") != null
+                .FindFirst("EmpresaId") != null
             ? Guid.Parse(_http.HttpContext!.User
-                .FindFirst("empresaId")!.Value)
+                .FindFirst("EmpresaId")!.Value)
             : null;
 
         public bool IsAdmin =>

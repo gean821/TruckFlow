@@ -47,6 +47,7 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new FornecedorConfiguracao());
             modelBuilder.ApplyConfiguration(new LocalDescargaConfiguracao());
             modelBuilder.ApplyConfiguration(new ProdutoFornecedorConfiguracao());
+            modelBuilder.ApplyConfiguration(new EmpresaConfiguracao());
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -66,6 +67,7 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<PlanejamentoRecebimento> PlanejamentosRecebimento { get; set; }
         public DbSet<ItemPlanejamento> ItensPlanejamento { get; set; }
         public DbSet<RecebimentoEvento> RecebimentoEvento { get; set; }
+        public DbSet<Empresa> Empresa { get; set; }
 
         private void ApplyGlobalFilters(ModelBuilder modelBuilder)
         {
@@ -82,7 +84,6 @@ namespace TruckFlowApi.Infra.Database
                 method.Invoke(this, new object[] { modelBuilder });
             }
         }
-
         private void SetGlobalFilter<TEntity>(ModelBuilder modelBuilder)
             where TEntity : class, IEmpresaScoped
         {

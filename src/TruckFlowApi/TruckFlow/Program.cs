@@ -18,6 +18,7 @@ using TruckFlow.Extensions.NotaFiscal;
 using TruckFlow.Extensions.Produto;
 using TruckFlow.Extensions.Recebimento;
 using TruckFlow.Extensions.RecebimentoEvento;
+using TruckFlow.Extensions.Saas;
 using TruckFlow.Extensions.UnidadeEntrega;
 using TruckFlow.Extensions.UserContext;
 using TruckFlow.Filters;
@@ -54,6 +55,7 @@ namespace TruckFlow
             builder.Services.AddScoped<IEmpresaContext, EmpresaContext>();
             builder.Services.AddEmpresa();
             builder.Services.AddUserContext();
+            builder.Services.AddSaas();
 
             builder.Services.AddEndpointsApiExplorer();
             
