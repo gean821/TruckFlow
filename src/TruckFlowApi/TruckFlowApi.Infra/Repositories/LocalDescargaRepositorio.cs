@@ -18,7 +18,8 @@ namespace TruckFlowApi.Infra.Repositories
        
         public async Task<LocalDescarga> CreateLocalDescarga(
             LocalDescarga local,
-            CancellationToken token = default)
+            CancellationToken token = default
+            )
         {
             await _db.LocalDescarga.AddAsync(local,token);
             return local;
@@ -28,37 +29,33 @@ namespace TruckFlowApi.Infra.Repositories
         {
                  return await _db.LocalDescarga
                 .Include(x=> x.Produtos)
+                .Include(x=> x.UnidadeEntrega)
                 .ToListAsync(token);
         }
 
-        public async Task<LocalDescarga> GetById(
+        public async Task<LocalDescarga?> GetById(
             Guid id,
-            CancellationToken token = default)
+            CancellationToken token = default
+            )
         {
-            var localDescarga = await _db.LocalDescarga.FindAsync(id, token);
-            return localDescarga!;
+            return await _db.LocalDescarga
+                 .Include(x => x.Produtos)
+                 .Include(x => x.UnidadeEntrega)
+                 .FirstOrDefaultAsync(x => x.Id == id, token);
         }
         public async Task<LocalDescarga> Update(
-            Guid id,
             LocalDescarga local,
             CancellationToken token = default)
         {
-            var localEncontrado = await GetById(id, token);
-            
-            localEncontrado.Id = local.Id;
-            localEncontrado.Nome = local.Nome;
-            localEncontrado.Produtos = local.Produtos;
-            
+            _db.LocalDescarga.Update(local);
             await SaveChangesAsync(token);
-            return localEncontrado;
+            return local;
         }
         public async Task Delete(
-            Guid id,
+            LocalDescarga local,
             CancellationToken token = default)
         {
-            var localEncontrado = await GetById(id, token);
-            
-            _db.Remove(localEncontrado);
+            _db.Remove(local);
             await SaveChangesAsync(token);
         }
 

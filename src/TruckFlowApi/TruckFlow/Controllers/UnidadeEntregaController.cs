@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.UnidadeEntrega;
+using TruckFlow.Domain.Entities;
 namespace TruckFlow.Controllers
 {
     [ApiController]
@@ -17,7 +18,10 @@ namespace TruckFlow.Controllers
             [FromBody] UnidadeEntregaCreateDto unidade, CancellationToken ct)
         {
             var unidadeCriada = await _service.CreateUnidadeEntrega(unidade, ct);
-            return Ok(unidadeCriada);
+            return CreatedAtAction(
+                 nameof(GetById),
+                 new { id = unidadeCriada.Id },
+                 unidadeCriada);
         }
 
         [HttpGet("{id}")]
@@ -26,12 +30,6 @@ namespace TruckFlow.Controllers
             CancellationToken ct)
         {
             var unidade = await _service.GetById(id, ct);
-
-            if (unidade == null)
-            {
-                return NotFound();
-            }
-
             return Ok(unidade);
         }
 
@@ -42,7 +40,7 @@ namespace TruckFlow.Controllers
             return Ok(lista);
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> Update(
             [FromRoute] Guid id,
             [FromBody] UnidadeEntregaUpdateDto dto,

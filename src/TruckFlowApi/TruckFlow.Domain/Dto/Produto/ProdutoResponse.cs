@@ -14,6 +14,8 @@ namespace TruckFlow.Domain.Dto.Produto
         public required Guid LocalDescargaId { get; set; }
         public required string LocalDescarga { get; set; }
 
+        public string? CodigoEan { get; set; }
+
         public required DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

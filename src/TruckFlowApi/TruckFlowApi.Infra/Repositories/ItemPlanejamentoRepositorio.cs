@@ -35,7 +35,7 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(token);
         }
 
-        public async Task<ItemPlanejamento> GetById(
+        public async Task<ItemPlanejamento?> GetById(
             Guid id,
             CancellationToken token = default
             )
@@ -70,7 +70,7 @@ namespace TruckFlowApi.Infra.Repositories
             await SaveChangesAsync(token);
         }
 
-        public async Task<ItemPlanejamento> GetByIdWithPlanejamento(
+        public async Task<ItemPlanejamento?> GetByIdWithPlanejamento(
             Guid id,
             CancellationToken token = default
             )

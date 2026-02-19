@@ -12,6 +12,7 @@ using TruckFlow.Extensions.Dashboard;
 using TruckFlow.Extensions.Empresa;
 using TruckFlow.Extensions.Fornecedor;
 using TruckFlow.Extensions.Grade;
+using TruckFlow.Extensions.Guards;
 using TruckFlow.Extensions.ItemPlanejamento;
 using TruckFlow.Extensions.LocalDescarga;
 using TruckFlow.Extensions.NotaFiscal;
@@ -56,6 +57,7 @@ namespace TruckFlow
             builder.Services.AddEmpresa();
             builder.Services.AddUserContext();
             builder.Services.AddSaas();
+            builder.Services.AddSecurity();
 
             builder.Services.AddEndpointsApiExplorer();
             
@@ -63,19 +65,23 @@ namespace TruckFlow
             {
                 x.OperationFilter<FileUploadOperationFilter>();
             });
+
             builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
             {
                 optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
-            builder.AddAuthenticationJwt();
-            builder.Services.AddAuthentication();
-            builder.Services.AddAuthorization();
+           
 
-            builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>()
+            builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>
+            {
+
+            })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.AddAuthenticationJwt();
+            builder.Services.AddAuthorization();
             builder.Services.AddTransient<RequestLoggingMiddleware>();
             builder.Services.AddScoped<ActionLoggingFilter>();
 
@@ -115,6 +121,7 @@ namespace TruckFlow
                 app.UseHttpsRedirection();
             }
 
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 

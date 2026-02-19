@@ -11,15 +11,18 @@ namespace TruckFlow.Application.Interfaces
     {
         public Task<LocalDescargaResponse> GetById(
             Guid id,
-            CancellationToken token = default);
+            CancellationToken token = default
+            );
         public Task<List<LocalDescargaResponse>> GetAll(CancellationToken token = default);
         public Task<LocalDescargaResponse> CreateLocalDescarga(
             LocalDescargaCreateDto local,
-            CancellationToken token = default);
+            CancellationToken token = default
+            );
         public Task<LocalDescargaResponse> Update(
             Guid id,
             LocalDescargaUpdateDto local,
-            CancellationToken token = default);
+            CancellationToken token = default
+            );
         public Task Delete(Guid id, CancellationToken token = default);
     }
 }

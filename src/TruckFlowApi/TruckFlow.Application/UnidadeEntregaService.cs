@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Validators.UnidadeEntrega;
-using TruckFlowApi.Infra.Repositories.Interfaces;
 using TruckFlow.Domain.Dto.UnidadeEntrega;
-using TruckFlow.Application.Exceptions;
+using TruckFlow.Domain.Entities;
+using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
 {
@@ -19,112 +20,166 @@ namespace TruckFlow.Application
         private readonly IUnidadeEntregaRepositorio _repo;
         private readonly IValidator<UnidadeEntregaCreateDto> _createValidator;
         private readonly IValidator<UnidadeEntregaUpdateDto> _updateValidator;
-        private readonly UnidadeEntregaFactory _factory;
+        private readonly CurrentUserGuard _currentUser;
 
         public UnidadeEntregaService(
             IUnidadeEntregaRepositorio repo,
             IValidator<UnidadeEntregaCreateDto> createValidator,
             IValidator<UnidadeEntregaUpdateDto> updateValidator,
-            UnidadeEntregaFactory factory
-            )
+            CurrentUserGuard currentUser)
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
-            _factory = factory;
+            _currentUser = currentUser;
         }
 
         public async Task<UnidadeEntregaResponse> CreateUnidadeEntrega(
-            UnidadeEntregaCreateDto unidade,
-            CancellationToken cancellationToken = default)
+            UnidadeEntregaCreateDto dto,
+            CancellationToken token = default
+            )
         {
-            ValidationResult validationResult = await _createValidator.ValidateAsync(unidade, cancellationToken);
+            var validation = await _createValidator.ValidateAsync(dto, token);
 
-            if (!validationResult.IsValid)
+            if (!validation.IsValid)
+                throw new ValidationException(validation.Errors);
+
+            var empresaId = _currentUser.GetEmpresaId();
+
+            var entity = new UnidadeEntrega
             {
-                throw new ValidationException(validationResult.Errors);
-            }
-
-            var unidadeCriada =  _factory.CreateUnidadeEntregaFromDto(unidade);
-
-            await _repo.CreateUnidadeEntrega(unidadeCriada, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
-
-            return new UnidadeEntregaResponse
-            {
-                Id = unidadeCriada.Id,
-                Nome = unidadeCriada.Nome,
-                Localizacao = unidadeCriada.Localizacao,
+                Nome = dto.Nome,
+                Localizacao = dto.Localizacao,
+                Logradouro = dto.Logradouro,
+                Numero = dto.Numero,
+                Complemento = dto.Complemento,
+                Bairro = dto.Bairro,
+                Cidade = dto.Cidade,
+                Estado = dto.Estado,
+                Cep = dto.Cep,
+                Latitude = dto.Latitude,
+                Longitude = dto.Longitude,
+                EmpresaId = empresaId,
+                CreatedAt = DateTime.UtcNow
             };
+
+            await _repo.CreateUnidadeEntrega(entity, token);
+            await _repo.SaveChangesAsync(token);
+
+            return MapToResponse(entity);
         }
 
-        public async Task<UnidadeEntregaResponse> GetById(Guid id, CancellationToken cancellationToken = default)
+        public async Task<List<UnidadeEntregaResponse>> GetAll(CancellationToken token = default)
         {
-            var unidadeEncontrada = await _repo.GetById(id, cancellationToken)
+            var lista = await _repo.GetAll(token);
+
+            return lista.Select(MapToResponse).ToList();
+        }
+
+        public async Task<UnidadeEntregaResponse> GetById(
+            Guid id,
+            CancellationToken token = default
+            )
+        {
+            var unidade = await _repo.GetById(id,token)
                 ?? throw new NotFoundException("Unidade de entrega não encontrada");
 
-            return new UnidadeEntregaResponse
-            {
-                Id = unidadeEncontrada.Id,
-                Nome = unidadeEncontrada.Nome,
-                Localizacao = unidadeEncontrada.Localizacao,
-            };
+            return MapToResponse(unidade);
         }
 
-        public async Task DeleteUnidadeEntrega(Guid id, CancellationToken cancellationToken = default)
+        public async Task DeleteUnidadeEntrega(
+            Guid id,
+            CancellationToken token = default
+            )
         {
-            var unidadeEncontrada = await _repo.GetById(id, cancellationToken)
+            _currentUser.GetEmpresaId();
+
+            var unidade = await _repo.GetById(id,token)
                 ?? throw new NotFoundException("Unidade de entrega não encontrada");
 
-            await _repo.Delete(unidadeEncontrada.Id, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
-        }
-
-        public async Task<List<UnidadeEntregaResponse>> GetAll(CancellationToken cancellationToken = default)
-        {
-            var listaUnidade = await _repo.GetAll(cancellationToken);
-
-            if (listaUnidade.Count == 0)
-            {
-                return new List<UnidadeEntregaResponse>();
-            }
-
-            var listaUnidadeDto = listaUnidade.Select(x => new UnidadeEntregaResponse
-            {
-                Id = x.Id,
-                Nome = x.Nome,
-                Localizacao = x.Localizacao,
-            }).ToList();
-
-            return listaUnidadeDto;
+            await _repo.Delete(unidade, token);
         }
 
         public async Task<UnidadeEntregaResponse> UpdateUnidadeEntrega(
-            Guid id, 
-            UnidadeEntregaUpdateDto unidade,
-            CancellationToken cancellationToken = default)
+            Guid id,
+            UnidadeEntregaUpdateDto dto,
+            CancellationToken token = default
+            )
         {
-            ValidationResult validationResult = await _updateValidator.ValidateAsync(unidade, cancellationToken);
+            _currentUser.GetEmpresaId();
 
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
+            var validation = await _updateValidator.ValidateAsync(dto, token);
 
-            var unidadeEncontrada = await _repo.GetById(id, cancellationToken)
+            if (!validation.IsValid)
+                throw new ValidationException(validation.Errors);
+
+            var unidade = await _repo.GetById(id,token)
                 ?? throw new NotFoundException("Unidade de entrega não encontrada");
 
-            unidadeEncontrada.Nome = unidade.Nome;
-            unidadeEncontrada.Localizacao = unidade.Localizacao;
+            ApplyPatch(unidade, dto);
 
-            var unidadeAtualizada = await _repo.Update(id, unidadeEncontrada, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
+            await _repo.Update(unidade, token);
 
+            return MapToResponse(unidade);
+        }
+
+        private static void ApplyPatch(
+            UnidadeEntrega unidade,
+            UnidadeEntregaUpdateDto dto
+            )
+        {
+            if (dto.Nome is not null)
+                unidade.Nome = dto.Nome;
+
+            if (dto.Localizacao is not null)
+                unidade.Localizacao = dto.Localizacao;
+
+            if (dto.Logradouro is not null)
+                unidade.Logradouro = dto.Logradouro;
+
+            if (dto.Numero is not null)
+                unidade.Numero = dto.Numero;
+
+            if (dto.Complemento is not null)
+                unidade.Complemento = dto.Complemento;
+
+            if (dto.Bairro is not null)
+                unidade.Bairro = dto.Bairro;
+
+            if (dto.Cidade is not null)
+                unidade.Cidade = dto.Cidade;
+
+            if (dto.Estado is not null)
+                unidade.Estado = dto.Estado;
+
+            if (dto.Cep is not null)
+                unidade.Cep = dto.Cep;
+
+            if (dto.Latitude is not null)
+                unidade.Latitude = dto.Latitude;
+
+            if (dto.Longitude is not null)
+                unidade.Longitude = dto.Longitude;
+
+            unidade.UpdatedAt = DateTime.UtcNow;
+        }
+        private static UnidadeEntregaResponse MapToResponse(UnidadeEntrega unidade)
+        {
             return new UnidadeEntregaResponse
             {
-                Id = unidadeEncontrada.Id,
-                Nome = unidadeEncontrada.Nome,
-                Localizacao = unidadeEncontrada.Localizacao,
+                Id = unidade.Id,
+                Nome = unidade.Nome,
+                Localizacao = unidade.Localizacao,
+                Logradouro = unidade.Logradouro,
+                Numero = unidade.Numero,
+                Complemento = unidade.Complemento,
+                Bairro = unidade.Bairro,
+                Cidade = unidade.Cidade,
+                Estado = unidade.Estado,
+                Cep = unidade.Cep,
+                Latitude = unidade.Latitude,
+                Longitude = unidade.Longitude,
+                Empresa = unidade?.Empresa?.NomeFantasia
             };
         }
     }

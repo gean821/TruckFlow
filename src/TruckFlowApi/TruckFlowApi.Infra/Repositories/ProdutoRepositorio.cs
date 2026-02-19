@@ -12,13 +12,14 @@ using TruckFlowApi.Infra.Repositories.Interfaces;
 namespace TruckFlowApi.Infra.Repositories
 {
 
-    public class ProdutoRepositorio : IProdutoRepositorio
+    public class ProdutoRepositorio(AppDbContext db) : IProdutoRepositorio
     {
-        private readonly AppDbContext _db;
+        private readonly AppDbContext _db = db;
 
-        public ProdutoRepositorio(AppDbContext db) => _db = db;
-
-        public async Task<Produto> CreateProduto(Produto produto, CancellationToken cancellationToken = default)
+        public async Task<Produto> CreateProduto(
+            Produto produto,
+            CancellationToken cancellationToken = default
+            )
         {
             await _db.Produto.AddAsync(produto, cancellationToken);
             await SaveChangesAsync(cancellationToken);
@@ -30,31 +31,31 @@ namespace TruckFlowApi.Infra.Repositories
             .Include(x=> x.LocalDescarga)
             .ToListAsync(cancellationToken);
 
-        public async Task<Produto> GetById(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Produto?> GetById(
+            Guid id,
+            CancellationToken cancellationToken = default
+            )
         {
-            var produto = await _db.Produto
+            return await _db.Produto
                 .Include(x=> x.LocalDescarga)
                 .FirstOrDefaultAsync(x=> x.Id == id, cancellationToken);
-            
-            return produto!;
         }
         
-        public async Task<Produto> UpdateProduto(Guid id, Produto produto, CancellationToken cancellationToken = default)
+        public async Task<Produto> UpdateProduto(
+            Produto produto,
+            CancellationToken cancellationToken = default
+            )
         {
-            var produtoBuscado = await GetById(id, cancellationToken);
-
-            produtoBuscado.LocalDescarga = produto.LocalDescarga;
-            produtoBuscado.LocalDescargaId = produto.LocalDescargaId;
-            produtoBuscado.Id = produto.Id;
-            produtoBuscado.UpdatedAt = DateTime.UtcNow;
-
+            _db.Produto.Update(produto);
             await SaveChangesAsync(cancellationToken);
-            return produtoBuscado;
+            return produto;
         }
-        public async Task DeleteProduto(Guid id, CancellationToken cancellationToken = default) 
+        public async Task DeleteProduto(
+            Produto produto,
+            CancellationToken cancellationToken = default
+            ) 
         {
-            var produtoDeletado = await _db.Produto.FindAsync(id, cancellationToken);
-            _db.Remove(produtoDeletado!);
+            _db.Remove(produto);
             await SaveChangesAsync(cancellationToken);
         }
         public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -259,13 +259,13 @@ namespace TruckFlow.Application
                 if (string.IsNullOrEmpty(fornecedor.Cnpj))
                 {
                     fornecedor.Cnpj = cnpjNota;
-                    await _fornecedorRepo.Update(fornecedor.Id, fornecedor, token);
+                    await _fornecedorRepo.Update(fornecedor, token);
                 }
             }
 
             var cnpjDestinatario = new string(dto.DestinatarioCpfCnpj
-    .Where(char.IsDigit)
-    .ToArray());
+                .Where(char.IsDigit)
+                .ToArray());
 
             var empresa = await _empresaRepo.GetByCnpj(cnpjDestinatario, token);
 

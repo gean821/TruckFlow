@@ -10,11 +10,9 @@ using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlowApi.Infra.Repositories
 {
-    public class UnidadeEntregaRepositorio : IUnidadeEntregaRepositorio
+    public class UnidadeEntregaRepositorio(AppDbContext db) : IUnidadeEntregaRepositorio
     {
-        private readonly AppDbContext _db;
-
-        public UnidadeEntregaRepositorio(AppDbContext db) => _db = db;
+        private readonly AppDbContext _db = db;
 
         public async Task<UnidadeEntrega> CreateUnidadeEntrega(
             UnidadeEntrega unidade,
@@ -23,24 +21,26 @@ namespace TruckFlowApi.Infra.Repositories
             await _db.UnidadeEntrega.AddAsync(unidade, token);
             return unidade;
         }
-        
-        public async Task<List<UnidadeEntrega>> GetAll(CancellationToken token = default)
+       
+        public async Task<List<UnidadeEntrega>> GetAll(
+            CancellationToken token = default)
         {
             return await _db.UnidadeEntrega
-            .Include(x => x.Agendamentos)
+            .Include(x=> x.LocaisDeDescarga)
             .ToListAsync(token);
         }
 
-        public async Task<UnidadeEntrega> GetById(
+        public async Task<UnidadeEntrega?> GetById(
             Guid id,
-            CancellationToken token = default)
+            CancellationToken token = default
+            )
         {
-            var unidadeEntrega = await _db.UnidadeEntrega.FindAsync(id, token);
-            return unidadeEntrega!;
+            return await _db.UnidadeEntrega
+                .Include(x => x.LocaisDeDescarga)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<UnidadeEntrega> Update(
-            Guid id,
             UnidadeEntrega unidade,
             CancellationToken token = default)
         {
@@ -50,10 +50,10 @@ namespace TruckFlowApi.Infra.Repositories
         }
 
         public async Task Delete(
-            Guid id,
+            UnidadeEntrega unidade,
             CancellationToken token = default)
         {
-            _db.Remove(id);
+            _db.Remove(unidade);
             await SaveChangesAsync(token);
         }
 

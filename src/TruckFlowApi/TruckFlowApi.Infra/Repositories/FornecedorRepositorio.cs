@@ -11,13 +11,14 @@ using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlowApi.Infra.Repositories
 {
-    public class FornecedorRepositorio : IFornecedorRepositorio
+    public class FornecedorRepositorio(AppDbContext db) : IFornecedorRepositorio
     {
-        private readonly AppDbContext _db;
+        private readonly AppDbContext _db = db;
 
-        public FornecedorRepositorio(AppDbContext db) => _db = db;
-
-        public async Task<Fornecedor> CreateFornecedor(Fornecedor fornecedor, CancellationToken token = default)
+        public async Task<Fornecedor> CreateFornecedor(
+            Fornecedor fornecedor,
+            CancellationToken token = default
+            )
         {
             await _db.Fornecedor.AddAsync(fornecedor, token);
             return fornecedor;
@@ -33,63 +34,68 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(token);
         }
 
-        public async Task<Fornecedor> GetByCnpj(string cnpj, CancellationToken token = default)
+        public async Task<Fornecedor?> GetByCnpj(
+            string cnpj,
+            CancellationToken token = default
+            )
         {
             var cnpjLimpo = new string(cnpj.Where(char.IsDigit).ToArray());
 
-            return await _db.Fornecedor.
-                Include(x=> x.NotaFiscal)
+            return await _db.Fornecedor
+                .Include(x=> x.Produtos)
                 .Include(x=> x.Produtos)
                 .Include(x=> x.Agendamentos)
                 .FirstOrDefaultAsync(x => x.Cnpj == cnpjLimpo, token);
         }
 
-        public async Task<Fornecedor> GetById(Guid id, CancellationToken token = default)
+        public async Task<Fornecedor?> GetById(
+            Guid id,
+            CancellationToken token = default
+            )
         {
-            var fornecedor = await _db.Fornecedor
-                .Include(x => x.NotaFiscal)
+            return await _db.Fornecedor
                 .Include(x => x.Agendamentos)
+                .Include(x => x.Produtos)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
-
-            return fornecedor!;
         }
 
-        public async Task<Fornecedor> Update(Guid id, Fornecedor fornecedor, CancellationToken token = default)
+        public async Task<Fornecedor> Update(
+            Fornecedor fornecedor,
+            CancellationToken token = default
+            )
         {
-            var fornecedorEncontrado = await GetById(id, token);
-
-            fornecedorEncontrado.Id = fornecedor.Id;
-            fornecedorEncontrado.Nome = fornecedor.Nome;
-            fornecedorEncontrado.Cnpj = fornecedor.Cnpj;
-            fornecedorEncontrado.NotaFiscal = fornecedor.NotaFiscal;
-            fornecedorEncontrado.Agendamentos = fornecedor.Agendamentos;
-
+            _db.Fornecedor.Update(fornecedor);
             await SaveChangesAsync(token);
-            return fornecedorEncontrado;
+            return fornecedor;
         }
 
-        public async Task Delete(Guid id, CancellationToken token)
+        public async Task Delete(
+            Fornecedor fornecedor,
+            CancellationToken token
+            )
         {
-            var fornecedorEncontrado = await GetById(id, token);
-
-            _db.Remove(fornecedorEncontrado);
+            _db.Remove(fornecedor);
             await SaveChangesAsync(token);
         }
-        public async Task<Fornecedor> GetByNome(string nome, CancellationToken token = default)
+        public async Task<Fornecedor?> GetByNome(
+            string nome,
+            CancellationToken token = default
+            )
         {
-            var fornecedor = await _db.Fornecedor
-                .Include(x => x.NotaFiscal)
+            return await _db.Fornecedor
+                 .Include(x => x.Produtos)
                 .Include(x => x.Agendamentos)
                 .FirstOrDefaultAsync(x => x.Nome == nome, token);
-
-            return fornecedor!;
         }
         public async Task SaveChangesAsync(CancellationToken token = default)
         {
             await _db.SaveChangesAsync(token);
         }
 
-        public async Task<Fornecedor?> GetByIdWithProdutosAsync(Guid id, CancellationToken token = default)
+        public async Task<Fornecedor?> GetByIdWithProdutosAsync(
+            Guid id,
+            CancellationToken token = default
+            )
         {
             return await _db.Fornecedor
                 .Include(x => x.Produtos)

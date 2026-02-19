@@ -14,7 +14,21 @@ namespace TruckFlow.Application.Validators.UnidadeEntrega
         {
             RuleFor(x => x.Nome)
                 .NotEmpty()
-                .WithMessage("Nome não pode ser vazio");
+                .MaximumLength(150);
+
+            RuleFor(x => x.Localizacao)
+                .NotEmpty()
+                .MaximumLength(200);
+
+            RuleFor(x => x.Cep)
+                .Matches(@"^\d{8}$")
+                .When(x => !string.IsNullOrWhiteSpace(x.Cep))
+                .WithMessage("CEP deve conter 8 dígitos numéricos.");
+
+            RuleFor(x => x.Estado)
+                .Length(2)
+                .When(x => !string.IsNullOrWhiteSpace(x.Estado))
+                .WithMessage("Estado deve conter 2 caracteres.");
         }
     }
 }

@@ -10,6 +10,5 @@ namespace TruckFlow.Domain.Dto.Produto
     {
         public required string Nome { get; set; }
         public required Guid LocalDescargaId { get; set; }
-        public required Guid EmpresaId { get; set; }
     }
 }

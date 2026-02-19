@@ -6,11 +6,27 @@ using System.Threading.Tasks;
 
 namespace TruckFlow.Domain.Dto.UnidadeEntrega
 {
-    public class UnidadeEntregaResponse
+    public sealed class UnidadeEntregaResponse
     {
-        public required Guid Id { get; set; }
-        public required string Nome { get; set; }
-        public required string Localizacao { get; set; }
-        public DateTime CreateAdt { get; set; }
+        public Guid Id { get; init; }
+
+        public string Nome { get; init; } = default!;
+        public string Localizacao { get; init; } = default!;
+        public string? Logradouro { get; init; }
+        public string? Numero { get; init; }
+        public string? Complemento { get; init; }
+        public string? Bairro { get; init; }
+        public string? Cidade { get; init; }
+        public string? Estado { get; init; }
+        public string? Cep { get; init; }
+
+        public string? Empresa { get; set; }
+
+        public double? Latitude { get; init; }
+        public double? Longitude { get; init; }
+
+        public DateTime CreatedAt { get; init; }
+        public DateTime? UpdatedAt { get; init; }
     }
+
 }

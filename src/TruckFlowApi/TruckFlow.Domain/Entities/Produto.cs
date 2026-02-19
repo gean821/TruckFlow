@@ -17,6 +17,6 @@ namespace TruckFlow.Domain.Entities
         public ICollection<Grade>? Grades { get; set; } = [];
 
         public required Guid EmpresaId { get; set; }
-        public required Empresa Empresa { get; set; }
+        public Empresa? Empresa { get; set; }
     }
 }

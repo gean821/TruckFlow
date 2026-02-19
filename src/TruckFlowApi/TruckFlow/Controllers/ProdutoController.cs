@@ -20,7 +20,11 @@ namespace TruckFlow.Controllers
             CancellationToken ct)
         {
             var produtoCriado = await _service.CreateProduto(produto, ct);
-            return Ok(produtoCriado);
+            
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = produtoCriado.Id },
+                produtoCriado);
         }
 
         [HttpGet("{id}")]
@@ -29,12 +33,6 @@ namespace TruckFlow.Controllers
             CancellationToken ct)
         {
             var produto = await _service.GetById(id, ct);
-            
-            if (produto == null)
-            {
-                return NotFound();
-            }
-
             return Ok(produto);
         }
 
@@ -45,11 +43,12 @@ namespace TruckFlow.Controllers
             return Ok(lista);
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> Update(
             [FromRoute] Guid id,
             [FromBody] ProdutoEditDto dto,
-            CancellationToken ct)
+            CancellationToken ct
+            )
         {
             var produtoEditado = await _service.UpdateProduto(id, dto, ct);
             return Ok(produtoEditado);

@@ -6,9 +6,21 @@ using System.Threading.Tasks;
 
 namespace TruckFlow.Domain.Dto.UnidadeEntrega
 {
-    public class UnidadeEntregaCreateDto
+    public sealed class UnidadeEntregaCreateDto
     {
-       public required string Nome { get; set; }
-       public required string Localizacao { get; set; }
+        public required string Nome { get; init; }
+        public required string Localizacao { get; init; }
+
+        public string? Logradouro { get; init; }
+        public string? Numero { get; init; }
+        public string? Complemento { get; init; }
+        public string? Bairro { get; init; }
+        public string? Cidade { get; init; }
+        public string? Estado { get; init; }
+        public string? Cep { get; init; }
+
+        public double? Latitude { get; init; }
+        public double? Longitude { get; init; }
     }
+
 }

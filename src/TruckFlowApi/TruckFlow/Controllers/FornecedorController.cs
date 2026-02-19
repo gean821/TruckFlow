@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Fornecedor;
 
@@ -6,20 +7,29 @@ namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
-    public class FornecedorController : ControllerBase
+    public class FornecedorController(IFornecedorService service) : ControllerBase
     {
-        private readonly IFornecedorService _service;
-
-        public FornecedorController(IFornecedorService service) =>
-            _service = service;
+        private readonly IFornecedorService _service = service;
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateFornecedor(
             [FromBody] FornecedorCreateDto fornecedor,
-            CancellationToken ct)
+            CancellationToken ct
+            )
         {
             var fornecedorCriado = await _service.CreateFornecedor(fornecedor, ct);
-            return Ok(fornecedorCriado);
+            
+            foreach (var claim in User.Claims)
+            {
+                Console.WriteLine($"TYPE: {claim.Type}  VALUE: {claim.Value}");
+            }
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = fornecedorCriado.Id },
+                fornecedorCriado
+            );
         }
 
         [HttpGet("{id}")]
@@ -28,12 +38,6 @@ namespace TruckFlow.Controllers
             CancellationToken ct)
         {
             var fornecedor = await _service.GetById(id, ct);
-
-            if (fornecedor == null)
-            {
-                return NotFound();
-            }
-
             return Ok(fornecedor);
         }
 
@@ -105,15 +109,15 @@ namespace TruckFlow.Controllers
             return NoContent();
         }
 
-        [HttpGet("produtos")]
-        public async Task<IActionResult> GetByIdsAsyc
-            (
-                [FromQuery] IEnumerable<Guid> produtosIds,
-                CancellationToken token
-            )
-        {
-            var produtos = await _service.GetByIdWithProdutosAsync(produtosIds, token);
-            return Ok(produtos);
-        }
+        //[HttpGet("produtos")]
+        //public async Task<IActionResult> GetByIdsAsyc
+        //    (
+        //        [FromQuery] IEnumerable<Guid> produtosIds,
+        //        CancellationToken token
+        //    )
+        //{
+        //    var produtos = await _service.GetByIdWithProdutosAsync(produtosIds, token);
+        //    return Ok(produtos);
+        //}
     }
 }

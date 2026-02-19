@@ -25,11 +25,13 @@ namespace TruckFlowApi.Infra.Repositories
             await _db.Agendamento.AddAsync(agendamento, token);
             return agendamento;
         }
-        public async Task AddRangeAsync(List<Agendamento> agendamentos, CancellationToken token = default)
+        public async Task AddRangeAsync(
+            List<Agendamento> agendamentos,
+            CancellationToken token = default
+            )
         {
             await _db.Agendamento.AddRangeAsync(agendamentos, token);
         }
-
         public async Task<List<Agendamento>> GetAvailable(
             Guid fornecedorId,
             DateTime dataInicio,

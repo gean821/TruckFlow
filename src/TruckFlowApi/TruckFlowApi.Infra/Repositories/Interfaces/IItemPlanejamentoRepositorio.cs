@@ -11,7 +11,7 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
     {
         public Task<List<ItemPlanejamento>> GetAll(CancellationToken token = default);
 
-        public Task<ItemPlanejamento> GetById(Guid id, CancellationToken token = default);
+        public Task<ItemPlanejamento?> GetById(Guid id, CancellationToken token = default);
 
         public Task<ItemPlanejamento> CreateItem
             (
