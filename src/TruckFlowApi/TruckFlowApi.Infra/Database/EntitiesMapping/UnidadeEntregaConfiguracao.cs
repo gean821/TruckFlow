@@ -32,6 +32,10 @@ namespace TruckFlowApi.Infra.Database.Configurations
             builder.Property(x => x.Cidade).HasMaxLength(150);
             builder.Property(x => x.Estado).HasMaxLength(50);
             builder.Property(x => x.Cep).HasMaxLength(20);
+            
+            builder.Property(x => x.Ativa)
+                .HasDefaultValue(true)
+                .IsRequired(false);
 
             builder.Property(x => x.Latitude);
             builder.Property(x => x.Longitude);

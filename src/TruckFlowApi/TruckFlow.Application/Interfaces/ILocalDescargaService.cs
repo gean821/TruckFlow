@@ -24,5 +24,11 @@ namespace TruckFlow.Application.Interfaces
             CancellationToken token = default
             );
         public Task Delete(Guid id, CancellationToken token = default);
+
+        public Task<LocalDescargaResponse> MudarStatusLocal(
+            Guid localId,
+            bool ativa,
+            CancellationToken token = default
+            ); 
     }
 }

@@ -66,7 +66,8 @@ namespace TruckFlowApi.Infra.Repositories
             )
         {
             var item = await GetById(id, token);
-            _db.Remove(item);
+
+            _db.Remove(item!);
             await SaveChangesAsync(token);
         }
 

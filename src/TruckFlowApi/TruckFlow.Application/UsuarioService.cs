@@ -127,7 +127,10 @@ namespace TruckFlow.Application
         {
             throw new NotImplementedException();
         }
-        public async Task<UserAdminResponseDto> GetAdminByIdAsync(Guid id, CancellationToken token)
+        public async Task<UserAdminResponseDto> GetAdminByIdAsync(
+            Guid id,
+            CancellationToken token = default
+            )
         {
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                             ?? throw new NotFoundException("Usuário não encontrado.");
@@ -152,7 +155,10 @@ namespace TruckFlow.Application
             await _userManager.UpdateAsync(usuario);
             return await MapUsuarioAsync(usuario);
         }
-        public async Task DeleteAdminAsync(Guid id, CancellationToken token = default)
+        public async Task DeleteAdminAsync(
+            Guid id,
+            CancellationToken token = default
+            )
         {
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuario não encontrado.");
@@ -214,8 +220,6 @@ namespace TruckFlow.Application
             )
         {
             Usuario? usuario;
-
-            
 
             if (dto.Login.Contains('@'))
             {

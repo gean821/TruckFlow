@@ -11,5 +11,8 @@ namespace TruckFlow.Domain.Entities
         public required UnidadeEntrega UnidadeEntrega { get; set; }
         public Guid EmpresaId { get; set; }
         public Empresa? Empresa { get; set; }
+
+        public bool? Ativa { get; set; } = true;
+
     }
 }

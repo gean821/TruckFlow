@@ -57,5 +57,22 @@ namespace TruckFlow.Controllers
             await _service.Delete(id, token);
             return NoContent();
         }
+
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> MudarStatus
+            (
+                [FromRoute] Guid id,
+                [FromBody] MudarStatusLocal dto,
+                CancellationToken token = default
+            )
+        {
+            var local =  await _service.MudarStatusLocal(
+                id,
+                dto.Status,
+                token
+            );
+
+            return Ok(local);
+        }
     }
 }

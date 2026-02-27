@@ -7,12 +7,9 @@ namespace TruckFlow.Controllers
     [ApiController]
     [Route("v1/[Controller]")]
 
-    public class ProdutoController : ControllerBase
+    public class ProdutoController(IProdutoService service) : ControllerBase
     {
-        private readonly IProdutoService _service;
-
-        public ProdutoController(IProdutoService service) =>
-            _service = service;
+        private readonly IProdutoService _service = service;
 
         [HttpPost]
         public async Task<IActionResult> CreateProduto(

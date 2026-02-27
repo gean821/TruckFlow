@@ -22,5 +22,7 @@ namespace TruckFlow.Domain.Entities
         public ICollection<LocalDescarga>? LocaisDeDescarga { get; set; } = [];
         public Guid EmpresaId { get; set; }
         public Empresa? Empresa { get; set; }
+
+        public bool? Ativa { get; set; } = true;
     }
 }

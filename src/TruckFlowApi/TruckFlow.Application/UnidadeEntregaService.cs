@@ -123,6 +123,22 @@ namespace TruckFlow.Application
             return MapToResponse(unidade);
         }
 
+        public async Task<UnidadeEntregaResponse> MudarStatusUnidade(
+            Guid id,
+            bool status,
+            CancellationToken token = default
+            )
+        {
+            var unidade = await _repo.GetById(id, token)
+                  ?? throw new NotFoundException("Unidade não encontrada.");
+
+            unidade.Ativa = status;
+            unidade.UpdatedAt = DateTime.UtcNow;
+
+            await _repo.Update(unidade, token);
+            return MapToResponse(unidade);
+        }
+
         private static void ApplyPatch(
             UnidadeEntrega unidade,
             UnidadeEntregaUpdateDto dto
@@ -161,6 +177,11 @@ namespace TruckFlow.Application
             if (dto.Longitude is not null)
                 unidade.Longitude = dto.Longitude;
 
+            if (dto.Ativa is not null)
+            {
+                unidade.Ativa = dto.Ativa;
+            }
+
             unidade.UpdatedAt = DateTime.UtcNow;
         }
         private static UnidadeEntregaResponse MapToResponse(UnidadeEntrega unidade)
@@ -179,7 +200,8 @@ namespace TruckFlow.Application
                 Cep = unidade.Cep,
                 Latitude = unidade.Latitude,
                 Longitude = unidade.Longitude,
-                Empresa = unidade?.Empresa?.NomeFantasia
+                Empresa = unidade?.Empresa?.NomeFantasia,
+                Ativa = unidade?.Ativa
             };
         }
     }

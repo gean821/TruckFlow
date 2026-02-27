@@ -10,6 +10,7 @@ namespace TruckFlow.Domain.Dto.LocalDescarga
     {
         public required string Nome { get; set; }
         public required Guid UnidadeEntregaId { get; set; }
+        public bool? Status { get; set; }
     }
 }
 

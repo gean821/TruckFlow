@@ -19,11 +19,6 @@ namespace TruckFlow.Controllers
             )
         {
             var fornecedorCriado = await _service.CreateFornecedor(fornecedor, ct);
-            
-            foreach (var claim in User.Claims)
-            {
-                Console.WriteLine($"TYPE: {claim.Type}  VALUE: {claim.Value}");
-            }
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -47,12 +42,6 @@ namespace TruckFlow.Controllers
             CancellationToken ct)
         {
             var fornecedor = await _service.GetByCnpj(cnpj, ct);
-
-            if (fornecedor == null)
-            {
-                return NotFound();
-            }
-
             return Ok(fornecedor);
         }
 
@@ -63,7 +52,7 @@ namespace TruckFlow.Controllers
             return Ok(lista);
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> Update(
             [FromRoute] Guid id,
             [FromBody] FornecedorUpdateDto dto,
@@ -104,7 +93,6 @@ namespace TruckFlow.Controllers
                CancellationToken token
             )
         {
-
             await _service.DeleteProdutoFromFornecedorAsync(fornecedorId, produtoId, token);
             return NoContent();
         }

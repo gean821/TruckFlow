@@ -42,7 +42,6 @@ namespace TruckFlow.Application
             _factory = factory;
             _currentUser = currentUser;
         }
-
         public async Task<FornecedorResponse> CreateFornecedor(
             FornecedorCreateDto dto,
             CancellationToken token = default
@@ -110,7 +109,6 @@ namespace TruckFlow.Application
             
             return MapToResponse(fornecedorEncontrado);
         }
-
 
         public async Task<FornecedorResponse> UpdateFornecedor(
             Guid id,

@@ -61,7 +61,8 @@ namespace TruckFlow.Application
                 Nome = local.Nome,
                 UnidadeEntrega = unidade,
                 CreatedAt = DateTime.Now,
-                EmpresaId = empresaId
+                EmpresaId = empresaId,
+                Ativa = local.Status
             };
 
             await _repo.CreateLocalDescarga(entity, token);
@@ -85,6 +86,7 @@ namespace TruckFlow.Application
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
                 UnidadeEntrega = x.UnidadeEntrega.Localizacao,
+                Status = x.Ativa,
                 Produtos = x.Produtos?.Select(x => new ProdutoResponse
                 {
                     Id = x.Id,
@@ -147,11 +149,34 @@ namespace TruckFlow.Application
             localEncontrado.Nome = local.Nome;
             localEncontrado.UnidadeEntrega.Id = unidade.Id;
             localEncontrado.UpdatedAt = DateTime.Now;
+            localEncontrado.Ativa = local.Status;
 
-            var localDescargaAtualizado = await _repo.Update(localEncontrado, token);
+            var localDescargaAtualizado = await _repo.Update(
+                localEncontrado,
+                token
+                );
+
+
             await _repo.SaveChangesAsync(token);
 
             return MapToResponse(localDescargaAtualizado);
+        }
+
+        public async Task<LocalDescargaResponse> MudarStatusLocal
+            (
+             Guid localId,
+             bool ativa,
+             CancellationToken token = default
+            )
+        {
+            var local = await _repo.GetById(localId, token)
+                ?? throw new NotFoundException("Local não encontrado.");
+
+            local.Ativa = ativa;
+            local.UpdatedAt = DateTime.UtcNow;
+
+            await _repo.Update(local, token);
+            return MapToResponse(local);
         }
 
         private static LocalDescargaResponse MapToResponse(LocalDescarga local)
@@ -163,8 +188,8 @@ namespace TruckFlow.Application
                 CreatedAt = local.CreatedAt,
                 UpdatedAt = local.UpdatedAt,
                 DeletedAt = local.DeletedAt,
-                Empresa = local.Empresa!.NomeFantasia,
                 UnidadeEntrega = local.UnidadeEntrega.Localizacao,
+                Status = local.Ativa,
                 Produtos = local.Produtos?.Select(x => new ProdutoResponse
                 {
                     Id = x.Id,

@@ -26,7 +26,7 @@ namespace TruckFlow.Domain.Entities
         public string DiasSemana { get; set; } = string.Empty;
 
         public Guid EmpresaId { get; set; }
-        public required Empresa Empresa { get; set; }
+        public Empresa? Empresa { get; set; }
 
         public ICollection<Agendamento> Agendamentos { get; set; } = [];
 

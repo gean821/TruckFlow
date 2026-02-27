@@ -17,5 +17,6 @@ namespace TruckFlow.Domain.Dto.LocalDescarga
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
         public string? Empresa { get; set; }
+        public bool? Status { get; set; }
     }
 }

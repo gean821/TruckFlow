@@ -31,6 +31,9 @@ namespace TruckFlowApi.Infra.Database.Configurations
             builder.Property(x => x.UnidadeEntregaId)
                 .IsRequired();
 
+            builder.Property(x => x.Ativa)
+                .HasDefaultValue(true);
+
             builder.HasMany(x => x.Produtos)
                 .WithOne(p => p.LocalDescarga)
                 .HasForeignKey(p => p.LocalDescargaId)

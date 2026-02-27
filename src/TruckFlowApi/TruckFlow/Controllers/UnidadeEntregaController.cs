@@ -10,7 +10,7 @@ namespace TruckFlow.Controllers
     {
         private readonly IUnidadeEntregaService _service;
 
-        public UnidadeEntregaController(IUnidadeEntregaService service) => 
+        public UnidadeEntregaController(IUnidadeEntregaService service) =>
             _service = service;
 
         [HttpPost]
@@ -57,6 +57,22 @@ namespace TruckFlow.Controllers
         {
             await _service.DeleteUnidadeEntrega(id, ct);
             return NoContent();
+        }
+
+
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> MudarStatus(
+            [FromRoute] Guid id,
+            [FromBody] UpdateStatusDto dto,
+            CancellationToken token = default)
+        {
+            var status = await _service.MudarStatusUnidade(
+                id,
+                dto.StatusUnidade,
+                token
+            );
+
+            return Ok(status);
         }
     }
 }

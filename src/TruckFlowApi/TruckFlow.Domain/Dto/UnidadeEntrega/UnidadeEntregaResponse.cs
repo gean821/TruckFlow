@@ -27,6 +27,8 @@ namespace TruckFlow.Domain.Dto.UnidadeEntrega
 
         public DateTime CreatedAt { get; init; }
         public DateTime? UpdatedAt { get; init; }
+
+        public bool? Ativa { get; set; } = false;
     }
 
 }

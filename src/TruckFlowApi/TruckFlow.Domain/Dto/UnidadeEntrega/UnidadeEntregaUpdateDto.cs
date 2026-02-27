@@ -21,6 +21,8 @@ namespace TruckFlow.Domain.Dto.UnidadeEntrega
 
         public double? Latitude { get; init; }
         public double? Longitude { get; init; }
-    }
+
+        public bool? Ativa { get; set; }
+     }
 
 }

@@ -12,11 +12,9 @@ using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlowApi.Infra.Repositories
 {
-    public sealed class AgendamentoRepositorio : IAgendamentoRepositorio
+    public sealed class AgendamentoRepositorio(AppDbContext db) : IAgendamentoRepositorio
     {
-        private readonly AppDbContext _db;
-
-        public AgendamentoRepositorio(AppDbContext db) => _db = db;
+        private readonly AppDbContext _db = db;
 
         public async Task<Agendamento> AddAgendamento(
             Agendamento agendamento,
@@ -115,7 +113,10 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<Agendamento> GetById(Guid id, CancellationToken token = default)
+        public async Task<Agendamento> GetById(
+            Guid id,
+            CancellationToken token = default
+            )
         {
             var agendamento = await _db.Agendamento
                 .Include(x => x.Fornecedor)
@@ -129,7 +130,10 @@ namespace TruckFlowApi.Infra.Repositories
             return agendamento!;
         }
 
-        public async Task<List<Agendamento>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default)
+        public async Task<List<Agendamento>> GetByMotoristaId(
+            Guid motoristaId,
+            CancellationToken token = default
+            )
         {
             return await _db.Agendamento
                 .Where(x => x.Usuario.Motorista.Id == motoristaId)
@@ -141,10 +145,10 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(token);
         }
 
-
         public async Task<bool> ExisteAgendamentoBloqueantePorGrade(
             Guid gradeId,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+            )
         {
             return await _db.Agendamento
                 .AnyAsync(a =>
@@ -153,7 +157,10 @@ namespace TruckFlowApi.Infra.Repositories
                     a.StatusAgendamento != StatusAgendamento.Cancelado,
                     cancellationToken);
         }
-        public async Task Delete(Agendamento agendamento, CancellationToken token = default)
+        public async Task Delete(
+            Agendamento agendamento,
+            CancellationToken token = default
+            )
         {
             _db.Agendamento.Remove(agendamento);
             await SaveChangesAsync(token);
@@ -173,7 +180,8 @@ namespace TruckFlowApi.Infra.Repositories
 
         public async Task<Agendamento> Update(
             Agendamento agendamento,
-            CancellationToken token = default)
+            CancellationToken token = default
+            )
         {
             _db.Agendamento.Update(agendamento);
             await SaveChangesAsync(token);
@@ -184,7 +192,10 @@ namespace TruckFlowApi.Infra.Repositories
             await _db.SaveChangesAsync(token);
         }
 
-        public async Task<Agendamento?> GetByIdWithFornecedor(Guid id, CancellationToken token = default)
+        public async Task<Agendamento?> GetByIdWithFornecedor(
+            Guid id,
+            CancellationToken token = default
+            )
         {
             return await _db.Agendamento
                 .Include(x => x.Fornecedor)

@@ -10,9 +10,27 @@ namespace TruckFlow.Application.Interfaces
     public interface IUnidadeEntregaService
     {
         public Task<List<UnidadeEntregaResponse>> GetAll(CancellationToken cancellationToken = default);
-        public Task<UnidadeEntregaResponse> GetById(Guid id, CancellationToken cancellationToken = default);
-        public Task<UnidadeEntregaResponse> CreateUnidadeEntrega(UnidadeEntregaCreateDto unidade, CancellationToken cancellationToken = default);
-        public Task<UnidadeEntregaResponse> UpdateUnidadeEntrega(Guid id, UnidadeEntregaUpdateDto unidade, CancellationToken cancellationToken = default);
-        public Task DeleteUnidadeEntrega(Guid id, CancellationToken cancellationToken = default);
+        public Task<UnidadeEntregaResponse> GetById(
+            Guid id,
+            CancellationToken cancellationToken = default
+            );
+        public Task<UnidadeEntregaResponse> CreateUnidadeEntrega(
+            UnidadeEntregaCreateDto unidade,
+            CancellationToken cancellationToken = default
+            );
+        public Task<UnidadeEntregaResponse> UpdateUnidadeEntrega(
+            Guid id,
+            UnidadeEntregaUpdateDto unidade,
+            CancellationToken cancellationToken = default
+            );
+        public Task DeleteUnidadeEntrega(
+            Guid id,
+            CancellationToken cancellationToken = default
+            );
+        public Task<UnidadeEntregaResponse> MudarStatusUnidade(
+            Guid id,
+            bool status,
+            CancellationToken token = default
+            ); 
     }
 }
