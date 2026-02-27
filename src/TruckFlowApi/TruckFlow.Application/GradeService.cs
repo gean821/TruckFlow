@@ -136,7 +136,7 @@ namespace TruckFlow.Application
                     "Não é possível alterar a grade pois existem agendamentos ativos.");
             }
 
-            ApplyPatch(grade, dto, token);
+            await ApplyPatch(grade, dto, token);
 
             await _repo.Update(grade, token);
             return MapToResponse(grade);

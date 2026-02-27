@@ -24,20 +24,21 @@ namespace TruckFlow.Application.Factories
         {
             return new Grade
             {
-                Produto = Produto,
-                ProdutoId = Produto.Id,
-                Fornecedor = Fornecedor,
-                FornecedorId = Fornecedor.Id,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = dto.UpdatedAt,
+                Produto = produto,
+                ProdutoId = produto.Id,
+                Fornecedor = fornecedor,
+                FornecedorId = fornecedor.Id,
+                LocalDescarga = localDescarga,
+                LocalDescargaId = localDescarga.Id,
+                UnidadeEntrega = unidade,
                 DataInicio = dto.DataInicio,
                 DataFim = dto.DataFim,
                 HoraInicial = dto.HoraInicial,
                 HoraFinal = dto.HoraFinal,
                 IntervaloMinutos = dto.IntervaloMinutos,
-                DiasSemana = dto.DiasSemana,
                 EmpresaId = empresaId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                DiasSemana = dto.DiasSemana
             };
         }
     }
