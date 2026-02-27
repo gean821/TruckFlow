@@ -29,7 +29,7 @@ namespace TruckFlow.Domain.Entities
         public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
 
         public Guid EmpresaId { get; set; }
-        public required Empresa Empresa { get; set; }
+        public Empresa? Empresa { get; set; }
 
         public string? PlacaVeiculo { get; set; }
         public TipoVeiculo? TipoVeiculo { get; set; }

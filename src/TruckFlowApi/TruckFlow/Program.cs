@@ -71,11 +71,9 @@ namespace TruckFlow
                 optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
-           
-
             builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>
             {
-
+                options.User.RequireUniqueEmail = true;
             })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
@@ -96,7 +94,7 @@ namespace TruckFlow
 
             builder.WebHost.ConfigureKestrel(options =>
             {
-                options.ListenAnyIP(56611); // HTTP
+                options.ListenAnyIP(56611);
                 options.ListenAnyIP(56610, listenOptions =>
                 {
                     listenOptions.UseHttps();

@@ -31,6 +31,8 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Produto)
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Fornecedor)
+                .Include(x=> x.LocalDescarga)
+                .Include(x=> x.UnidadeEntrega)
                 .ToListAsync(token);
         }
 
@@ -40,8 +42,10 @@ namespace TruckFlowApi.Infra.Repositories
             )
         {
              return await _db.Grade
-                .Include(x => x.Produto)
+               .Include(x => x.Produto)
+                .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Fornecedor)
+                .Include(x => x.LocalDescarga)
                 .Include(x => x.UnidadeEntrega)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
         }

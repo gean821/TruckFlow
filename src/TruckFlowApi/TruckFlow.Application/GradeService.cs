@@ -160,8 +160,7 @@ namespace TruckFlow.Application
 
             await _repo.Delete(gradeEncontrada, cancellationToken);
         }
-
-        private async void ApplyPatch(
+        private async Task ApplyPatch(
             Grade grade,
             GradeUpdateDto dto,
             CancellationToken token = default)

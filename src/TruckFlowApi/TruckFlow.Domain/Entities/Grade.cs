@@ -51,11 +51,11 @@ namespace TruckFlow.Domain.Entities
                         slots.Add(new Agendamento
                         {
                             GradeId = Id,
-                            Empresa = Empresa,
                             Fornecedor = Fornecedor,
                             FornecedorId = FornecedorId,
                             UnidadeEntrega = UnidadeEntrega,
                             UnidadeEntregaId = UnidadeEntregaId,
+                            EmpresaId = EmpresaId,
                             DataInicio = DateTime.SpecifyKind(horaAtual, DateTimeKind.Utc),
                             DataFim = DateTime.SpecifyKind(
                                 horaAtual.AddMinutes(IntervaloMinutos),
