@@ -43,6 +43,12 @@ namespace TruckFlow.Application.Validators.Grade
             RuleFor(x => x.IntervaloMinutos)
                 .GreaterThan(0)
                 .WithMessage("O intervalo em minutos deve ser maior que 0.");
+
+            RuleFor(x => x.DiasSemana)
+    .NotEmpty().WithMessage("Dias da semana são obrigatórios.")
+    .Must(ds => ds.Split(',')
+        .All(d => int.TryParse(d, out var dia) && dia >= 0 && dia <= 6))
+    .WithMessage("Dias da semana inválidos.");
         }
     }
 }

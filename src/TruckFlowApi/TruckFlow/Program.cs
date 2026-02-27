@@ -3,19 +3,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application;
 using TruckFlow.Configuration;
+using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Extensions.Agendamento;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Cors;
 using TruckFlow.Extensions.Dashboard;
+using TruckFlow.Extensions.Empresa;
 using TruckFlow.Extensions.Fornecedor;
 using TruckFlow.Extensions.Grade;
+using TruckFlow.Extensions.Guards;
 using TruckFlow.Extensions.ItemPlanejamento;
 using TruckFlow.Extensions.LocalDescarga;
 using TruckFlow.Extensions.NotaFiscal;
 using TruckFlow.Extensions.Produto;
 using TruckFlow.Extensions.Recebimento;
+using TruckFlow.Extensions.RecebimentoEvento;
+using TruckFlow.Extensions.Saas;
 using TruckFlow.Extensions.UnidadeEntrega;
+using TruckFlow.Extensions.UserContext;
 using TruckFlow.Filters;
 using TruckFlow.Middlewares;
 using TruckFlowApi.Infra.Database;
@@ -45,28 +51,35 @@ namespace TruckFlow
             builder.Services.AddAgendamento();
             builder.Services.AddUserAuth();
             builder.Services.AddDashboard();
+            builder.Services.AddRecebimentoEvento();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<IEmpresaContext, EmpresaContext>();
+            builder.Services.AddEmpresa();
+            builder.Services.AddUserContext();
+            builder.Services.AddSaas();
+            builder.Services.AddSecurity();
 
-
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             
             builder.Services.AddSwaggerGen(x=>
             {
                 x.OperationFilter<FileUploadOperationFilter>();
             });
+
             builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
             {
                 optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
-            builder.AddAuthenticationJwt();
-            builder.Services.AddAuthentication();
-            builder.Services.AddAuthorization();
-
-            builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>()
+            builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+            })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.AddAuthenticationJwt();
+            builder.Services.AddAuthorization();
             builder.Services.AddTransient<RequestLoggingMiddleware>();
             builder.Services.AddScoped<ActionLoggingFilter>();
 
@@ -81,7 +94,7 @@ namespace TruckFlow
 
             builder.WebHost.ConfigureKestrel(options =>
             {
-                options.ListenAnyIP(56611); // HTTP
+                options.ListenAnyIP(56611);
                 options.ListenAnyIP(56610, listenOptions =>
                 {
                     listenOptions.UseHttps();
@@ -106,6 +119,7 @@ namespace TruckFlow
                 app.UseHttpsRedirection();
             }
 
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 

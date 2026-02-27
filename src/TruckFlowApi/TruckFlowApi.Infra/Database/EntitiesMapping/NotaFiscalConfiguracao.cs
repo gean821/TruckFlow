@@ -82,6 +82,11 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .WithOne(x => x.NotaFiscal)
                 .HasForeignKey(x => x.NotaFiscalId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(x => x.Empresa)
+               .WithMany()
+               .HasForeignKey(x => x.EmpresaId)
+               .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

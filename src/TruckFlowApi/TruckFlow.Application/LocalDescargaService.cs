@@ -20,21 +20,30 @@ namespace TruckFlow.Application
         private readonly ILocalDescargaRepositorio _repo;
         private readonly IValidator<LocalDescargaCreateDto> _createValidator;
         private readonly IValidator<LocalDescargaUpdateDto> _updateValidator;
+        private readonly IUnidadeEntregaRepositorio _unidadeEntregaRepositorio;
+        private readonly ICurrentUserService _currentUser;
 
         public LocalDescargaService(
             ILocalDescargaRepositorio repo,
             IValidator<LocalDescargaCreateDto> createValidator,
-            IValidator<LocalDescargaUpdateDto> updateValidator)
+            IValidator<LocalDescargaUpdateDto> updateValidator,
+            IUnidadeEntregaRepositorio unidadeEntregaRepositorio,
+            ICurrentUserService currentUser
+            )
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
+            _unidadeEntregaRepositorio = unidadeEntregaRepositorio;
+            _currentUser = currentUser;
         }
 
         public async Task<LocalDescargaResponse> CreateLocalDescarga(
             LocalDescargaCreateDto local,
-            CancellationToken token = default)
+            CancellationToken token = default
+            )
         {
+
             ValidationResult validation = await _createValidator.ValidateAsync(local, token);
 
             if (!validation.IsValid)
@@ -42,10 +51,18 @@ namespace TruckFlow.Application
                 throw new ValidationException(validation.Errors);
             }
 
+            var empresaId = ValidateEnterprise();
+
+            var unidade = await _unidadeEntregaRepositorio.GetById(local.UnidadeEntregaId, token)
+                ?? throw new NotFoundException("Unidade de entrega não encontrada.");
+
             var entity = new LocalDescarga
             {
                 Nome = local.Nome,
-                CreatedAt = DateTime.Now
+                UnidadeEntrega = unidade,
+                CreatedAt = DateTime.Now,
+                EmpresaId = empresaId,
+                Ativa = local.Status
             };
 
             await _repo.CreateLocalDescarga(entity, token);
@@ -59,7 +76,7 @@ namespace TruckFlow.Application
 
             if (listaDescarga.Count == 0)
             {
-                return new List<LocalDescargaResponse>();
+                return [];
             }
 
             var listaDto = listaDescarga.Select(x => new LocalDescargaResponse
@@ -68,6 +85,8 @@ namespace TruckFlow.Application
                 Nome = x.Nome,
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
+                UnidadeEntrega = x.UnidadeEntrega.Localizacao,
+                Status = x.Ativa,
                 Produtos = x.Produtos?.Select(x => new ProdutoResponse
                 {
                     Id = x.Id,
@@ -81,13 +100,17 @@ namespace TruckFlow.Application
             return listaDto;
         }
 
-        public async Task Delete(Guid id, CancellationToken token = default)
+        public async Task Delete(
+            Guid id,
+            CancellationToken token = default
+            )
         {
-            var localEncontrado = await _repo.GetById(id, token) 
+            ValidateEnterprise();
+            var localEncontrado = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Local não encontrado");
 
-            await _repo.Delete(localEncontrado.Id, token);
 
+            await _repo.Delete(localEncontrado, token);
             await _repo.SaveChangesAsync(token);
         }
 
@@ -95,6 +118,8 @@ namespace TruckFlow.Application
             Guid id,
             CancellationToken token = default)
         {
+
+            ValidateEnterprise();
             var localEncontrado = await _repo.GetById(id, token)
                ?? throw new NotFoundException("Local não encontrado");
 
@@ -107,6 +132,7 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
+            ValidateEnterprise();
             ValidationResult validation = await _updateValidator.ValidateAsync(local, token);
 
             if (!validation.IsValid)
@@ -117,15 +143,41 @@ namespace TruckFlow.Application
             var localEncontrado = await _repo.GetById(id, token)
                ?? throw new NotFoundException("Local não encontrado");
 
+            var unidade = await _unidadeEntregaRepositorio.GetById(local.UnidadeEntregaId, token)
+                    ?? throw new NotFoundException("Unidade não encontrada");
+               
             localEncontrado.Nome = local.Nome;
+            localEncontrado.UnidadeEntrega.Id = unidade.Id;
             localEncontrado.UpdatedAt = DateTime.Now;
+            localEncontrado.Ativa = local.Status;
 
-            var localDescargaAtualizado = await _repo.Update(id, localEncontrado, token);
+            var localDescargaAtualizado = await _repo.Update(
+                localEncontrado,
+                token
+                );
+
+
             await _repo.SaveChangesAsync(token);
 
             return MapToResponse(localDescargaAtualizado);
         }
 
+        public async Task<LocalDescargaResponse> MudarStatusLocal
+            (
+             Guid localId,
+             bool ativa,
+             CancellationToken token = default
+            )
+        {
+            var local = await _repo.GetById(localId, token)
+                ?? throw new NotFoundException("Local não encontrado.");
+
+            local.Ativa = ativa;
+            local.UpdatedAt = DateTime.UtcNow;
+
+            await _repo.Update(local, token);
+            return MapToResponse(local);
+        }
 
         private static LocalDescargaResponse MapToResponse(LocalDescarga local)
         {
@@ -136,6 +188,8 @@ namespace TruckFlow.Application
                 CreatedAt = local.CreatedAt,
                 UpdatedAt = local.UpdatedAt,
                 DeletedAt = local.DeletedAt,
+                UnidadeEntrega = local.UnidadeEntrega.Localizacao,
+                Status = local.Ativa,
                 Produtos = local.Produtos?.Select(x => new ProdutoResponse
                 {
                     Id = x.Id,
@@ -145,6 +199,12 @@ namespace TruckFlow.Application
                     CreatedAt = x.CreatedAt
                 }).ToList()
             };
+        }
+
+        private Guid ValidateEnterprise()
+        {
+            return _currentUser.EmpresaId
+                          ?? throw new BusinessException("Usuário não vinculado a empresa.");
         }
     }
 }

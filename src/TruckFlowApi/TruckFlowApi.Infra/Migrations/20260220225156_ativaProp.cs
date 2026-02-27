@@ -5,25 +5,25 @@
 namespace TruckFlowApi.Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class FornecedorAtt : Migration
+    public partial class ativaProp : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Cnpj",
-                table: "Fornecedor",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.AddColumn<bool>(
+                name: "Ativa",
+                table: "UnidadeEntrega",
+                type: "bit",
+                nullable: true,
+                defaultValue: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Cnpj",
-                table: "Fornecedor");
+                name: "Ativa",
+                table: "UnidadeEntrega");
         }
     }
 }

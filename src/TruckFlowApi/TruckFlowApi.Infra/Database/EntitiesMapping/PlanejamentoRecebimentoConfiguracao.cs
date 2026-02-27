@@ -22,8 +22,7 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .IsRequired();
 
             builder.Property(x => x.StatusRecebimento)
-    .HasDefaultValue(StatusRecebimento.Planejado)
-    .IsRequired();
+                .IsRequired();
 
             builder.Property(x => x.CreatedAt)
              .IsRequired();
@@ -33,6 +32,11 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
 
             builder.Property(x => x.DeletedAt)
                 .IsRequired(false);
+
+            builder.HasOne(x => x.Empresa)
+                .WithMany()
+                .HasForeignKey(x => x.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(x => x.Fornecedor)
                 .WithMany(x => x.Recebimentos)

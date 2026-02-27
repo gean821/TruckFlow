@@ -15,5 +15,7 @@ namespace TruckFlow.Domain.Dto.User.Administrador
         public required string NomeReal { get; set; }
         public required string Telefone { get; set; }
         public DateTime? CreatedAt { get; set; }
+
+        public Guid EmpresaId { get; set; }
     }
 }

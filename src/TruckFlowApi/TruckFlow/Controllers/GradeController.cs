@@ -9,12 +9,9 @@ namespace TruckFlow.Controllers
 
     [ApiController]
     [Route("v1/[Controller]")]
-    public class GradeController : ControllerBase
+    public class GradeController(IGradeService service) : ControllerBase
     {
-        private readonly IGradeService _service;
-
-        public GradeController(IGradeService service) =>
-            _service = service;
+        private readonly IGradeService _service = service;
 
         [HttpPost]
         public async Task<IActionResult> CreateGrade(
@@ -22,7 +19,11 @@ namespace TruckFlow.Controllers
             CancellationToken ct = default)
         {
             var gradeCriada = await _service.CreateGrade(grade, ct);
-            return Ok(gradeCriada);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = gradeCriada.Id },
+                gradeCriada
+            );
         }
 
         [HttpGet("{id}")]
@@ -35,13 +36,13 @@ namespace TruckFlow.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken ct)
+        public async Task<IActionResult> GetAll(CancellationToken ct = default)
         {
             var lista = await _service.GetAll(ct);
             return Ok(lista);
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> Update(
             [FromRoute] Guid id,
             [FromBody] GradeUpdateDto dto,

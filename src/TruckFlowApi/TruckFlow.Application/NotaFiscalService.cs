@@ -28,6 +28,7 @@ namespace TruckFlow.Application
         private readonly IProdutoRepositorio _produtoRepositorio;
         private readonly ProdutoLearningService _learningService;
         private readonly ILogger<NotaFiscalService> _logger;
+        private readonly IEmpresaRepositorio _empresaRepo;
 
 
         public NotaFiscalService(
@@ -37,7 +38,8 @@ namespace TruckFlow.Application
             IValidator<NotaFiscalItemDto> itemValidator,
             ProdutoLearningService learningService,
             IProdutoRepositorio produtoRepositorio,
-            ILogger<NotaFiscalService> logger
+            ILogger<NotaFiscalService> logger,
+            IEmpresaRepositorio empresaRepo
             )
         {
             _repo = repo;
@@ -47,8 +49,8 @@ namespace TruckFlow.Application
             _itemValidator = itemValidator;
             _learningService = learningService;
             _logger = logger;
+            _empresaRepo = empresaRepo;
         }
-
         public async Task<NotaFiscalParsedDto> ParseXmlAsync(
             Stream xmlStream,
             CancellationToken token
@@ -68,6 +70,7 @@ namespace TruckFlow.Application
                 Console.WriteLine($"✅ XML RECEBIDO ({xml.Length} chars)");
                 Console.WriteLine(xml.Substring(0, Math.Min(200, xml.Length)));
             }
+
             Console.WriteLine("=================================");
 
             NFe.Classes.NFe nfe;
@@ -115,7 +118,6 @@ namespace TruckFlow.Application
             //essa parte precisa ser melhorada para otimizar processo.
             var produtosDoSistema = await _produtoRepositorio.GetAll(token);
             var itensDto = new List<NotaFiscalItemDto>();
-
 
             foreach (var det in infNFe.det!)
             {
@@ -257,14 +259,24 @@ namespace TruckFlow.Application
                 if (string.IsNullOrEmpty(fornecedor.Cnpj))
                 {
                     fornecedor.Cnpj = cnpjNota;
-                    await _fornecedorRepo.Update(fornecedor.Id, fornecedor, token);
+                    await _fornecedorRepo.Update(fornecedor, token);
                 }
             }
+
+            var cnpjDestinatario = new string(dto.DestinatarioCpfCnpj
+                .Where(char.IsDigit)
+                .ToArray());
+
+            var empresa = await _empresaRepo.GetByCnpj(cnpjDestinatario, token);
+
+            if (empresa == null)
+                throw new BusinessException("Empresa destinatária não cadastrada.");
 
             var nota = new NotaFiscal
             {
                 ChaveAcesso = dto.ChaveAcesso,
                 Numero = dto.Numero,
+                Empresa = empresa,
                 Serie = dto.Serie,
                 DataEmissao = dto.DataEmissao,
                 EmitenteNome = dto.EmitenteNome,
@@ -362,5 +374,3 @@ namespace TruckFlow.Application
         }
     }
 }
-
-

@@ -13,7 +13,10 @@ namespace TruckFlow.Application
     {
         private readonly IProdutoRepositorio _repo = repo;
 
-        public async Task TryLearnEanAsync(NotaFiscalItemDto item, CancellationToken token)
+        public async Task TryLearnEanAsync(
+            NotaFiscalItemDto item,
+            CancellationToken token
+            )
         {
             if (item.ProdutoSistemaId == null)
             {
@@ -47,7 +50,7 @@ namespace TruckFlow.Application
 
             produto.CodigoEan = ean;
 
-            await _repo.UpdateProduto(produto.Id, produto, token);
+            await _repo.UpdateProduto(produto, token);
         }
     }
 }

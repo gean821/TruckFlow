@@ -5,14 +5,10 @@ using TruckFlow.Domain.Dto.LocalDescarga;
 namespace TruckFlow.Controllers
 {
     [ApiController]
-    [Route("v1/[Controller]")]
-    public class LocalDescargaController : ControllerBase
+    [Route("v1/[controller]")]
+    public class LocalDescargaController(ILocalDescargaService service) : ControllerBase
     {
-        private readonly ILocalDescargaService _service;
-
-        public LocalDescargaController(ILocalDescargaService service) =>
-            _service = service;
-
+        private readonly ILocalDescargaService _service = service;
 
         [HttpPost]
         public async Task<IActionResult> Create(
@@ -20,46 +16,63 @@ namespace TruckFlow.Controllers
             CancellationToken token)
         {
             var localDescarga = await _service.CreateLocalDescarga(dto, token);
-            return Ok(localDescarga);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = localDescarga.Id },
+                localDescarga);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(CancellationToken token)
         {
-            var lista = await _service.GetAll();
+            var lista = await _service.GetAll(token);
             return Ok(lista);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken token)
+        public async Task<IActionResult> GetById(
+            [FromRoute] Guid id,
+            CancellationToken token)
         {
             var localEncontrado = await _service.GetById(id, token);
-            
-            if (localEncontrado == null)
-            {
-                return NotFound();
-            }
-
             return Ok(localEncontrado);
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> Update(
             [FromRoute] Guid id,
-            LocalDescargaUpdateDto dto,
+            [FromBody] LocalDescargaUpdateDto dto,
             CancellationToken token)
         {
-            var localAtualizado = await _service.Update(id, dto,token);
+            var localAtualizado = await _service.Update(id, dto, token);
             return Ok(localAtualizado);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Update(
+        public async Task<IActionResult> Delete(
             [FromRoute] Guid id,
             CancellationToken token)
         {
-            await _service.Delete(id,token);
+            await _service.Delete(id, token);
             return NoContent();
+        }
+
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> MudarStatus
+            (
+                [FromRoute] Guid id,
+                [FromBody] MudarStatusLocal dto,
+                CancellationToken token = default
+            )
+        {
+            var local =  await _service.MudarStatusLocal(
+                id,
+                dto.Status,
+                token
+            );
+
+            return Ok(local);
         }
     }
 }

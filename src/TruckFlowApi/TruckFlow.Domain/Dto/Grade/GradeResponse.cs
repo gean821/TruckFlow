@@ -10,10 +10,11 @@ namespace TruckFlow.Domain.Dto.Grade
 {
     public class GradeResponse
     {
-        public required Guid FornecedorId { get; set; }
         public required string Fornecedor { get; set; } = string.Empty;
         public Guid ProdutoId { get; set; }
         public string UnidadeEntrega { get; set; } = string.Empty;
+        public string LocalDescarga{ get; set; } = string.Empty;
+
         public required string Produto { get; set; } = string.Empty;
         public required Guid Id { get; set; }
         public required string DiasSemana { get; set; } = string.Empty;

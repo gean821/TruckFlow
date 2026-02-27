@@ -47,6 +47,11 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                     .WithOne(a => a.Usuario)
                     .HasForeignKey(a => a.UsuarioId)
                     .IsRequired(false);
+
+            builder.HasOne(x => x.Empresa)
+                .WithMany(x => x.Usuarios)
+                .HasForeignKey(x => x.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

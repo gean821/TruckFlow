@@ -39,5 +39,6 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             Guid gradeId,
             CancellationToken cancellationToken = default);
         public Task SaveChangesAsync(CancellationToken token = default);
+        Task<Agendamento?> GetByIdWithFornecedor(Guid id, CancellationToken token = default);
     }
 }

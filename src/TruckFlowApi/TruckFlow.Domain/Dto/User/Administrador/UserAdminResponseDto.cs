@@ -13,6 +13,10 @@ namespace TruckFlow.Domain.Dto.User.Administrador
         public required string Username { get; set; }
         public string? NomeReal { get; set; }
         public required string Role { get; set; }
+
+        public string? Empresa { get; set; }
+        public Guid? EmpresaId { get; set; }
+
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }

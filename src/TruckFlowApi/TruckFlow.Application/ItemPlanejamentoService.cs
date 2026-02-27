@@ -22,21 +22,25 @@ namespace TruckFlow.Application
         private readonly IValidator<ItemPlanejamentoUpdateDto> _updateValidator;
         private readonly ItemPlanejamentoFactory _factory;
         private readonly IProdutoRepositorio _produtoRepo;
+        private readonly IRecebimentoEventoRepositorio _eventoRepo;
+        private readonly IUsuarioService _usuarioService;
 
-        public ItemPlanejamentoService
-            (
-                IItemPlanejamentoRepositorio repo,
-                IValidator<ItemPlanejamentoCreateDto> createValidator,
-                IValidator<ItemPlanejamentoUpdateDto> updateValidator,
-                ItemPlanejamentoFactory factory,
-                IProdutoRepositorio produtoRepo
-            )
+        public ItemPlanejamentoService(
+            IItemPlanejamentoRepositorio repo,
+            IValidator<ItemPlanejamentoCreateDto> createValidator,
+            IValidator<ItemPlanejamentoUpdateDto> updateValidator,
+            ItemPlanejamentoFactory factory,
+            IProdutoRepositorio produtoRepo,
+            IRecebimentoEventoRepositorio eventoRepo,
+            IUsuarioService usuarioService)
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _factory = factory;
             _produtoRepo = produtoRepo;
+            _eventoRepo = eventoRepo;
+            _usuarioService = usuarioService;
         }
 
         public async Task<ItemPlanejamentoResponseDto> CreateItem
@@ -124,6 +128,37 @@ namespace TruckFlow.Application
             var itemAtualizado = await _repo.UpdateItem(id, item, token);
             return MapToResponse(itemAtualizado, token);
         }
+
+        public async Task RegistrarRecebimentoManual(
+                Guid itemPlanejamentoId,
+                decimal quantidade,
+                string? observacao,
+                Usuario user,
+                CancellationToken token = default)
+        {
+            var item = await _repo.GetByIdWithPlanejamento(itemPlanejamentoId, token)
+                ?? throw new NotFoundException("Item não encontrado.");
+
+            var usuario = await _usuarioService.GetAdminByIdAsync(user.Id, token)
+                ?? throw new NotFoundException("Usuário não encontrado.");
+
+            var empresa = usuario.EmpresaId;
+            
+            var evento = new RecebimentoEvento(
+                item,
+                quantidade,
+                agendamentoId: null,
+                observacao,
+                empresa
+            );
+
+            await _eventoRepo.AddAsync(evento, token);
+
+            // 2️⃣ Atualiza domínio
+            item.RegistrarRecebimento(quantidade);
+            item.PlanejamentoRecebimento.RecalcularStatus();
+        }
+
         private static ItemPlanejamentoResponseDto MapToResponse(ItemPlanejamento item, CancellationToken token = default) =>
             new ItemPlanejamentoResponseDto
             {

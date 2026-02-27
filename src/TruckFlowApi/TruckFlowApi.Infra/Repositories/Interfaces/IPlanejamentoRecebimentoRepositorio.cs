@@ -25,5 +25,9 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
                 CancellationToken token = default
             );
         public Task SaveChangesAsync(CancellationToken token = default);
+
+        Task<PlanejamentoRecebimento?> GetPlanejamentoAtivoPorFornecedor(
+             Guid fornecedorId,
+             CancellationToken token = default);
     }
 }
