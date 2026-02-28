@@ -883,3 +883,4 @@ RNF01 — A validação deve ser obrigatória e bloquear o fluxo quando houver d
 RNF02 — O vínculo deve ser feito por identificador confiável (FornecedorId derivado do CNPJ do emitente).
 
 RNF03 — A mensagem de erro deve ser clara (“NF não pertence a esta empresa”).
+
