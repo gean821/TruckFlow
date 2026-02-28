@@ -882,5 +882,148 @@ RNF01 — A validação deve ser obrigatória e bloquear o fluxo quando houver d
 
 RNF02 — O vínculo deve ser feito por identificador confiável (FornecedorId derivado do CNPJ do emitente).
 
-RNF03 — A mensagem de erro deve ser clara (“NF não pertence a esta empresa”).
+RNF03 — A mensagem de erro deve ser clara (“NF não pertence a esta empresa”).          
 
+🔹  RF61 — Criar Planejamento de Recebimento
+
+O sistema deve permitir ao admin criar um planejamento de recebimento vinculado a um Fornecedor e a uma DataInicio, contendo ao menos um ItemPlanejamento.
+
+RNF associados:
+
+RNF01 — DataInicio não pode ser anterior à data atual (UTC).
+
+RNF02 — Deve exigir lista de itens não vazia no create.
+
+RNF03 — Deve validar cada item do planejamento.
+
+🔹  RF62 — Consultar Planejamento por ID
+
+O sistema deve permitir obter um planejamento pelo id.
+
+RNF associados:
+
+RNF01 — Deve retornar 404 quando o planejamento não existir.
+
+RNF02 — Deve retornar os itens com cálculo de “Falta Receber”.
+
+🔹  RF63 — Listar Planejamentos
+
+O sistema deve permitir listar todos os planejamentos de recebimento cadastrados.
+
+RNF associados:
+
+RNF01 — Deve retornar dados agregados para dashboard (TotalItens, FornecedorNome, Itens detalhados).
+
+RNF02 — Deve retornar lista vazia quando não houver registros (nunca null).
+
+🔹  RF64 — Atualizar Planejamento de Recebimento
+
+O sistema deve permitir atualizar:
+
+- Fornecedor
+
+- DataInicio
+
+- Status (setado como Planejado no update)
+
+- lista de itens (recriada a partir do DTO)
+
+RNF associados:
+
+RNF01 — Deve validar existência do fornecedor informado.
+
+RNF02 — Deve validar que todos os produtos dos itens existem antes de montar a lista.
+
+RNF03 — Deve registrar UpdatedAt em UTC.
+
+RNF04 — Deve definir o status como Planejado ao atualizar.
+
+🔹  RF65 — Excluir Planejamento
+
+O sistema deve permitir excluir um planejamento por id.
+
+RNF associados:
+
+RNF01 — Deve retornar 404 quando não existir.
+
+RNF02 — Deve remover e persistir (delete + save para possível auditoria).
+
+🔹  RF66 — Criar ItemPlanejamento
+
+O sistema deve permitir criar um item de planejamento com:
+
+- ProdutoId
+
+- QuantidadeTotalPlanejada
+
+- CadenciaDiariaPlanejada
+
+RNF associados:
+
+RNF01 — Deve validar: QuantidadeTotalPlanejada > 0.
+
+RNF02 — Deve validar: CadenciaDiariaPlanejada > 0.
+
+RNF03 — Deve validar: CadenciaDiariaPlanejada <= QuantidadeTotalPlanejada.
+
+🔹  RF67 — Consultar ItemPlanejamento por ID
+
+O sistema deve permitir consultar um item por id.
+
+RNF associados:
+
+RNF01 — Deve retornar 404 quando não existir.
+
+🔹  RF68 — Listar ItensPlanejamento
+
+O sistema deve permitir listar todos os itens de planejamento.
+
+RNF associados:
+
+RNF01 — Deve retornar “FaltaReceber = TotalPlanejado - TotalRecebido”.
+
+🔹  RF69 — Atualizar ItemPlanejamento
+
+O sistema deve permitir atualizar:
+
+- ProdutoId (troca de produto)
+
+- QuantidadeTotalPlanejada
+
+- CadenciaDiariaPlanejada
+
+RNF associados:
+
+RNF01 — Se ProdutoId mudar, deve validar existência do produto novo.
+
+RNF02 — Deve registrar UpdatedAt em UTC.
+
+🔹  RF70 — Excluir ItemPlanejamento
+
+O sistema deve permitir excluir um item por id.
+
+RNF associados:
+
+RNF01 — Deve retornar 404 se não existir.
+
+RNF02 — Deve persistir a exclusão.
+
+🔹  RF71 — Descontar do saldo planejado ao reservar agendamento
+
+Quando o motorista reservar um agendamento de um produto em um dia, o sistema deve descontar do saldo do ItemPlanejamento correspondente.
+
+RNF associados:
+
+RNF01 — Deve ser atômico (reserva + desconto) para não estourar saldo.
+
+RNF02 — Deve prevenir concorrência (dois motoristas reservando ao mesmo tempo).
+
+🔹  RF72 — Congelar slots ao atingir cadência/meta diária
+
+Ao atingir a cadência diária planejada do produto naquele dia (ou saldo definido), o sistema deve “congelar” (bloquear) os slots restantes daquele produto/dia para impedir novos agendamentos.
+
+RNF associados:
+
+RNF01 — Bloqueio deve ocorrer no backend (não só no app).
+
+RNF02 — Deve haver rastreabilidade do motivo do bloqueio (auditoria/log).
