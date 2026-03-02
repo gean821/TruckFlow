@@ -27,7 +27,7 @@ namespace TruckFlow.Domain.Entities
         public Agendamento? Agendamento { get; set; }
 
         public Guid EmpresaId { get; set; }
-        public required Empresa Empresa { get; set; }
+        public Empresa? Empresa { get; set; }
 
         public ICollection<NotaFiscalItem> Itens { get; set; } = new List<NotaFiscalItem>();
         public Guid UploadedByUserId { get; set; }       // quem enviou (motorista)

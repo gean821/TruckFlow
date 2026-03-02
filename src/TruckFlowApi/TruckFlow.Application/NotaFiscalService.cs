@@ -72,7 +72,6 @@ namespace TruckFlow.Application
             }
 
             Console.WriteLine("=================================");
-
             NFe.Classes.NFe nfe;
 
             try
@@ -199,6 +198,12 @@ namespace TruckFlow.Application
                 ValidationWarnings = []
             };
 
+            Console.WriteLine("=================================");
+            Console.WriteLine($"EMIT CNPJ: {infNFe.emit?.CNPJ}");
+            Console.WriteLine($"DEST CNPJ: {infNFe.dest?.CNPJ}");
+            Console.WriteLine($"DEST CPF: {infNFe.dest?.CPF}");
+            Console.WriteLine("=================================");
+
             return notaFiscalDto;
         }
 
@@ -225,7 +230,6 @@ namespace TruckFlow.Application
                     throw new ValidationException(itemResult.Errors);
                 }
             }
-
 
             foreach (var item in dto.Itens)
             {
@@ -267,16 +271,23 @@ namespace TruckFlow.Application
                 .Where(char.IsDigit)
                 .ToArray());
 
-            var empresa = await _empresaRepo.GetByCnpj(cnpjDestinatario, token);
+            _logger.LogInformation(
+                "CNPJ destinatário da NF: {CnpjDestinatario}",
+                cnpjDestinatario
+            ); 
+            
+            var empresa = await _empresaRepo.GetByCnpj(cnpjDestinatario, token)
+                    ??
+                    throw new BusinessException(
+                        $"Empresa destinatária não cadastrada. CNPJ recebido: {cnpjDestinatario}");
 
-            if (empresa == null)
-                throw new BusinessException("Empresa destinatária não cadastrada.");
+            Console.WriteLine($"[DEBUG] DTO DESTINATARIO: '{dto.DestinatarioCpfCnpj}'");
 
             var nota = new NotaFiscal
             {
                 ChaveAcesso = dto.ChaveAcesso,
                 Numero = dto.Numero,
-                Empresa = empresa,
+                EmpresaId = empresa.Id,
                 Serie = dto.Serie,
                 DataEmissao = dto.DataEmissao,
                 EmitenteNome = dto.EmitenteNome,

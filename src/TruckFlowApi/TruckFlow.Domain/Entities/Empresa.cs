@@ -28,6 +28,6 @@
         public ICollection<Produto> Produtos { get; set; } = [];
         public ICollection<ItemPlanejamento>? ItensPlanejamento { get; set; }
 
-        public ICollection<Usuario>? Usuarios { get; set; } = [];
+        public ICollection<Usuario> Usuarios { get; set; } = [];
     }
 }

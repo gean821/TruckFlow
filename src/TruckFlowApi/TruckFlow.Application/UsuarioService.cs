@@ -296,7 +296,9 @@ namespace TruckFlow.Application
             return await MapMotoristaAsync(usuario);
         }
 
-        public async Task DeleteMotoristaAsync(Guid id, CancellationToken token = default)
+        public async Task DeleteMotoristaAsync(
+            Guid id,
+            CancellationToken token = default)
         {
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuario não encontrado.");
@@ -306,7 +308,10 @@ namespace TruckFlow.Application
             await _userManager.UpdateAsync(usuario);
         }
 
-        public async Task ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
+        public async Task ChangePasswordAsync(
+            Guid userId,
+            string currentPassword,
+            string newPassword)
         {
             var usuario = await _userManager.FindByIdAsync(userId.ToString())
                 ?? throw new NotFoundException("Usuário não encontrado");
@@ -332,7 +337,7 @@ namespace TruckFlow.Application
                 Id = usuario.Id,
                 Username = usuario.UserName!,
                 Email = usuario.Email!,
-                Role = roles.First(),
+                Role = roles.First() ?? "User",
                 CreatedAt = usuario.CreatedAt,
                 UpdatedAt = usuario.UpdatedAt,
                 DeletedAt = usuario.DeletedAt,

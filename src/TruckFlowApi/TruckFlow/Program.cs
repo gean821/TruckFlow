@@ -96,8 +96,8 @@ namespace TruckFlow
             {
                 options.ListenAnyIP(56611);
                 options.ListenAnyIP(56610, listenOptions =>
-                {
-                    listenOptions.UseHttps();
+            {
+                listenOptions.UseHttps();
                 });
             });
 
