@@ -61,12 +61,8 @@ namespace TruckFlow.Application
         {
             await _createValidator.ValidateAndThrowAsync(dto, token);
 
-            var fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId, token);
-
-            if (fornecedor == null)
-            {
-                throw new NotFoundException("Fornecedor não encontrado");
-            }
+            var fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId, token)
+                ?? throw new NotFoundException("Fornecedor não encontrado");
 
             var unidade = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token);
 
