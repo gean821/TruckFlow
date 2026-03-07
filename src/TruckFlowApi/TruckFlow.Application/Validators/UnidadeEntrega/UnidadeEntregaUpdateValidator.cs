@@ -13,8 +13,20 @@ namespace TruckFlow.Application.Validators.UnidadeEntrega
         public UnidadeEntregaUpdateValidator()
         {
             RuleFor(x => x.Nome)
-                .NotEmpty()
-                .WithMessage("Nome não pode ser vazio");
+                .MaximumLength(150)
+                .When(x => x.Nome is not null);
+
+            RuleFor(x => x.Localizacao)
+                .MaximumLength(200)
+                .When(x => x.Localizacao is not null);
+
+            RuleFor(x => x.Cep)
+                .Matches(@"^\d{8}$")
+                .When(x => !string.IsNullOrWhiteSpace(x.Cep));
+
+            RuleFor(x => x.Estado)
+                .Length(2)
+                .When(x => !string.IsNullOrWhiteSpace(x.Estado));
         }
     }
 }

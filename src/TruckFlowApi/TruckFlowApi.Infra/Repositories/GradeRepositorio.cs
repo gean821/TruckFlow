@@ -31,21 +31,29 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Produto)
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Fornecedor)
+                .Include(x=> x.LocalDescarga)
+                .Include(x=> x.UnidadeEntrega)
                 .ToListAsync(token);
         }
 
-        public async Task<Grade> GetById(Guid id, CancellationToken token = default)
+        public async Task<Grade?> GetById(
+            Guid id,
+            CancellationToken token = default
+            )
         {
-            var grade = await _db.Grade
-                .Include(x => x.Produto)
+             return await _db.Grade
+               .Include(x => x.Produto)
+                .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Fornecedor)
+                .Include(x => x.LocalDescarga)
                 .Include(x => x.UnidadeEntrega)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
-
-            return grade!;
         }
 
-        public async Task<Grade> Update(Grade grade, CancellationToken token = default)
+        public async Task<Grade> Update(
+            Grade grade,
+            CancellationToken token = default
+            )
         {
             _db.Grade.Update(grade);
             await SaveChangesAsync(token);
@@ -53,7 +61,10 @@ namespace TruckFlowApi.Infra.Repositories
             return grade;
         }
 
-        public async Task<bool> CheckAppointmentExistence(Guid gradeId, CancellationToken token = default)
+        public async Task<bool> CheckAppointmentExistence(
+            Guid gradeId,
+            CancellationToken token = default
+            )
         {
             return await _db.Agendamento
                 .AsNoTracking()
@@ -64,7 +75,10 @@ namespace TruckFlowApi.Infra.Repositories
                 );
         }
 
-        public async Task Delete(Grade grade, CancellationToken token = default)
+        public async Task Delete(
+            Grade grade,
+            CancellationToken token = default
+            )
         {
             _db.Remove(grade);
             await SaveChangesAsync(token);

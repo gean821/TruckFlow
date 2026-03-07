@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
@@ -40,6 +41,7 @@ namespace TruckFlowApi.Infra.Repositories
             var recebimento = await _db.PlanejamentosRecebimento
                 .Include(x => x.Fornecedor)
                 .Include(x => x.ItemPlanejamentos)
+                    .ThenInclude(x=> x.Produto)
                 .FirstOrDefaultAsync(x=> x.Id == id, token);
             
             return recebimento!;
@@ -72,10 +74,25 @@ namespace TruckFlowApi.Infra.Repositories
             _db.Remove(recebimento);
             await SaveChangesAsync(token);
         }
+        public async Task<PlanejamentoRecebimento?> GetPlanejamentoAtivoPorFornecedor(
+             Guid fornecedorId,
+             CancellationToken token = default)
+        {
+            return await _db.PlanejamentosRecebimento
+                .Include(x => x.Fornecedor)
+                .Include(x => x.ItemPlanejamentos)
+                    .ThenInclude(x => x.Produto)
+                .Where(x =>
+                    x.FornecedorId == fornecedorId &&
+                    x.StatusRecebimento == StatusRecebimento.Planejado
+                )
+                .FirstOrDefaultAsync(token);
+        }
 
         public async Task SaveChangesAsync(CancellationToken token = default)
         {
             await _db.SaveChangesAsync(token);
         }
+
     }
 }

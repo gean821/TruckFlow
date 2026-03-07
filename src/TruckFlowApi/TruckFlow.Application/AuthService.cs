@@ -55,8 +55,13 @@ namespace TruckFlow.Application
             {
                 new Claim(ClaimTypes.Name, usuario.UserName!),
                 new Claim(ClaimTypes.Email, usuario.Email!),
-                new Claim("UserId", usuario.Id.ToString())
+                new Claim("UserId", usuario.Id.ToString()),
             };
+
+            if (usuario.EmpresaId.HasValue)
+            {
+                claims.Add(new Claim("EmpresaId", usuario.EmpresaId.Value.ToString()));
+            }
 
             if (usuario.Motorista != null)
             {

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Domain.Enums;
 
 namespace TruckFlowApi.Infra.Database.EntitiesMapping
 {
@@ -20,7 +21,8 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.DataInicio)
                 .IsRequired();
 
-            builder.Property(x => x.StatusRecebimento);
+            builder.Property(x => x.StatusRecebimento)
+                .IsRequired();
 
             builder.Property(x => x.CreatedAt)
              .IsRequired();
@@ -30,6 +32,11 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
 
             builder.Property(x => x.DeletedAt)
                 .IsRequired(false);
+
+            builder.HasOne(x => x.Empresa)
+                .WithMany()
+                .HasForeignKey(x => x.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(x => x.Fornecedor)
                 .WithMany(x => x.Recebimentos)

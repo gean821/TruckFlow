@@ -24,6 +24,13 @@ namespace TruckFlow.Application.Interfaces
                 ItemPlanejamentoUpdateDto ItemPlanejamentoResponseDto,
                 CancellationToken token = default
             );
+
+        public Task RegistrarRecebimentoManual(
+            Guid itemId,
+            decimal quantidade,
+            string? observacao,
+            Usuario usuario,
+            CancellationToken token = default);
     }
 }
 

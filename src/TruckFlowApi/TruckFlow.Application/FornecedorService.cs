@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,239 +25,197 @@ namespace TruckFlow.Application
         private readonly IValidator<FornecedorUpdateDto> _updateValidator;
         private readonly IProdutoRepositorio _produtoRepo;
         private readonly FornecedorFactory _factory;
+        private readonly CurrentUserGuard _currentUser;
 
         public FornecedorService(
             IFornecedorRepositorio repo,
             IValidator<FornecedorCreateDto> createValidator,
             IValidator<FornecedorUpdateDto> updateValidator,
+            IProdutoRepositorio produtoRepo,
             FornecedorFactory factory,
-            IProdutoRepositorio produtoRepo
-            )
+            CurrentUserGuard currentUser)
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
-            _factory = factory;
             _produtoRepo = produtoRepo;
+            _factory = factory;
+            _currentUser = currentUser;
         }
-
-        public async Task<FornecedorResponse> CreateFornecedor
-            (
-                FornecedorCreateDto fornecedor,
-                CancellationToken token = default
+        public async Task<FornecedorResponse> CreateFornecedor(
+            FornecedorCreateDto dto,
+            CancellationToken token = default
             )
         {
-            ValidationResult validationResult = await _createValidator.ValidateAsync(fornecedor, token);
+            var validation = await _createValidator.ValidateAsync(dto, token);
 
-            if (!validationResult.IsValid)
+            if (!validation.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                throw new ValidationException(validation.Errors);
             }
 
-            var cnpjLimpo = new string(fornecedor.Cnpj.Where(char.IsDigit).ToArray());
+            var empresaId = _currentUser.GetEmpresaId();
+
+            var cnpjLimpo = new string(dto.Cnpj.Where(char.IsDigit).ToArray());
+
             var existente = await _repo.GetByCnpj(cnpjLimpo, token);
-            
+
             if (existente != null)
             {
-                throw new BusinessException($"Já Existe um Fornecedor cadastrado com o CNPJ: {fornecedor.Cnpj}");
+                throw new BusinessException($"Já existe fornecedor com o CNPJ {dto.Cnpj}");
             }
 
-            List<Produto> produtos = new();
+            List<Produto> produtos = [];
 
-            if (fornecedor.ProdutoIds?.Count > 0)
+            if (dto.ProdutoIds?.Count == 0)
             {
-                produtos = await _produtoRepo.GetByIdsAsync(fornecedor.ProdutoIds, token);
+                produtos = await _produtoRepo.GetByIdsAsync(dto.ProdutoIds, token);
             }
 
-            fornecedor.Cnpj = cnpjLimpo;
-            var fornecedorCriado = await _factory.CreateFornecedorFromDto(fornecedor, produtos, token);
+            dto.Cnpj = cnpjLimpo;
 
-            await _repo.CreateFornecedor(fornecedorCriado, token);
+            var fornecedor = await _factory.CreateFornecedorFromDto(dto, empresaId, produtos);
+
+            await _repo.CreateFornecedor(fornecedor, token);
             await _repo.SaveChangesAsync(token);
 
-            return MapToResponse(fornecedorCriado);
+            return MapToResponse(fornecedor);
         }
 
-        public async Task<FornecedorResponse> GetById(Guid id, CancellationToken cancellatioToken = default)
+        public async Task<List<FornecedorResponse>> GetAll(CancellationToken token = default)
         {
-            var fornecedorEncontrado = await _repo.GetById(id, cancellatioToken)
-                ?? throw new NotFoundException("Fornecedor não encontrado");
-
-            return MapToResponse(fornecedorEncontrado);
+            var lista = await _repo.GetAll(token);
+            return lista.Select(MapToResponse).ToList();
         }
 
-        public async Task<FornecedorResponse> GetByCnpj(string cnpj, CancellationToken token = default)
-        {
-            var fornecedorEncontrado = await _repo.GetByCnpj(cnpj, token)
-               ?? throw new NotFoundException("Fornecedor não encontrado");
-
-            return MapToResponse(fornecedorEncontrado);
-        }
-
-
-        public async Task DeleteFornecedor(Guid id, CancellationToken cancellationToken = default)
-        {
-            var fornecedorEncontrado = await _repo.GetById(id, cancellationToken)
-                ?? throw new NotFoundException("Fornecedor não encontrado");
-
-            await _repo.Delete(fornecedorEncontrado.Id, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
-        }
-
-        public async Task<List<FornecedorResponse>> GetAll(CancellationToken cancellationToken = default)
-        {
-            var listaFornecedor = await _repo.GetAll(cancellationToken);
-
-            if (listaFornecedor.Count == 0)
-            {
-                return new List<FornecedorResponse>();
-            }
-
-            return MapListToResponse(listaFornecedor);
-        }
-
-        public async Task<FornecedorResponse> UpdateFornecedor
-            (
-                Guid id,
-                FornecedorUpdateDto fornecedor,
-                CancellationToken cancellationToken = default
-           )
-
-        {
-            ValidationResult validationResult = await _updateValidator.ValidateAsync(fornecedor, cancellationToken);
-
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
-
-            var fornecedorEncontrado = await _repo.GetById(id, cancellationToken)
-                ?? throw new NotFoundException("Fornecedor não encontrado.");
-
-            fornecedorEncontrado.Nome = fornecedor.Nome;
-            fornecedorEncontrado.Cnpj = fornecedor.Cnpj;
-            
-            
-            var fornecedorAtualizado = await _repo.Update(id, fornecedorEncontrado, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
-
-            return MapToResponse(fornecedorAtualizado);
-        }
-        public async Task<FornecedorResponse> GetByNome(string nome, CancellationToken token = default)
-        {
-            var fornecedorEncontrado = await _repo.GetByNome(nome, token)
-               ?? throw new NotFoundException("Fornecedor não encontrado");
-
-            return MapToResponse(fornecedorEncontrado);
-        }
-        public async Task<FornecedorResponse> GetByIdWithProdutosAsync
-            (
-               Guid id,
-               CancellationToken token = default
+        public async Task<FornecedorResponse> GetById(
+            Guid id,
+            CancellationToken token = default
             )
         {
-            var fornecedorEncontrado = await _repo.GetById(id, token)
-               ?? throw new NotFoundException("Fornecedor não encontrado");
+            var fornecedor = await _repo.GetById(id, token)
+                ?? throw new NotFoundException("Fornecedor não encontrado");
 
+            return MapToResponse(fornecedor);
+        }
+
+        public async Task<FornecedorResponse> GetByCnpj(
+            string cnpj,
+            CancellationToken token = default
+            ) 
+        {
+            var fornecedorEncontrado = await _repo.GetByCnpj(cnpj, token) 
+                ?? throw new NotFoundException("Fornecedor não encontrado");
+            
             return MapToResponse(fornecedorEncontrado);
         }
-        public async Task<FornecedorResponse> AddProdutoToFornecedorAsync
-          (
+
+        public async Task<FornecedorResponse> UpdateFornecedor(
+            Guid id,
+            FornecedorUpdateDto dto,
+            CancellationToken token = default)
+        {
+            var validation = await _updateValidator.ValidateAsync(dto, token);
+
+            if (!validation.IsValid)
+                throw new ValidationException(validation.Errors);
+
+            var fornecedor = await _repo.GetById(id, token)
+                ?? throw new NotFoundException("Fornecedor não encontrado");
+
+            ApplyPatch(fornecedor, dto);
+
+            await _repo.Update(fornecedor, token);
+
+            return MapToResponse(fornecedor);
+        }
+
+        public async Task DeleteFornecedor(
+            Guid id,
+            CancellationToken token = default
+            )
+        {
+            var fornecedor = await _repo.GetById(id, token)
+                ?? throw new NotFoundException("Fornecedor não encontrado");
+
+            await _repo.Delete(fornecedor, token);
+        }
+
+        public async Task<FornecedorResponse> AddProdutoToFornecedorAsync(
             Guid fornecedorId,
             Guid produtoId,
             CancellationToken token = default
-          )
-
+            )
         {
             var fornecedor = await _repo.GetByIdWithProdutosAsync(fornecedorId, token)
-                          ?? throw new NotFoundException("Fornecedor não encontrado");
+                ?? throw new NotFoundException("Fornecedor não encontrado");
 
-            var produto = await _produtoRepo.GetById(produtoId, token)
-                          ?? throw new NotFoundException("Produto não encontrado");
-            
+            var produto = await _produtoRepo.GetById(produtoId, token) 
+                ?? throw new NotFoundException("Produto não encontrado");
+
             if (fornecedor.Produtos.Any(p => p.Id == produto.Id))
             {
                 throw new BusinessException("Produto já associado a este fornecedor.");
             }
 
             fornecedor.Produtos.Add(produto);
+
             await _repo.SaveChangesAsync(token);
 
             return MapToResponse(fornecedor);
         }
-        public async Task<FornecedorResponse> DeleteProdutoFromFornecedorAsync
-            (
-               Guid fornecedorId,
-               Guid produtoId,
-               CancellationToken token = default
-            )
 
+        public async Task<FornecedorResponse> DeleteProdutoFromFornecedorAsync(
+            Guid fornecedorId,
+            Guid produtoId,
+            CancellationToken token = default
+            )
         {
             var fornecedor = await _repo.GetByIdWithProdutosAsync(fornecedorId, token)
                 ?? throw new NotFoundException("Fornecedor não encontrado");
 
-            var produto = fornecedor.Produtos.FirstOrDefault(p => p.Id == produtoId)
-                ?? throw new NotFoundException("Produto não associado a este fornecedor");
+            var produto = fornecedor.Produtos
+                .FirstOrDefault(p => p.Id == produtoId)
+                ?? throw new NotFoundException("Produto não associado");
 
             fornecedor.Produtos.Remove(produto);
+
             await _repo.SaveChangesAsync(token);
 
             return MapToResponse(fornecedor);
         }
-        public async Task<List<FornecedorResponse>> GetByIdWithProdutosAsync
-            (
-                IEnumerable<Guid> produtoIds,
-                CancellationToken token = default
-            )
+
+        private static void ApplyPatch(Fornecedor fornecedor, FornecedorUpdateDto dto)
         {
+            if (dto.Nome is not null)
+                fornecedor.Nome = dto.Nome;
 
-            if (produtoIds == null || !produtoIds.Any())
+            if (dto.Cnpj is not null)
             {
-                throw new ArgumentException("Nenhum ID de produto fornecido.");
+                var cnpjLimpo = new string(dto.Cnpj.Where(char.IsDigit).ToArray());
+                fornecedor.Cnpj = cnpjLimpo;
             }
 
-            var produtosEncontrados = await _produtoRepo.GetByIdsAsync(produtoIds, token);
-
-
-            if (produtosEncontrados == null || produtosEncontrados.Count == 0)
-            {
-                throw new NotFoundException("Nenhum produto encontrado para os IDs informados.");
-            }
-
-            var fornecedores = produtosEncontrados
-            .Where(p => p.Fornecedores != null)
-                .SelectMany(p => p.Fornecedores!)
-                .Distinct()
-                .ToList();
-
-            if (fornecedores.Count == 0) { 
-                throw new NotFoundException("Nenhum fornecedor associado encontrado para os produtos informados.");
-            }
-
-            return MapListToResponse(fornecedores);
+            fornecedor.UpdatedAt = DateTime.UtcNow;
         }
 
-        private static FornecedorResponse MapToResponse(Fornecedor f) => 
+        private static FornecedorResponse MapToResponse(Fornecedor f) =>
             new FornecedorResponse
-        {
+            {
                 Id = f.Id,
                 Nome = f.Nome,
-                CreatedAt = f.CreatedAt,
                 Cnpj = f.Cnpj,
-                Produtos = f.Produtos?.Select(x => new ProdutoResponse
+                CreatedAt = f.CreatedAt,
+                UpdatedAt = f.UpdatedAt,
+                Produtos = f.Produtos?.Select(p => new ProdutoResponse
                 {
-                    Id = x.Id,
-                    CreatedAt = x.CreatedAt,
-                    LocalDescarga = x.LocalDescarga.Nome,
-                    LocalDescargaId = x.LocalDescargaId,
-                    Nome = x.Nome
+                    Id = p.Id,
+                    Nome = p.Nome,
+                    LocalDescarga = p.LocalDescarga.Nome,
+                    LocalDescargaId = p.LocalDescargaId,
+                    CreatedAt = p.CreatedAt
                 }).ToList()
-        };
-
-        private static List<FornecedorResponse> MapListToResponse
-            (
-                IEnumerable<Fornecedor> fornecedores
-            ) => fornecedores.Select(MapToResponse).ToList();
+            };
     }
 }
 

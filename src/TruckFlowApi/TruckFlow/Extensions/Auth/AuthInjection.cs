@@ -12,6 +12,7 @@ namespace TruckFlow.Extensions.Auth
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
             {
@@ -21,10 +22,20 @@ namespace TruckFlow.Extensions.Auth
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    ValidIssuer = builder.Configuration["JwtOptions:Issuer"],
+                    ValidAudience = builder.Configuration["JwtOptions:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ClockSkew = TimeSpan.Zero // sem tolerância de expiração
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnChallenge = context =>
+                    {
+                        context.HandleResponse(); // previne redirect
+                        context.Response.StatusCode = 401;
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

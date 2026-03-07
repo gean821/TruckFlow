@@ -12,6 +12,7 @@ using TruckFlow.Domain.Dto.User.Motorista;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
+using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
 {
@@ -20,12 +21,14 @@ namespace TruckFlow.Application
         private readonly UserManager<Usuario> _userManager;
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly IAuthService _authService;
+        private readonly IEmpresaRepositorio _empresaRepo;
         private readonly AppDbContext _db;
 
         public UsuarioService(
             UserManager<Usuario> userManager,
             RoleManager<IdentityRole<Guid>> roleManager,
             IAuthService authService,
+            IEmpresaRepositorio empresaRepo,
             AppDbContext db
         )
         {
@@ -33,6 +36,7 @@ namespace TruckFlow.Application
             _roleManager = roleManager;
             _authService = authService;
             _db = db;
+            _empresaRepo = empresaRepo;
         }
 
         public async Task<UserAdminResponseDto> RegisterAdminAsync
@@ -41,6 +45,8 @@ namespace TruckFlow.Application
                 CancellationToken token = default
             )
         {
+            var empresa = await _empresaRepo.GetById(dto.EmpresaId, token);
+
             var usuario = new Usuario
             {
                 Id = Guid.NewGuid(),
@@ -48,6 +54,8 @@ namespace TruckFlow.Application
                 Email = dto.Email,
                 CreatedAt = DateTime.UtcNow,
                 PhoneNumber = dto.Telefone,
+                Empresa = empresa,
+                EmpresaId = dto.EmpresaId
             };
 
             var usuarioCriado = await _userManager.CreateAsync(usuario, dto.Password);
@@ -80,7 +88,10 @@ namespace TruckFlow.Application
             return await MapUsuarioAsync(usuario);
         }
 
-        public async Task<LoginAdminResponseDto> LoginAdminAsync(UserAdminLoginDto dto, CancellationToken ct = default)
+        public async Task<LoginAdminResponseDto> LoginAdminAsync(
+            UserAdminLoginDto dto,
+            CancellationToken ct = default
+            )
         {
             Usuario? usuario;
 
@@ -116,9 +127,15 @@ namespace TruckFlow.Application
         {
             throw new NotImplementedException();
         }
-        public Task<UserAdminResponseDto> GetAdminByIdAsync(Guid id, CancellationToken token)
+        public async Task<UserAdminResponseDto> GetAdminByIdAsync(
+            Guid id,
+            CancellationToken token = default
+            )
         {
-            throw new NotImplementedException();
+            var usuario = await _userManager.FindByIdAsync(id.ToString())
+                            ?? throw new NotFoundException("Usuário não encontrado.");
+
+            return await MapUsuarioAsync(usuario);
         }
         public async Task<UserAdminResponseDto> UpdateAdminAsync
             (
@@ -138,7 +155,10 @@ namespace TruckFlow.Application
             await _userManager.UpdateAsync(usuario);
             return await MapUsuarioAsync(usuario);
         }
-        public async Task DeleteAdminAsync(Guid id, CancellationToken token = default)
+        public async Task DeleteAdminAsync(
+            Guid id,
+            CancellationToken token = default
+            )
         {
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuario não encontrado.");
@@ -200,8 +220,6 @@ namespace TruckFlow.Application
             )
         {
             Usuario? usuario;
-
-            
 
             if (dto.Login.Contains('@'))
             {
@@ -278,7 +296,9 @@ namespace TruckFlow.Application
             return await MapMotoristaAsync(usuario);
         }
 
-        public async Task DeleteMotoristaAsync(Guid id, CancellationToken token = default)
+        public async Task DeleteMotoristaAsync(
+            Guid id,
+            CancellationToken token = default)
         {
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuario não encontrado.");
@@ -288,7 +308,10 @@ namespace TruckFlow.Application
             await _userManager.UpdateAsync(usuario);
         }
 
-        public async Task ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
+        public async Task ChangePasswordAsync(
+            Guid userId,
+            string currentPassword,
+            string newPassword)
         {
             var usuario = await _userManager.FindByIdAsync(userId.ToString())
                 ?? throw new NotFoundException("Usuário não encontrado");
@@ -314,11 +337,13 @@ namespace TruckFlow.Application
                 Id = usuario.Id,
                 Username = usuario.UserName!,
                 Email = usuario.Email!,
-                Role = roles.First(),
+                Role = roles.First() ?? "User",
                 CreatedAt = usuario.CreatedAt,
                 UpdatedAt = usuario.UpdatedAt,
                 DeletedAt = usuario.DeletedAt,
-                NomeReal = usuario?.Administrador?.Nome
+                NomeReal = usuario?.Administrador?.Nome,
+                Empresa = usuario?.Empresa?.NomeFantasia,
+                EmpresaId = usuario?.EmpresaId
             };
         }
 

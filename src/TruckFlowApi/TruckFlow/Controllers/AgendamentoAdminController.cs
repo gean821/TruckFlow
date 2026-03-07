@@ -81,6 +81,18 @@ namespace TruckFlow.Controllers
             return Ok(agendamento);
         }
 
+        [HttpPost("{id}/finalizar")]
+        public async Task<IActionResult> Finalizar
+            (
+                Guid id,
+                [FromBody] decimal quantidadeRecebida,
+                CancellationToken token = default
+            )
+        {
+            await _service.FinalizarAgendamento(id, quantidadeRecebida, token);
+            return NoContent();
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAgendamento(
           [FromRoute] Guid id,

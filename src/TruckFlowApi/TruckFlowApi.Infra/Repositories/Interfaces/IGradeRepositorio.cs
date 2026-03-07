@@ -9,7 +9,7 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
 {
     public interface IGradeRepositorio
     {
-        public Task<Grade> GetById(Guid id, CancellationToken token = default);
+        public Task<Grade?> GetById(Guid id, CancellationToken token = default);
         public Task<List<Grade>> GetAll(CancellationToken token = default);
         public Task<Grade> CreateGrade(Grade grade, CancellationToken token = default);
         public Task<Grade> Update(Grade grade, CancellationToken token = default);

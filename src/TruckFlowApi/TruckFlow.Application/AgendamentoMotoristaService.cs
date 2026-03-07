@@ -114,7 +114,6 @@ namespace TruckFlow.Application
                 Status = agendamento.StatusAgendamento.ToString()
             };
         }
-
     }
 }
 

@@ -8,7 +8,7 @@ namespace TruckFlow.Domain.Dto.Produto
 {
     public class ProdutoEditDto
     {
-        public required string Nome { get; set; }
-        public required Guid LocalDescargaId { get; set; }
+        public string? Nome { get; set; }
+        public Guid? LocalDescargaId { get; set; }
     }
 }

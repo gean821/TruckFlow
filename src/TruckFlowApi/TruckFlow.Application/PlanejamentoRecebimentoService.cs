@@ -24,6 +24,8 @@ namespace TruckFlow.Application
         private readonly IValidator<RecebimentoUpdateDto> _updateValidator;
         private readonly RecebimentoFactory _factory;
         private readonly IProdutoRepositorio _produtoRepositorio;
+        private readonly IEmpresaRepositorio _empresaRepo;
+
 
         public PlanejamentoRecebimentoService
             (
@@ -32,7 +34,8 @@ namespace TruckFlow.Application
                 IValidator<RecebimentoUpdateDto> updateValidator,
                 RecebimentoFactory factory,
                 IFornecedorRepositorio repo,
-                IProdutoRepositorio produtoRepositorio
+                IProdutoRepositorio produtoRepositorio,
+                IEmpresaRepositorio empresaRepo
             )
         {
             _planeRepo = planeRepo;
@@ -41,6 +44,7 @@ namespace TruckFlow.Application
             _factory = factory;
             _forRepo = repo;
             _produtoRepositorio = produtoRepositorio;
+            _empresaRepo = empresaRepo;
         }
 
         public async Task<RecebimentoResponseDto> CreateRecebimento
@@ -105,6 +109,9 @@ namespace TruckFlow.Application
             var produtosIds = recebimento.ItensPlanejamento!.Select(x => x.ProdutoId).ToList();
             var produtos = await _produtoRepositorio.GetByIdsAsync(produtosIds, token);
 
+            var empresa = await _empresaRepo.GetById(recebimento.EmpresaId, token)
+                ?? throw new NotFoundException("Empresa não encontrada.");
+
 
             recebimentoEncontrado.Fornecedor = fornecedor;
             recebimentoEncontrado.FornecedorId = fornecedor.Id;
@@ -122,6 +129,7 @@ namespace TruckFlow.Application
                     {
                         ProdutoId = produto.Id,
                         Produto = produto,
+                        Empresa = empresa,
                         PlanejamentoRecebimentoId = recebimentoEncontrado.Id,
                         PlanejamentoRecebimento = recebimentoEncontrado,
                         QuantidadeTotalPlanejada = x.QuantidadeTotalPlanejada,
@@ -137,26 +145,7 @@ namespace TruckFlow.Application
         public async Task<List<RecebimentoResponseDto>> GetAll(CancellationToken token = default)
         {
             var listaRecebimento = await _planeRepo.GetAll(token);
-
-            return listaRecebimento.Select(recebimento => new RecebimentoResponseDto
-            {
-                Id = recebimento.Id,
-                DataInicio = recebimento.DataInicio,
-                FornecedorNome = recebimento.Fornecedor.Nome,
-                TotalItens = recebimento.ItemPlanejamentos.Count,
-                CreatedAt = recebimento.CreatedAt,
-                Itens = recebimento.ItemPlanejamentos.Select(item => new ItemPlanejamentoResponseDto
-                {
-                    Id = item.Id,
-                    Produto = item.Produto!.Nome,
-                    CadenciaDiariaPlanejada = item.CadenciaDiariaPlanejada,
-                    QuantidadeTotalPlanejada = item.QuantidadeTotalPlanejada,
-                    QuantidadeTotalRecebida = item.QuantidadeTotalRecebida,
-                    FaltaReceber = item.QuantidadeTotalPlanejada - item.QuantidadeTotalRecebida,
-                    Fornecedor = recebimento.Fornecedor.Nome,
-                    CreatedAt = item.CreatedAt
-                }).ToList()
-            }).ToList();
+            return listaRecebimento.Select(MapToResponse).ToList();
         }
 
         private static RecebimentoResponseDto MapToResponse(PlanejamentoRecebimento recebimento) =>
@@ -179,6 +168,5 @@ namespace TruckFlow.Application
                     CreatedAt = x.CreatedAt
                 }).ToList()
             };
-            
     }
 }

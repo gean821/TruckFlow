@@ -8,14 +8,15 @@ namespace TruckFlow.Domain.Dto.Grade
 {
     public class GradeUpdateDto
     {
-        public Guid FornecedorId { get; set; }
-        public Guid  ProdutoId { get; set; }
-        public required DateOnly DataInicio { get; set; }
-        public required DateOnly DataFim { get; set; }
-        public required TimeOnly HoraInicial { get; set; }
-        public required TimeOnly HoraFinal { get; set; }
-        public required int IntervaloMinutos { get; set; }
-        public string DiasSemana { get; set; } = string.Empty;
+        public Guid? FornecedorId { get; set; }
+        public Guid?  ProdutoId { get; set; }
+        public Guid? LocalDescargaId { get; set; }
+        public  DateOnly? DataInicio { get; set; }
+        public DateOnly? DataFim { get; set; }
+        public TimeOnly? HoraInicial { get; set; }
+        public TimeOnly? HoraFinal { get; set; }
+        public int? IntervaloMinutos { get; set; }
+        public string? DiasSemana { get; set; } = string.Empty;
         public DateTime? UpdatedAt { get; set; }
     }
 }

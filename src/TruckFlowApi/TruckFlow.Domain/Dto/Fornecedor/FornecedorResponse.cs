@@ -14,5 +14,6 @@ namespace TruckFlow.Domain.Dto.Fornecedor
         public string? Cnpj { get; set; }
         public ICollection<ProdutoResponse>? Produtos { get; set; } = [];
         public required DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

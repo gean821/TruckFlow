@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Domain.Contracts;
 
 namespace TruckFlow.Domain.Entities
 {
-    public class NotaFiscalItem : EntidadeBase
+    public class NotaFiscalItem : EntidadeBase, IEmpresaScoped
     {
         public Guid NotaFiscalId { get; set; }
         public required NotaFiscal NotaFiscal { get; set; }
@@ -16,5 +17,8 @@ namespace TruckFlow.Domain.Entities
         public string? Unidade { get; set; }
         public required decimal ValorUnitario { get; set; }
         public required decimal ValorTotal { get; set; }
+
+        public Guid EmpresaId { get; set; }
+        public Empresa? Empresa { get; set; }
     }
 }

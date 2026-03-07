@@ -19,144 +19,129 @@ namespace TruckFlow.Application
         private readonly IProdutoRepositorio _repo;
         private readonly IValidator<ProdutoCreateDto> _createValidator;
         private readonly IValidator<ProdutoEditDto> _editValidator;
-        private readonly ILocalDescargaRepositorio _localRepo;
         private readonly ProdutoFactory _factory;
+        private readonly ILocalDescargaRepositorio _localRepo;
+        private readonly CurrentUserGuard _currentUser;
 
         public ProdutoService(
             IProdutoRepositorio repo,
             IValidator<ProdutoCreateDto> createValidator,
             IValidator<ProdutoEditDto> editValidator,
             ProdutoFactory factory,
-            ILocalDescargaRepositorio localRepo
-            )
+            ILocalDescargaRepositorio localRepo,
+            CurrentUserGuard currentUser)
         {
             _repo = repo;
             _createValidator = createValidator;
             _editValidator = editValidator;
             _factory = factory;
             _localRepo = localRepo;
+            _currentUser = currentUser;
         }
 
         public async Task<ProdutoResponse> CreateProduto(
-            ProdutoCreateDto produto,
-            CancellationToken cancellationToken = default)
+            ProdutoCreateDto dto,
+            CancellationToken token = default
+            )
         {
-            ValidationResult validationResult = await _createValidator.ValidateAsync(produto, cancellationToken);
-            
-            if (!validationResult.IsValid)
+            var validation = await _createValidator.ValidateAsync(dto, token);
+
+            if (!validation.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                throw new ValidationException(validation.Errors);
             }
 
-            var produtoCriado = await _factory.CreateProdutoFromDto(produto, cancellationToken);
+            var empresaId = _currentUser.GetEmpresaId();
 
-            await _repo.CreateProduto(produtoCriado, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
+            var entity = await _factory.CreateProdutoFromDto(dto, empresaId, token);
 
-            return new ProdutoResponse
-            {
-                Id = produtoCriado.Id,
-                Nome = produtoCriado.Nome,
-                LocalDescarga = produtoCriado.LocalDescarga.Nome,
-                LocalDescargaId = produtoCriado.LocalDescargaId,
-                CreatedAt = produtoCriado.CreatedAt
-            };
+            await _repo.CreateProduto(entity, token);
+
+            return MapToResponse(entity);
         }
 
-        public async Task<ProdutoResponse> GetById(Guid id, CancellationToken cancellationToken = default)
+        public async Task<List<ProdutoResponse>> GetAll(CancellationToken token = default)
         {
-            var produtoEncontrado = await _repo.GetById(id, cancellationToken) ?? 
-                throw new NotFoundException("Produto não encontrado");
+            var lista = await _repo.GetAll(token);
 
-            return new ProdutoResponse
-            {
-                Id = produtoEncontrado.Id,
-                Nome = produtoEncontrado.Nome,
-                LocalDescarga = produtoEncontrado.LocalDescarga.Nome,
-                LocalDescargaId = produtoEncontrado.LocalDescargaId,
-                CreatedAt = produtoEncontrado.CreatedAt
-            };
+            return lista.Select(MapToResponse).ToList();
         }
 
-        public async Task DeleteProduto(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ProdutoResponse> GetById(
+            Guid id,
+            CancellationToken token = default
+            )
         {
-            var produtoEncontrado = await _repo.GetById(id, cancellationToken) 
+            var produto = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Produto não encontrado");
 
-            await _repo.DeleteProduto(produtoEncontrado.Id, cancellationToken);
-            
-            await _repo.SaveChangesAsync(cancellationToken);
+            return MapToResponse(produto);
         }
 
-        public async Task<List<ProdutoResponse>> GetAll(CancellationToken cancellationToken = default)
+        public async Task DeleteProduto(
+            Guid id,
+            CancellationToken token = default
+            )
         {
-            var listaProdutos = await _repo.GetAll(cancellationToken);
-            
-            if (listaProdutos.Count == 0)
-            {
-                return new List<ProdutoResponse>();
-            }
+            var produto = await _repo.GetById(id, token)
+                ?? throw new NotFoundException("Produto não encontrado");
 
-            var listaProdutosDto = listaProdutos.Select(x => new ProdutoResponse
-            {
-                Id = x.Id,
-                Nome = x.Nome,
-                LocalDescarga = x.LocalDescarga.Nome,
-                LocalDescargaId = x.LocalDescargaId,
-                CreatedAt = x.CreatedAt
-            }).ToList();
-
-            return listaProdutosDto;
+            await _repo.DeleteProduto(produto, token);
         }
-
 
         public async Task<ProdutoResponse> UpdateProduto(
             Guid id,
-            ProdutoEditDto produto,
-            CancellationToken cancellationToken = default)
+            ProdutoEditDto dto,
+            CancellationToken token = default)
         {
-            var localDescarga = await _localRepo.GetById(produto.LocalDescargaId, cancellationToken) 
-                ?? throw new NotFoundException("Local de descarga não encontrado");
+            var validation = await _editValidator.ValidateAsync(dto, token);
 
-            ValidationResult validationResult = await _editValidator.ValidateAsync(produto, cancellationToken);
-
-            if (!validationResult.IsValid)
+            if (!validation.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                throw new ValidationException(validation.Errors);
             }
 
-            var produtoEncontrado = await _repo.GetById(id, cancellationToken)
+            var produto = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Produto não encontrado");
 
+            await ApplyPatch(produto, dto, token);
 
-            produtoEncontrado.Nome = produto.Nome;
-            produtoEncontrado.LocalDescarga = localDescarga;
-            produtoEncontrado.LocalDescargaId = localDescarga.Id;
-            produtoEncontrado.UpdatedAt = DateTime.UtcNow;
+            await _repo.UpdateProduto(produto, token);
 
-            var produtoAtualizado = await _repo.UpdateProduto(id, produtoEncontrado, cancellationToken);
-            await _repo.SaveChangesAsync(cancellationToken);
-
-            return new ProdutoResponse
-            {
-                Id = produtoAtualizado.Id,
-                Nome = produtoAtualizado.Nome,
-                LocalDescarga = produtoAtualizado.LocalDescarga.Nome,
-                LocalDescargaId = produtoAtualizado.LocalDescargaId,
-                CreatedAt = produtoAtualizado.CreatedAt,
-                UpdatedAt = produtoAtualizado.UpdatedAt
-            };
+            return MapToResponse(produto);
         }
 
-        private ProdutoResponse MapToResponse(Produto p) => 
+        private async Task ApplyPatch(
+            Produto produto,
+            ProdutoEditDto dto,
+            CancellationToken token
+            )
+        {
+            if (dto.Nome is not null)
+                produto.Nome = dto.Nome;
 
+            if (dto.LocalDescargaId is not null)
+            {
+                var localDescarga = await _localRepo.GetById(dto.LocalDescargaId.Value, token)
+                    ?? throw new NotFoundException("Local de descarga não encontrado");
+
+                produto.LocalDescarga = localDescarga;
+                produto.LocalDescargaId = localDescarga.Id;
+            }
+
+            produto.UpdatedAt = DateTime.UtcNow;
+        }
+
+        private static ProdutoResponse MapToResponse(Produto p) =>
             new ProdutoResponse
             {
-                Id = p.Id, 
+                Id = p.Id,
                 Nome = p.Nome,
                 LocalDescarga = p.LocalDescarga.Nome,
                 LocalDescargaId = p.LocalDescargaId,
-                CreatedAt = p.CreatedAt
+                CodigoEan = p.CodigoEan,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt
             };
-       }
+    }
 }

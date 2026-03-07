@@ -8,8 +8,10 @@ namespace TruckFlow.Domain.Dto.LocalDescarga
 {
     public class LocalDescargaUpdateDto
     {
-        public required string Nome { get; set; }
-        public Guid? ProdutoId { get; set; }
+        public string Nome { get; set; } = string.Empty;
+        public Guid UnidadeEntregaId { get; set; }
+        public Guid ProdutoId { get; set; }
+        public bool? Status { get; set; }
     }
 }
 

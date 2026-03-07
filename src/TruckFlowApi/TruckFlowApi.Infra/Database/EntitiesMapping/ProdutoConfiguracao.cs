@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Database.EntitiesMapping
@@ -18,30 +13,26 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.HasKey(x => x.Id);
 
             builder.Property(x => x.Nome)
-                .IsRequired();
+                .IsRequired()
+                .HasMaxLength(250);
 
             builder.Property(x => x.CodigoEan)
-                .IsRequired(false)
                 .HasMaxLength(14);
 
             builder.HasOne(x => x.LocalDescarga)
                 .WithMany(x => x.Produtos)
                 .HasForeignKey(x => x.LocalDescargaId)
-                .IsRequired();
+                .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(x => x.Fornecedores)
+            builder.HasMany(x => x.ProdutoFornecedores)
+                .WithOne(x => x.Produto)
+                .HasForeignKey(x => x.ProdutoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(x => x.Empresa)
                 .WithMany(x => x.Produtos)
-                .UsingEntity<ProdutoFornecedor>(x => x.HasOne(pf => pf.Fornecedor)
-                .WithMany()
-                .HasForeignKey(pf => pf.FornecedorId),
-                x => x.HasOne(x => x.Produto)
-                .WithMany()
-                .HasForeignKey(x => x.ProdutoId),
-                x =>
-                {
-                    x.HasKey(pf => new { pf.ProdutoId, pf.FornecedorId });
-                    x.ToTable("ProdutoFornecedor");
-                });
+                .HasForeignKey(x => x.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
