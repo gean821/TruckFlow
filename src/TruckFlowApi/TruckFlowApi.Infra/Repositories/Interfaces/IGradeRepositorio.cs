@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Domain.Dto.Shared;
 
 namespace TruckFlowApi.Infra.Repositories.Interfaces
 {
@@ -11,6 +12,10 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
     {
         public Task<Grade?> GetById(Guid id, CancellationToken token = default);
         public Task<List<Grade>> GetAll(CancellationToken token = default);
+        public Task<PagedResponse<Grade>> GetPagedAsync(
+             int pageNumber,
+             int pageSize,
+             CancellationToken token = default);
         public Task<Grade> CreateGrade(Grade grade, CancellationToken token = default);
         public Task<Grade> Update(Grade grade, CancellationToken token = default);
         public Task Delete(Grade grade, CancellationToken token = default);

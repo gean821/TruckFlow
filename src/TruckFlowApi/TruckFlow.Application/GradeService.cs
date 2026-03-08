@@ -13,6 +13,7 @@ using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Fornecedor;
 using TruckFlow.Domain.Dto.Grade;
 using TruckFlow.Domain.Dto.Produto;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -52,6 +53,29 @@ namespace TruckFlow.Application
             _agendamentoRepo = agendamentoRepositorio;
             _localDescargaRepo = descargaRepo;
             _currentUser = guard;
+        }
+
+        public async Task<PagedResponse<GradeResponse>> GetPagedGrades(
+            int pageNumber,
+            int pageSize,
+            CancellationToken token = default)
+        {
+            if (pageNumber <= 0)
+                pageNumber = 1;
+
+            if (pageSize <= 0)
+                pageSize = 10;
+
+            var pagedGrades = await _repo.GetPagedAsync(pageNumber, pageSize, token);
+
+            return new PagedResponse<GradeResponse>
+            {
+                Items = pagedGrades.Items.Select(MapToResponse).ToList(),
+                PageNumber = pagedGrades.PageNumber,
+                PageSize = pagedGrades.PageSize,
+                TotalCount = pagedGrades.TotalCount,
+                TotalPages = pagedGrades.TotalPages
+            };
         }
 
         public async Task<GradeResponse> CreateGrade(
@@ -227,8 +251,8 @@ namespace TruckFlow.Application
                 HoraFinal = g.HoraFinal,
                 IntervaloMinutos = g.IntervaloMinutos,
                 DiasSemana = g.DiasSemana,
-                UnidadeEntrega = g.UnidadeEntrega.Nome.ToString(),
-                LocalDescarga = g.LocalDescarga.Nome.ToString(),
+                UnidadeEntrega = g.UnidadeEntrega != null ? g.UnidadeEntrega.Nome.ToString() : string.Empty,
+                LocalDescarga = g.LocalDescarga != null ? g.LocalDescarga.Nome.ToString() : string.Empty,
                 CreatedAt = g.CreatedAt,
                 UpdatedAt = g.UpdatedAt
             };

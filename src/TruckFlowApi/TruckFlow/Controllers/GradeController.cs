@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Grade;
-using TruckFlow.Domain.Dto.Produto;
-using TruckFlow.Domain.Entities;
+
 
 namespace TruckFlow.Controllers
 {
-
     [ApiController]
     [Route("v1/[Controller]")]
     public class GradeController(IGradeService service) : ControllerBase
@@ -36,9 +34,12 @@ namespace TruckFlow.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken ct = default)
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            CancellationToken ct = default)
         {
-            var lista = await _service.GetAll(ct);
+            var lista = await _service.GetPagedGrades(pageNumber, pageSize, ct);
             return Ok(lista);
         }
 

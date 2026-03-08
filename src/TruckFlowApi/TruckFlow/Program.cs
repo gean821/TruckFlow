@@ -92,15 +92,6 @@ namespace TruckFlow
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
             });
 
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                options.ListenAnyIP(56611);
-                options.ListenAnyIP(56610, listenOptions =>
-            {
-                listenOptions.UseHttps();
-                });
-            });
-
             var app = builder.Build();
 
             app.UseRouting();

@@ -9,6 +9,7 @@ using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
 using TruckFlowApi.Infra.Repositories.Interfaces;
+using TruckFlow.Domain.Dto.Shared;
 
 namespace TruckFlowApi.Infra.Repositories
 {
@@ -35,6 +36,36 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x=> x.UnidadeEntrega)
                 .ToListAsync(token);
         }
+
+        public async Task<PagedResponse<Grade>> GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+         CancellationToken token = default)
+            {
+                var query = _db.Grade
+                    .AsNoTracking()
+                    .Include(x => x.Produto)
+                    .Include(x => x.UnidadeEntrega)
+                    .Include(x => x.Fornecedor)
+                    .Include(x => x.LocalDescarga)
+                    .AsQueryable();
+
+                var totalCount = await query.CountAsync(token);
+
+                var items = await query
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync(token);
+
+                return new PagedResponse<Grade>
+                {
+                    Items = items,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                };
+            }
 
         public async Task<Grade?> GetById(
             Guid id,
