@@ -11,10 +11,9 @@ namespace TruckFlow.Application.Interfaces
     public interface IGradeService
     {
         public Task<List<GradeResponse>> GetAll(CancellationToken cancellationToken = default);
-        public Task<PagedResponse<GradeResponse>> GetPagedGrades(
-        int pageNumber,
-        int pageSize,
-        CancellationToken token = default);
+        Task<PagedResponse<GradeResponse>> GetPagedGrades(
+            GradeListQueryDto query,
+            CancellationToken token = default);
         public Task<GradeResponse> GetById(Guid id, CancellationToken cancellationToken = default);
         public Task<GradeResponse> CreateGrade(GradeCreateDto grade, CancellationToken cancellationToken = default);
         public Task<GradeResponse> UpdateGrade(Guid id, GradeUpdateDto produto, CancellationToken cancellationToken = default);

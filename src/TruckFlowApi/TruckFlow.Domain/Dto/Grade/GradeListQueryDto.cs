@@ -14,7 +14,7 @@ namespace TruckFlow.Domain.Dto.Grade
         public Guid? ProdutoId { get; set; }
         public Guid? FornecedorId { get; set; }
         public Guid? LocalDescargaId { get; set; }
-
+         
         public DateOnly? DataInicio { get; set; }
         public DateOnly? DataFim { get; set; }
 

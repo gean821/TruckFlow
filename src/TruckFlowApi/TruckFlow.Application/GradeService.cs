@@ -56,25 +56,18 @@ namespace TruckFlow.Application
         }
 
         public async Task<PagedResponse<GradeResponse>> GetPagedGrades(
-            int pageNumber,
-            int pageSize,
+            GradeListQueryDto query,
             CancellationToken token = default)
         {
-            if (pageNumber <= 0)
-                pageNumber = 1;
-
-            if (pageSize <= 0)
-                pageSize = 10;
-
-            var pagedGrades = await _repo.GetPagedAsync(pageNumber, pageSize, token);
+            var result = await _repo.GetPagedAsync(query, token);
 
             return new PagedResponse<GradeResponse>
             {
-                Items = pagedGrades.Items.Select(MapToResponse).ToList(),
-                PageNumber = pagedGrades.PageNumber,
-                PageSize = pagedGrades.PageSize,
-                TotalCount = pagedGrades.TotalCount,
-                TotalPages = pagedGrades.TotalPages
+                Items = result.Items.Select(MapToResponse).ToList(),
+                PageNumber = result.PageNumber,
+                PageSize = result.PageSize,
+                TotalCount = result.TotalCount,
+                TotalPages = result.TotalPages
             };
         }
 

@@ -35,11 +35,10 @@ namespace TruckFlow.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetAll(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
+            [FromQuery] GradeListQueryDto query,
             CancellationToken ct = default)
         {
-            var lista = await _service.GetPagedGrades(pageNumber, pageSize, ct);
+            var lista = await _service.GetPagedGrades(query, ct);
             return Ok(lista);
         }
 

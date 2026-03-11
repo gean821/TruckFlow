@@ -10,6 +10,7 @@ using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 using TruckFlow.Domain.Dto.Shared;
+using TruckFlow.Domain.Dto.Grade;
 
 namespace TruckFlowApi.Infra.Repositories
 {
@@ -38,34 +39,63 @@ namespace TruckFlowApi.Infra.Repositories
         }
 
         public async Task<PagedResponse<Grade>> GetPagedAsync(
-        int pageNumber,
-        int pageSize,
-         CancellationToken token = default)
+            GradeListQueryDto query,
+            CancellationToken token = default)
+        {
+            var dbQuery = _db.Grade
+                .AsNoTracking()
+                .Include(x => x.Produto)
+                .Include(x => x.UnidadeEntrega)
+                .Include(x => x.Fornecedor)
+                .Include(x => x.LocalDescarga)
+                .AsQueryable();
+
+            if (query.ProdutoId.HasValue)
+                dbQuery = dbQuery.Where(x => x.ProdutoId == query.ProdutoId.Value);
+
+            if (query.FornecedorId.HasValue)
+                dbQuery = dbQuery.Where(x => x.FornecedorId == query.FornecedorId.Value);
+
+            if (query.LocalDescargaId.HasValue)
+                dbQuery = dbQuery.Where(x => x.LocalDescargaId == query.LocalDescargaId.Value);
+
+            if (query.DataInicio.HasValue)
+                dbQuery = dbQuery.Where(x => x.DataInicio >= query.DataInicio.Value);
+
+            if (query.DataFim.HasValue)
+                dbQuery = dbQuery.Where(x => x.DataFim <= query.DataFim.Value);
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
             {
-                var query = _db.Grade
-                    .AsNoTracking()
-                    .Include(x => x.Produto)
-                    .Include(x => x.UnidadeEntrega)
-                    .Include(x => x.Fornecedor)
-                    .Include(x => x.LocalDescarga)
-                    .AsQueryable();
+                var search = query.Search.Trim();
 
-                var totalCount = await query.CountAsync(token);
-
-                var items = await query
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync(token);
-
-                return new PagedResponse<Grade>
-                {
-                    Items = items,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
-                    TotalCount = totalCount,
-                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
-                };
+                dbQuery = dbQuery.Where(x =>
+                    x.Produto.Nome.Contains(search) ||
+                    x.Fornecedor.Nome.Contains(search) ||
+                    (x.LocalDescarga != null && x.LocalDescarga.Nome.Contains(search)) ||
+                    (x.UnidadeEntrega != null && x.UnidadeEntrega.Nome.Contains(search)));
             }
+
+            var pageNumber = query.PageNumber <= 0 ? 1 : query.PageNumber;
+            var pageSize = query.PageSize <= 0 ? 10 : query.PageSize;
+
+            var totalCount = await dbQuery.CountAsync(token);
+
+            var items = await dbQuery
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(token);
+
+            return new PagedResponse<Grade>
+            {
+                Items = items,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
+        }
 
         public async Task<Grade?> GetById(
             Guid id,
