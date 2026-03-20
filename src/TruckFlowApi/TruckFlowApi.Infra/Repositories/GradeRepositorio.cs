@@ -107,7 +107,6 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Fornecedor)
                 .Include(x => x.LocalDescarga)
-                .Include(x => x.UnidadeEntrega)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
         }
 

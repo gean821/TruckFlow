@@ -70,7 +70,6 @@ namespace TruckFlow.Application
                 TotalPages = result.TotalPages
             };
         }
-
         public async Task<GradeResponse> CreateGrade(
             GradeCreateDto dto,
             CancellationToken token = default)
@@ -116,7 +115,6 @@ namespace TruckFlow.Application
             var listarGrades = await _repo.GetAll(cancellationToken);
             return listarGrades.Select(MapToResponse).ToList();
         }
-
         public async Task<GradeResponse> GetById(
             Guid id,
             CancellationToken cancellationToken = default
@@ -229,9 +227,7 @@ namespace TruckFlow.Application
 
             grade.UpdatedAt = DateTime.UtcNow;
         }
-
         private static GradeResponse MapToResponse(Grade g) =>
-            
             new GradeResponse
             {
                 Id = g.Id,
