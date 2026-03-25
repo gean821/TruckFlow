@@ -13,6 +13,7 @@ using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Fornecedor;
 using TruckFlow.Domain.Dto.Grade;
 using TruckFlow.Domain.Dto.Produto;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -54,6 +55,21 @@ namespace TruckFlow.Application
             _currentUser = guard;
         }
 
+        public async Task<PagedResponse<GradeResponse>> GetPagedGrades(
+            GradeListQueryDto query,
+            CancellationToken token = default)
+        {
+            var result = await _repo.GetPagedAsync(query, token);
+
+            return new PagedResponse<GradeResponse>
+            {
+                Items = result.Items.Select(MapToResponse).ToList(),
+                PageNumber = result.PageNumber,
+                PageSize = result.PageSize,
+                TotalCount = result.TotalCount,
+                TotalPages = result.TotalPages
+            };
+        }
         public async Task<GradeResponse> CreateGrade(
             GradeCreateDto dto,
             CancellationToken token = default)
@@ -99,7 +115,6 @@ namespace TruckFlow.Application
             var listarGrades = await _repo.GetAll(cancellationToken);
             return listarGrades.Select(MapToResponse).ToList();
         }
-
         public async Task<GradeResponse> GetById(
             Guid id,
             CancellationToken cancellationToken = default
@@ -212,9 +227,7 @@ namespace TruckFlow.Application
 
             grade.UpdatedAt = DateTime.UtcNow;
         }
-
         private static GradeResponse MapToResponse(Grade g) =>
-            
             new GradeResponse
             {
                 Id = g.Id,
@@ -227,8 +240,8 @@ namespace TruckFlow.Application
                 HoraFinal = g.HoraFinal,
                 IntervaloMinutos = g.IntervaloMinutos,
                 DiasSemana = g.DiasSemana,
-                UnidadeEntrega = g.UnidadeEntrega.Nome.ToString(),
-                LocalDescarga = g.LocalDescarga.Nome.ToString(),
+                UnidadeEntrega = g.UnidadeEntrega != null ? g.UnidadeEntrega.Nome.ToString() : string.Empty,
+                LocalDescarga = g.LocalDescarga != null ? g.LocalDescarga.Nome.ToString() : string.Empty,
                 CreatedAt = g.CreatedAt,
                 UpdatedAt = g.UpdatedAt
             };

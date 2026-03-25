@@ -5,7 +5,7 @@ using TruckFlow.Domain.Dto.NotaFiscal;
 namespace TruckFlow.Controllers
 {
     [ApiController]
-    [Route("/v1/[Controller]")]
+    [Route("v1/[Controller]")]
     public class NotaFiscalController : ControllerBase
     {
         private readonly INotaFiscalService _service;
