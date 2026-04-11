@@ -25,13 +25,13 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .IsRequired();
 
             builder.Property(x => x.ValorUnitario)
-                .HasColumnType("decimal(18,2)");
+                .HasPrecision(18,2);
 
             builder.Property(x => x.ValorTotal)
-                .HasColumnType("decimal(18,2)");
+                .HasPrecision(18, 2);
             
             builder.Property(x => x.Quantidade)
-                .HasColumnType("decimal(18,3)");
+                .HasPrecision(18,3);
 
             builder.HasOne(x => x.NotaFiscal)
                 .WithMany(x => x.Itens)

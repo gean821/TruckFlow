@@ -73,7 +73,7 @@ namespace TruckFlow
 
             builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
             {
-                optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+                optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
             builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>

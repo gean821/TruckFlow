@@ -1,20 +1,16 @@
 services:
-  sql-server:
-    container_name: sql-server-truckflow
-    hostname: sql-server-ecm
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    user: root
+  postgres:
+    container_name: postgres-truckflow
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      ACCEPT_EULA: 'Y'
-      MSSQL_SA_PASSWORD: Nesher#2019
+      POSTGRES_DB: TruckFlow
+      POSTGRES_USER: truckflow
+      POSTGRES_PASSWORD: Nesher#2019
     ports:
-      - 1433:1433
-
+      - 5432:5432
     volumes:
-      - truck-sqlserverdb-backups:/var/opt/mssql/backups
-      - truck-sqlserverdb-data:/var/opt/mssql/data
-      - truck-sqlserverdb-log:/var/opt/mssql/log
+      - truck-postgresdb-data:/var/lib/postgresql/data
     networks:
       - truckflow
 
@@ -23,13 +19,6 @@ networks:
     external: false
 
 volumes:
-  truck-sqlserverdb-backups:
+  truck-postgresdb-data:
     external: true
-    name: truck-sql-serverdb-backups
-  truck-sqlserverdb-data:
-    external: true
-    name: truck-sql-serverdb-data
-  truck-sqlserverdb-log:
-    external: true
-    name: truck-sql-serverdb-log
-  
+    name: truck-postgresdb-data
