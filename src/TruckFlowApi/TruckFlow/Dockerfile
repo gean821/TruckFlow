@@ -9,13 +9,16 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# 1. Copia o repositório inteiro (a partir da raiz) para dentro do container
+# 1. Copia o repositório inteiro para o container
 COPY . .
 
-# 2. Restaura as dependências pela Solution (assim ele mapeia Application, Domain, Infra, etc.)
-RUN dotnet restore "src/TruckFlowApi/TruckFlowApi.sln"
+# 2. GOLPE DE MESTRE: Limpa as pastas obj e bin que vieram do Windows e quebram o Linux
+RUN find . -type d \( -name "bin" -o -name "obj" \) -exec rm -rf {} + || true
 
-# 3. Faz o build e publish apontando para o projeto principal
+# 3. Restaura as dependências (focando apenas na API e nos projetos que ela usa)
+RUN dotnet restore "src/TruckFlowApi/TruckFlow/TruckFlow.csproj"
+
+# 4. Faz o build e publish
 RUN dotnet publish "src/TruckFlowApi/TruckFlow/TruckFlow.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Final
