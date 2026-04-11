@@ -39,7 +39,7 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .IsRequired();
 
             builder.Property(x => x.VolumeCarga)
-                .HasColumnType("decimal(18,2)");
+                .HasPrecision(18, 2);
 
             builder.HasOne<Usuario>(x => x.Usuario)
                 .WithMany(x => x.Agendamentos)

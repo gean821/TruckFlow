@@ -34,8 +34,7 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .IsRequired();
 
             builder.Property(x => x.IntervaloMinutos)
-                .HasColumnType("int")
-                .IsRequired();
+                  .IsRequired();
 
 
             builder.Property(x => x.CreatedAt)
@@ -48,8 +47,8 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             .IsRequired(false);
 
             builder.Property(x => x.DiasSemana)
-                .HasColumnType("varchar(20)")
-                .IsRequired();
+                    .HasMaxLength(20)
+                    .IsRequired();
 
             builder.HasOne(x => x.UnidadeEntrega)
                 .WithMany(x => x.Grades)

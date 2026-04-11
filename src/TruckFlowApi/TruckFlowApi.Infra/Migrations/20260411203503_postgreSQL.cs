@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace TruckFlowApi.Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class postgreSQL : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,10 +16,10 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -29,27 +30,27 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Empresa",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RazaoSocial = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    NomeFantasia = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Cnpj = table.Column<string>(type: "nvarchar(18)", maxLength: 18, nullable: false),
-                    InscricaoEstadual = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    InscricaoMunicipal = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Telefone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Logradouro = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Numero = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Complemento = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Bairro = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    Cidade = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    Estado = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Cep = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Latitude = table.Column<double>(type: "float", nullable: false),
-                    Longitude = table.Column<double>(type: "float", nullable: false),
-                    Ativa = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RazaoSocial = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    NomeFantasia = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Cnpj = table.Column<string>(type: "character varying(18)", maxLength: 18, nullable: false),
+                    InscricaoEstadual = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    InscricaoMunicipal = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Telefone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Logradouro = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Numero = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Complemento = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Bairro = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    Cidade = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    Estado = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Cep = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Latitude = table.Column<double>(type: "double precision", nullable: false),
+                    Longitude = table.Column<double>(type: "double precision", nullable: false),
+                    Ativa = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -60,11 +61,11 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -81,13 +82,13 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Fornecedor",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    Cnpj = table.Column<string>(type: "nvarchar(18)", maxLength: 18, nullable: false),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Nome = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    Cnpj = table.Column<string>(type: "character varying(18)", maxLength: 18, nullable: false),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -104,22 +105,23 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "UnidadeEntrega",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Localizacao = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    Logradouro = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Numero = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Complemento = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Bairro = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
-                    Cidade = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
-                    Estado = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Cep = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Latitude = table.Column<double>(type: "float", nullable: true),
-                    Longitude = table.Column<double>(type: "float", nullable: true),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Nome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Localizacao = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Logradouro = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Numero = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Complemento = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Bairro = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
+                    Cidade = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
+                    Estado = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Cep = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Latitude = table.Column<double>(type: "double precision", nullable: true),
+                    Longitude = table.Column<double>(type: "double precision", nullable: true),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Ativa = table.Column<bool>(type: "boolean", nullable: true, defaultValue: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -136,25 +138,25 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Usuario",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UserName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -171,32 +173,32 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "NotaFiscal",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ChaveAcesso = table.Column<string>(type: "nvarchar(44)", maxLength: 44, nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChaveAcesso = table.Column<string>(type: "character varying(44)", maxLength: 44, nullable: false),
                     Numero = table.Column<long>(type: "bigint", nullable: false),
-                    Serie = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DataEmissao = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EmitenteNome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    EmitenteCnpj = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    DestinatarioNome = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    DestinatarioCpfCnpj = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    ValorTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    PesoBruto = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
-                    PesoLiquido = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: true),
-                    VolumeQuantidade = table.Column<int>(type: "int", nullable: true),
-                    PlacaVeiculo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Serie = table.Column<string>(type: "text", nullable: false),
+                    DataEmissao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EmitenteNome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    EmitenteCnpj = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    DestinatarioNome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    DestinatarioCpfCnpj = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    ValorTotal = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    PesoBruto = table.Column<decimal>(type: "numeric(18,3)", precision: 18, scale: 3, nullable: true),
+                    PesoLiquido = table.Column<decimal>(type: "numeric(18,3)", precision: 18, scale: 3, nullable: true),
+                    VolumeQuantidade = table.Column<int>(type: "integer", nullable: true),
+                    PlacaVeiculo = table.Column<string>(type: "text", nullable: true),
                     RawXml = table.Column<string>(type: "text", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AgendamentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UploadedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ValidationMessages = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TipoCarga = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    FornecedorId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AgendamentoId = table.Column<Guid>(type: "uuid", nullable: true),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UploadedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UploadedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ValidationMessages = table.Column<string>(type: "text", nullable: true),
+                    TipoCarga = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -219,14 +221,14 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "PlanejamentoRecebimento",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DataInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    StatusRecebimento = table.Column<int>(type: "int", nullable: false),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FornecedorId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DataInicio = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    StatusRecebimento = table.Column<int>(type: "integer", nullable: false),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -249,13 +251,14 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "LocalDescarga",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    UnidadeEntregaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Nome = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    UnidadeEntregaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Ativa = table.Column<bool>(type: "boolean", nullable: true, defaultValue: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -278,14 +281,14 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Administrador",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FuncaoAdm = table.Column<int>(type: "int", nullable: false),
-                    UsuarioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Nome = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    UserName = table.Column<string>(type: "text", nullable: false),
+                    FuncaoAdm = table.Column<int>(type: "integer", nullable: false),
+                    UsuarioId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -301,11 +304,11 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -322,10 +325,10 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -342,8 +345,8 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -366,10 +369,10 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -386,14 +389,14 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Motorista",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NomeReal = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    Telefone = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
-                    UsuarioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Username = table.Column<string>(type: "text", nullable: false),
+                    NomeReal = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    Telefone = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false),
+                    UsuarioId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -409,18 +412,18 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "NotaFiscalItem",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    NotaFiscalId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Codigo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Descricao = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    Quantidade = table.Column<decimal>(type: "decimal(18,3)", nullable: false),
-                    Unidade = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ValorUnitario = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ValorTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    NotaFiscalId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Codigo = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Descricao = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Quantidade = table.Column<decimal>(type: "numeric(18,3)", precision: 18, scale: 3, nullable: false),
+                    Unidade = table.Column<string>(type: "text", nullable: true),
+                    ValorUnitario = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    ValorTotal = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -443,15 +446,15 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Produto",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Nome = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    LocalDescargaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CodigoEan = table.Column<string>(type: "nvarchar(14)", maxLength: 14, nullable: true),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Nome = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    LocalDescargaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CodigoEan = table.Column<string>(type: "character varying(14)", maxLength: 14, nullable: true),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FornecedorId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -479,13 +482,13 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Veiculo",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Placa = table.Column<string>(type: "nvarchar(7)", maxLength: 7, nullable: false),
-                    TipoVeiculo = table.Column<int>(type: "int", nullable: false),
-                    MotoristaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Placa = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    TipoVeiculo = table.Column<int>(type: "integer", nullable: false),
+                    MotoristaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -502,21 +505,21 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Grade",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LocalDescargaId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UnidadeEntregaId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProdutoId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LocalDescargaId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UnidadeEntregaId = table.Column<Guid>(type: "uuid", nullable: true),
+                    FornecedorId = table.Column<Guid>(type: "uuid", nullable: false),
                     DataInicio = table.Column<DateOnly>(type: "date", nullable: false),
                     DataFim = table.Column<DateOnly>(type: "date", nullable: false),
                     HoraInicial = table.Column<TimeOnly>(type: "time", nullable: false),
                     HoraFinal = table.Column<TimeOnly>(type: "time", nullable: false),
-                    IntervaloMinutos = table.Column<int>(type: "int", nullable: false),
-                    DiasSemana = table.Column<string>(type: "varchar(20)", nullable: false),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    IntervaloMinutos = table.Column<int>(type: "integer", nullable: false),
+                    DiasSemana = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -557,16 +560,16 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "ItemPlanejamento",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PlanejamentoRecebimentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    QuantidadeTotalPlanejada = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    CadenciaDiariaPlanejada = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    QuantidadeTotalRecebida = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProdutoId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PlanejamentoRecebimentoId = table.Column<Guid>(type: "uuid", nullable: false),
+                    QuantidadeTotalPlanejada = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    CadenciaDiariaPlanejada = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    QuantidadeTotalRecebida = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -578,7 +581,7 @@ namespace TruckFlowApi.Infra.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_ItemPlanejamento_PlanejamentoRecebimento_PlanejamentoRecebimentoId",
+                        name: "FK_ItemPlanejamento_PlanejamentoRecebimento_PlanejamentoRecebi~",
                         column: x => x.PlanejamentoRecebimentoId,
                         principalTable: "PlanejamentoRecebimento",
                         principalColumn: "Id",
@@ -595,12 +598,12 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "ProdutoFornecedor",
                 columns: table => new
                 {
-                    FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    FornecedorId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProdutoId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -629,24 +632,24 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Agendamento",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProdutoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    GradeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UsuarioId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    FornecedorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TipoCarga = table.Column<int>(type: "int", nullable: false),
-                    VolumeCarga = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    DataInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DataFim = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    StatusAgendamento = table.Column<int>(type: "int", nullable: false),
-                    UnidadeEntregaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    NotaFiscalId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PlacaVeiculo = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TipoVeiculo = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProdutoId = table.Column<Guid>(type: "uuid", nullable: true),
+                    GradeId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UsuarioId = table.Column<Guid>(type: "uuid", nullable: true),
+                    FornecedorId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TipoCarga = table.Column<int>(type: "integer", nullable: false),
+                    VolumeCarga = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
+                    DataInicio = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DataFim = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    StatusAgendamento = table.Column<int>(type: "integer", nullable: false),
+                    UnidadeEntregaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    NotaFiscalId = table.Column<Guid>(type: "uuid", nullable: true),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PlacaVeiculo = table.Column<string>(type: "text", nullable: true),
+                    TipoVeiculo = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -697,12 +700,12 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Carga",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AgedamentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    TipoCarga = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    AgedamentoId = table.Column<Guid>(type: "uuid", nullable: true),
+                    TipoCarga = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -718,12 +721,12 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "Notificacao",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Descricao = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AgendamentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Descricao = table.Column<string>(type: "text", nullable: false),
+                    AgendamentoId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -739,16 +742,16 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "RecebimentoEvento",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ItemPlanejamentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AgendamentoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Quantidade = table.Column<decimal>(type: "decimal(18,3)", precision: 18, scale: 3, nullable: false),
-                    DataRecebimento = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Observacao = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    EmpresaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ItemPlanejamentoId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AgendamentoId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Quantidade = table.Column<decimal>(type: "numeric(18,3)", precision: 18, scale: 3, nullable: false),
+                    DataRecebimento = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Observacao = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    EmpresaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -798,8 +801,7 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "IX_Agendamento_NotaFiscalId",
                 table: "Agendamento",
                 column: "NotaFiscalId",
-                unique: true,
-                filter: "[NotaFiscalId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Agendamento_ProdutoId",
@@ -825,8 +827,7 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -1021,8 +1022,7 @@ namespace TruckFlowApi.Infra.Migrations
                 name: "UserNameIndex",
                 table: "Usuario",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Veiculo_MotoristaId",
