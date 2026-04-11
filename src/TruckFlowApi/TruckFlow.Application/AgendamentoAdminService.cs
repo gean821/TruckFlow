@@ -26,7 +26,6 @@ namespace TruckFlow.Application
         private readonly IPlanejamentoRecebimentoRepositorio _recebimentoRepo;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly ICurrentUserService _currentUser;
-
         public AgendamentoAdminService
            (
             IAgendamentoRepositorio repo,
@@ -38,7 +37,6 @@ namespace TruckFlow.Application
             IRecebimentoEventoRepositorio eventoRepo,
             IPlanejamentoRecebimentoRepositorio recebimentoRepositorio,
             IEmpresaRepositorio empresaRepo,
-            IUsuarioService usuarioService,
             ICurrentUserService currentUser
             )
         {
@@ -64,12 +62,8 @@ namespace TruckFlow.Application
             var fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId, token)
                 ?? throw new NotFoundException("Fornecedor não encontrado");
 
-            var unidade = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token);
-
-            if (unidade == null)
-            {
-                throw new NotFoundException("Unidade de entrega não encontrada.");
-            }
+            var unidade = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token)
+                ?? throw new NotFoundException("Unidade de entrega não encontrada.");
 
             var empresa = await _empresaRepo.GetById(dto.EmpresaId, token)
                 ?? throw new NotFoundException("Empresa não encontrada.");
@@ -82,7 +76,6 @@ namespace TruckFlow.Application
                 UnidadeEntregaId = dto.UnidadeEntregaId,
                 DataInicio = dto.DataInicio,
                 UnidadeEntrega = unidade,
-                // Regra de negócio: Doca demora 1h por padrão se não informado
                 DataFim = dto.DataInicio.AddHours(1),
                 UsuarioId = dto.MotoristaId,
                 NotaFiscalId = dto.NotaFiscalId,
@@ -97,7 +90,6 @@ namespace TruckFlow.Application
             await _repo.AddAgendamento(vaga, token);
             return MapToResponse(vaga);
         }
-
         public async Task<List<AgendamentoAdminResponse>> GetByFiltros
             (
                 AgendamentoFilterDto filtros,
@@ -128,19 +120,15 @@ namespace TruckFlow.Application
                 filtros.UnidadeEntregaId,
                 token);
         }
-
-        public async Task<AgendamentoAdminResponse> GetById(Guid id, CancellationToken token = default)
+        public async Task<AgendamentoAdminResponse> GetById(
+            Guid id,
+            CancellationToken token = default)
         {
-            var agendamento = await _repo.GetById(id, token);
-
-            if (agendamento == null)
-            {
-                throw new NotFoundException("Agendamento não encontrado");
-            }
-
+            var agendamento = await _repo.GetById(id, token)
+                   ?? throw new NotFoundException("Agendamento não encontrado");
+            
             return MapToResponse(agendamento);
         }
-
         public async Task RegistrarChegadaAsync(
             Guid agendamentoId,
             CancellationToken token = default
@@ -175,7 +163,6 @@ namespace TruckFlow.Application
             agendamento.Cancelar();
             await _repo.Update(agendamento, token);
         }
-
         public async Task<AgendamentoAdminResponse> Update(
             Guid id,
             AgendamentoAdminUpdateDto dto,
@@ -184,26 +171,16 @@ namespace TruckFlow.Application
         {
             await _updateValidator.ValidateAndThrowAsync(dto, token);
 
-            var agendamento = await _repo.GetById(id, token);
-
-            if (agendamento == null)
-            {
-                throw new NotFoundException("Agendamento não encontrado");
-            }
-
-
-            var novaDoca = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token);
-
-            if (novaDoca == null)
-            {
-                throw new BusinessException("Doca inválida");
-            }
+            var agendamento = await _repo.GetById(id, token)
+                ?? throw new NotFoundException("Agendamento não encontrado");
+           
+            var novaDoca = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token)
+                ?? throw new BusinessException("Doca inválida");
 
             agendamento.UnidadeEntregaId = dto.UnidadeEntregaId;
             agendamento.DataInicio = dto.DataInicio;
             agendamento.DataFim = dto.DataFim;
 
-            // Permite ao admin "chutar" um motorista ou alocar outro manualmente
             agendamento.UsuarioId = dto.MotoristaId;
             agendamento.NotaFiscalId = dto.NotaFiscalId;
 
@@ -267,15 +244,14 @@ namespace TruckFlow.Application
 
             await _repo.Update(agendamento, token);
         }
-
-        public async Task Delete(Guid id, CancellationToken token = default)
+        public async Task Delete(
+            Guid id,
+            CancellationToken token = default
+            )
         {
-            var agendamento = await _repo.GetById(id, token);
-
-            if (agendamento == null)
-            {
-                throw new NotFoundException("Agendamento não encontrado");
-            }
+            var agendamento = await _repo.GetById(id, token)
+                ?? throw new NotFoundException("Agendamento não encontrado");
+           
 
             if (agendamento.StatusAgendamento == StatusAgendamento.EmAndamento)
             {
@@ -297,7 +273,7 @@ namespace TruckFlow.Application
                 PesoCarga = agendamento.VolumeCarga ?? agendamento.NotaFiscal?.PesoBruto ?? 0,
                 PlacaVeiculo = agendamento.PlacaVeiculo ?? agendamento.NotaFiscal?.PlacaVeiculo,
                 TipoVeiculo = agendamento.TipoVeiculo.ToString(),
-                UnidadeEntrega = agendamento.UnidadeEntrega.Nome,
+                UnidadeEntrega = agendamento.UnidadeEntrega?.Nome,
                 CreatedAt = agendamento.CreatedAt,
                 Status = agendamento.StatusAgendamento.ToString(),
                 UpdatedAt = agendamento.UpdatedAt,
