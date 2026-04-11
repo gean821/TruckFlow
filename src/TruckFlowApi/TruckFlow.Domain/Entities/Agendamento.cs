@@ -26,7 +26,7 @@ namespace TruckFlow.Domain.Entities
         public Guid? UnidadeEntregaId { get; set; }
         public NotaFiscal? NotaFiscal { get; set; }
         public Guid? NotaFiscalId { get; set; }
-        public ICollection<Notificacao> Notificacoes { get; set; } = new List<Notificacao>();
+        public ICollection<Notificacao> Notificacoes { get; set; } = [];
 
         public Guid EmpresaId { get; set; }
         public Empresa? Empresa { get; set; }
@@ -46,7 +46,12 @@ namespace TruckFlow.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void Reservar(Guid usuarioId, NotaFiscal notaFiscal, TipoVeiculo? tipoVeiculo, string? placaVeiculo)
+        public void Reservar(
+            Guid usuarioId,
+            NotaFiscal notaFiscal,
+            TipoVeiculo? tipoVeiculo,
+            string? placaVeiculo
+            )
         {
             if (StatusAgendamento != StatusAgendamento.Disponivel)
             {

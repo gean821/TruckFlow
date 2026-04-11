@@ -35,6 +35,11 @@ namespace TruckFlow
         { 
             var builder = WebApplication.CreateBuilder(args);
             
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.ListenAnyIP(8080);
+            });
+
             builder.AddSerilogLogging();
             
             // Add services to the container.
@@ -93,6 +98,11 @@ namespace TruckFlow
             });
 
             var app = builder.Build();
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Database.Migrate();
+            }
 
             app.UseRouting();
             app.UseCors("AllowFrontend");
@@ -104,6 +114,7 @@ namespace TruckFlow
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+
             }
             else
             {
@@ -114,7 +125,15 @@ namespace TruckFlow
             app.UseAuthorization();
             app.MapControllers();
 
-            app.Run();
+            if (app.Environment.IsDevelopment())
+            {
+                app.Run();
+            }
+            else
+            {
+                var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+                app.Run($"http://0.0.0.0:{port}");
+            }
         }
     }
 }
