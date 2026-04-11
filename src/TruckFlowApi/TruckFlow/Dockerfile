@@ -1,31 +1,40 @@
-# Acesse https://aka.ms/customizecontainer para saber como personalizar seu contêiner de depuração e como o Visual Studio usa este Dockerfile para criar suas imagens para uma depuração mais rápida.
+# Acesse https://aka.ms/customizecontainer para saber como personalizar seu contêiner
 
-# Esta fase é usada durante a execução no VS no modo rápido (Padrão para a configuração de Depuração)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-
-# Esta fase é usada para compilar o projeto de serviço
+# Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/TruckFlowApi/TruckFlow/TruckFlow.csproj", "src/TruckFlowApi/TruckFlow/"]
-RUN dotnet restore "src/TruckFlowApi/TruckFlow/TruckFlow.csproj"
-COPY . .
-WORKDIR "/src/src/TruckFlowApi/TruckFlow"
-RUN dotnet build "./TruckFlow.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Esta fase é usada para publicar o projeto de serviço a ser copiado para a fase final
+# Copiar todos os projetos da solution
+COPY ["src/TruckFlowApi/TruckFlow/TruckFlow.csproj", "src/TruckFlowApi/TruckFlow/"]
+COPY ["src/TruckFlow.Application/TruckFlow.Application.csproj", "src/TruckFlow.Application/"]
+COPY ["src/TruckFlow.Domain/TruckFlow.Domain.csproj", "src/TruckFlow.Domain/"]
+COPY ["src/TruckFlowApi.Infra/TruckFlowApi.Infra.csproj", "src/TruckFlowApi.Infra/"]
+
+# Restaurar dependências
+RUN dotnet restore "src/TruckFlowApi/TruckFlow/TruckFlow.csproj"
+
+# Copiar todo o código
+COPY . .
+
+WORKDIR "/src/src/TruckFlowApi/TruckFlow"
+RUN dotnet build "TruckFlow.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# Publish
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "TruckFlow.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Esta fase é usada na produção ou quando executada no VS no modo normal (padrão quando não está usando a configuração de Depuração)
+# Runtime final
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
 ENV ASPNETCORE_URLS=http://+:8080
 
 ENTRYPOINT ["dotnet", "TruckFlow.dll"]
