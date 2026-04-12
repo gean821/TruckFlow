@@ -11,9 +11,12 @@ namespace TruckFlow.Extensions.Cors
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.AllowAnyOrigin()
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    policy.WithOrigins(
+                             "http://localhost:5173",
+                             "https://truck-flow-app.vercel.app" 
+                         )
+                         .AllowAnyHeader()
+                         .AllowAnyMethod();
                 });
             });
 
