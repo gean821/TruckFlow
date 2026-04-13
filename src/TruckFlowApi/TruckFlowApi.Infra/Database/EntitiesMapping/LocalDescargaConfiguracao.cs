@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 
-namespace TruckFlowApi.Infra.Database.Configurations
+namespace TruckFlowApi.Infra.Database.EntitiesMapping
 {
     public class LocalDescargaConfiguracao : IEntityTypeConfiguration<LocalDescarga>
     {

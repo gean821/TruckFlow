@@ -60,7 +60,7 @@ namespace TruckFlow.Application
             {
                 Nome = local.Nome,
                 UnidadeEntrega = unidade,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 EmpresaId = empresaId,
                 Ativa = local.Status
             };
@@ -148,7 +148,7 @@ namespace TruckFlow.Application
                
             localEncontrado.Nome = local.Nome;
             localEncontrado.UnidadeEntrega.Id = unidade.Id;
-            localEncontrado.UpdatedAt = DateTime.Now;
+            localEncontrado.UpdatedAt = DateTime.UtcNow;
             localEncontrado.Ativa = local.Status;
 
             var localDescargaAtualizado = await _repo.Update(

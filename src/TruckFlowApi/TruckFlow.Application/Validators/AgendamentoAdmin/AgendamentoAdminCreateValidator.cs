@@ -15,17 +15,12 @@ namespace TruckFlow.Application.Validators.AgendamentoMotorista
             RuleFor(x => x.FornecedorId)
                  .NotEmpty().WithMessage("Selecione o fornecedor.");
 
-            RuleFor(x => x.UnidadeEntregaId)
-                .NotEmpty().WithMessage("Selecione a unidade de descarga (doca).");
-
             RuleFor(x => x.DataInicio)
                 .NotEmpty().WithMessage("A data de início é obrigatória.")
-                .GreaterThan(DateTime.Now).WithMessage("A data deve ser futura.");
+                .GreaterThan(DateTime.Now.AddMinutes(-5)).WithMessage("A data informada já passou.");
 
-
-            When(x => x.MotoristaId.HasValue, () =>
-            {
-            });
+            RuleFor(x => x.LocalDescargaId)
+                 .NotEmpty().WithMessage("Selecione a doca/local de descarga.");
         }
     }
 }

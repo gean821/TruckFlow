@@ -21,6 +21,7 @@ namespace TruckFlowApi.Infra.Repositories
             CancellationToken token = default)
         {
             await _db.Agendamento.AddAsync(agendamento, token);
+            await SaveChangesAsync(token);
             return agendamento;
         }
         public async Task AddRangeAsync(

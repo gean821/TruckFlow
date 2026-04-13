@@ -26,6 +26,8 @@ namespace TruckFlow.Application
         private readonly IPlanejamentoRecebimentoRepositorio _recebimentoRepo;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly ICurrentUserService _currentUser;
+        private readonly IProdutoRepositorio _produtoRepo;
+        private readonly ILocalDescargaRepositorio _localRepo;
         public AgendamentoAdminService
            (
             IAgendamentoRepositorio repo,
@@ -37,7 +39,9 @@ namespace TruckFlow.Application
             IRecebimentoEventoRepositorio eventoRepo,
             IPlanejamentoRecebimentoRepositorio recebimentoRepositorio,
             IEmpresaRepositorio empresaRepo,
-            ICurrentUserService currentUser
+            ICurrentUserService currentUser,
+            IProdutoRepositorio produtoRepositorio,
+            ILocalDescargaRepositorio localDescargaRepositorio
             )
         {
             _repo = repo;
@@ -50,6 +54,8 @@ namespace TruckFlow.Application
             _recebimentoRepo = recebimentoRepositorio;
             _empresaRepo = empresaRepo;
             _currentUser = currentUser;
+            _produtoRepo = produtoRepositorio;
+            _localRepo = localDescargaRepositorio;
         }
 
         public async Task<AgendamentoAdminResponse> CreateAvulso(
@@ -59,32 +65,49 @@ namespace TruckFlow.Application
         {
             await _createValidator.ValidateAndThrowAsync(dto, token);
 
+            var empresaId = _currentUser.EmpresaId ?? throw new UnauthorizedAccessException("Usuário sem empresa.");
+            var empresa = await _empresaRepo.GetById(empresaId, token)
+                ?? throw new NotFoundException("Empresa não encontrada.");
+
             var fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId, token)
                 ?? throw new NotFoundException("Fornecedor não encontrado");
 
-            var unidade = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token)
-                ?? throw new NotFoundException("Unidade de entrega não encontrada.");
+            Produto? produto = null;
+            if (dto.ProdutoId.HasValue && dto.ProdutoId.Value != Guid.Empty)
+            {
+                produto = await _produtoRepo.GetById(dto.ProdutoId.Value, token)
+                    ?? throw new NotFoundException("Produto não encontrado.");
+            }
 
-            var empresa = await _empresaRepo.GetById(dto.EmpresaId, token)
-                ?? throw new NotFoundException("Empresa não encontrada.");
+            var localDescarga = await _localRepo.GetById(dto.LocalDescargaId, token)
+                ?? throw new NotFoundException("Local não encontrado.");
+
+            var unidade = await _unidadeRepo.GetById(localDescarga.UnidadeEntregaId, token)
+                ?? throw new NotFoundException("Unidade de entrega não encontrada.");
 
             var vaga = new Agendamento
             {
                 FornecedorId = dto.FornecedorId,
                 Fornecedor = fornecedor,
+                Produto = produto,
+                ProdutoId = produto?.Id,
                 TipoCarga = dto.TipoCarga,
-                UnidadeEntregaId = dto.UnidadeEntregaId,
-                DataInicio = dto.DataInicio,
+                UnidadeEntregaId = localDescarga.UnidadeEntregaId, 
                 UnidadeEntrega = unidade,
-                DataFim = dto.DataInicio.AddHours(1),
+                DataInicio = dto.DataInicio,
+                DataFim = dto.DataFim,
                 UsuarioId = dto.MotoristaId,
                 NotaFiscalId = dto.NotaFiscalId,
-                StatusAgendamento = dto.MotoristaId.HasValue ? StatusAgendamento.Agendado : StatusAgendamento.Disponivel,
+                VolumeCarga = dto.VolumeCarga,
+                PlacaVeiculo = dto.PlacaVeiculo,
+                TipoVeiculo = dto.TipoVeiculo,
+                EmpresaId = empresa.Id,
                 Grade = null,
                 GradeId = null,
-                VolumeCarga = dto.VolumeCarga,
-                Empresa = empresa
-                // Avulso não tem grade pai
+
+                StatusAgendamento = dto.MotoristaId.HasValue || !string.IsNullOrWhiteSpace(dto.PlacaVeiculo)
+                    ? StatusAgendamento.Agendado
+                    : StatusAgendamento.Disponivel
             };
 
             await _repo.AddAgendamento(vaga, token);
@@ -269,7 +292,7 @@ namespace TruckFlow.Application
                 MotoristaNome = agendamento.Usuario?.Motorista?.NomeReal,
                 DataInicio = agendamento.DataInicio,
                 DataFim = agendamento.DataFim,
-                Produto = agendamento.Grade?.Produto?.Nome ?? agendamento.TipoCarga.ToString(),
+                Produto = agendamento.Grade?.Produto?.Nome ?? agendamento?.Produto?.Nome!,
                 PesoCarga = agendamento.VolumeCarga ?? agendamento.NotaFiscal?.PesoBruto ?? 0,
                 PlacaVeiculo = agendamento.PlacaVeiculo ?? agendamento.NotaFiscal?.PlacaVeiculo,
                 TipoVeiculo = agendamento.TipoVeiculo.ToString(),
