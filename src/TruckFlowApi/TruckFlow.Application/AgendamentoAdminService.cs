@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Agendamento;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -113,35 +114,31 @@ namespace TruckFlow.Application
             await _repo.AddAgendamento(vaga, token);
             return MapToResponse(vaga);
         }
-        public async Task<List<AgendamentoAdminResponse>> GetByFiltros
+        public async Task<PagedResponse<AgendamentoAdminResponse>> GetByFiltros
             (
                 AgendamentoFilterDto filtros,
                 CancellationToken token = default
             )
         {
+            var dataInicio = filtros.DataInicio.HasValue
+                ? DateTime.SpecifyKind(filtros.DataInicio.Value.Date, DateTimeKind.Utc)
+                : (DateTime?)null;
 
-            var dataInicio = filtros.DataInicio == default
-                ? DateTime.UtcNow.Date
-                : DateTime.SpecifyKind(filtros.DataInicio.Date, DateTimeKind.Utc);
+            var dataFim = filtros.DataFim.HasValue
+                ? DateTime.SpecifyKind(
+                    filtros.DataFim.Value.Date.AddDays(1).AddTicks(-1),
+                    DateTimeKind.Utc)
+                : (DateTime?)null;
 
-            var dataFim = filtros.DataFim == default
-                ? dataInicio.AddDays(7).AddDays(1).AddTicks(-1)
-                : DateTime.SpecifyKind(
-                    filtros.DataFim.Date.AddDays(1).AddTicks(-1),
-                    DateTimeKind.Utc
-                  );
-
-            if (dataFim < dataInicio)
+            if (dataInicio.HasValue && dataFim.HasValue && dataFim < dataInicio)
             {
                 throw new BusinessException("A data final deve ser maior que a inicial.");
             }
 
-            return await _repo.GetAdminViewAsync(
-                dataInicio,
-                dataFim,
-                filtros.FornecedorId,
-                filtros.UnidadeEntregaId,
-                token);
+            filtros.DataInicio = dataInicio;
+            filtros.DataFim = dataFim;
+
+            return await _repo.GetAdminViewAsync(filtros, token);
         }
         public async Task<AgendamentoAdminResponse> GetById(
             Guid id,

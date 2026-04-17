@@ -37,8 +37,8 @@ namespace TruckFlow.Application.Validators.Grade
             RuleFor(x => x.HoraFinal)
                 .NotNull()
                 .WithMessage("A hora final deve ser informada.")
-                .GreaterThan(x => x.HoraInicial)
-                .WithMessage("A hora final deve ser maior que a hora inicial.");
+                .NotEqual(x => x.HoraInicial)
+                .WithMessage("A hora final não pode ser igual à hora inicial.");
 
             RuleFor(x => x.IntervaloMinutos)
                 .GreaterThan(0)

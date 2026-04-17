@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.Agendamento;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Application.Interfaces
@@ -11,7 +12,7 @@ namespace TruckFlow.Application.Interfaces
     public interface IAgendamentoAdminService
     {
         Task<AgendamentoAdminResponse> CreateAvulso(AgendamentoAdminCreateDto dto, CancellationToken token = default);
-        Task<List<AgendamentoAdminResponse>> GetByFiltros(AgendamentoFilterDto filtros, CancellationToken token = default);
+        Task<PagedResponse<AgendamentoAdminResponse>> GetByFiltros(AgendamentoFilterDto filtros, CancellationToken token = default);
         Task<AgendamentoAdminResponse> GetById(Guid id, CancellationToken token = default);
 
         Task<AgendamentoAdminResponse> Update(Guid id, AgendamentoAdminUpdateDto dto, CancellationToken token = default);

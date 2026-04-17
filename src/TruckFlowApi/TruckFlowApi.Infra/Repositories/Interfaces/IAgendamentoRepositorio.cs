@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.Agendamento;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Repositories.Interfaces
@@ -23,11 +24,8 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         public Task<Agendamento> GetById(Guid id, CancellationToken token = default);
         public Task<List<Agendamento>> GetAll(CancellationToken token = default);
 
-        Task<List<AgendamentoAdminResponse>> GetAdminViewAsync(
-                                                DateTime dataInicio,
-                                                DateTime dataFim,
-                                                Guid? fornecedorId,
-                                                Guid? unidadeEntregaId,
+        Task<PagedResponse<AgendamentoAdminResponse>> GetAdminViewAsync(
+                                                AgendamentoFilterDto filtros,
                                                 CancellationToken cancellationToken = default
             );
 

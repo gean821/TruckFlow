@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.Agendamento;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
@@ -58,60 +59,118 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(token);
         }
 
-        public async Task<List<AgendamentoAdminResponse>> GetAdminViewAsync(
-       DateTime dataInicio,
-       DateTime dataFim,
-       Guid? fornecedorId,
-       Guid? unidadeEntregaId,
-       CancellationToken cancellationToken = default)
+        public async Task<PagedResponse<AgendamentoAdminResponse>> GetAdminViewAsync(
+            AgendamentoFilterDto filtros,
+            CancellationToken cancellationToken = default)
         {
             var query = _db.Agendamento
                 .AsNoTracking()
                 .Include(x => x.Fornecedor)
+                .Include(x => x.Produto)
                 .Include(x => x.Grade)
                     .ThenInclude(g => g.Produto)
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Usuario)
                     .ThenInclude(u => u.Motorista)
                 .Include(x => x.NotaFiscal)
-                .Where(x => x.DataInicio >= dataInicio && x.DataInicio <= dataFim);
+                .AsQueryable();
 
-            if (fornecedorId.HasValue)
+            if (filtros.DataInicio.HasValue)
             {
-                query = query.Where(x => x.FornecedorId == fornecedorId);
+                query = query.Where(x => x.DataInicio >= filtros.DataInicio.Value);
             }
 
-            if (unidadeEntregaId.HasValue)
+            if (filtros.DataFim.HasValue)
             {
-                query = query.Where(x => x.UnidadeEntregaId == unidadeEntregaId);
+                query = query.Where(x => x.DataInicio <= filtros.DataFim.Value);
             }
 
-            return await query
+            if (filtros.FornecedorId.HasValue)
+            {
+                query = query.Where(x => x.FornecedorId == filtros.FornecedorId.Value);
+            }
+
+            if (filtros.UnidadeEntregaId.HasValue)
+            {
+                query = query.Where(x => x.UnidadeEntregaId == filtros.UnidadeEntregaId.Value);
+            }
+
+            if (filtros.ProdutoId.HasValue)
+            {
+                var produtoId = filtros.ProdutoId.Value;
+                query = query.Where(x =>
+                    x.ProdutoId == produtoId ||
+                    (x.Grade != null && x.Grade.ProdutoId == produtoId));
+            }
+
+            if (filtros.Status.HasValue)
+            {
+                query = query.Where(x => x.StatusAgendamento == filtros.Status.Value);
+            }
+
+            if (filtros.TipoVeiculo.HasValue)
+            {
+                query = query.Where(x => x.TipoVeiculo == filtros.TipoVeiculo.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(filtros.Search))
+            {
+                var search = filtros.Search.Trim();
+
+                query = query.Where(x =>
+                    (x.PlacaVeiculo != null && x.PlacaVeiculo.Contains(search)) ||
+                    (x.NotaFiscal != null && x.NotaFiscal.PlacaVeiculo != null && x.NotaFiscal.PlacaVeiculo.Contains(search)) ||
+                    x.Fornecedor.Nome.Contains(search) ||
+                    (x.UnidadeEntrega != null && x.UnidadeEntrega.Nome.Contains(search)) ||
+                    (x.Produto != null && x.Produto.Nome.Contains(search)) ||
+                    (x.Grade != null && x.Grade.Produto.Nome.Contains(search)) ||
+                    (x.Usuario != null && x.Usuario.Motorista != null && x.Usuario.Motorista.NomeReal.Contains(search)));
+            }
+
+            var pageNumber = filtros.PageNumber <= 0 ? 1 : filtros.PageNumber;
+            var pageSize = filtros.PageSize <= 0 ? 20 : filtros.PageSize;
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderBy(x => x.DataInicio)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(x => new AgendamentoAdminResponse
                 {
                     Id = x.Id,
                     FornecedorNome = x.Fornecedor.Nome,
                     MotoristaNome = x.Usuario != null
                                      ? x.Usuario.Motorista != null
-                                     ? x.Usuario.Motorista.NomeReal
-                                    : null
-                                    : null,
-
+                                        ? x.Usuario.Motorista.NomeReal
+                                        : null
+                                     : null,
                     DataInicio = x.DataInicio,
                     DataFim = x.DataFim,
                     Produto = x.Grade != null
-                                ? x.Grade.Produto.Nome : x.TipoCarga.ToString(),
-
-                    PesoCarga = x.NotaFiscal!.PesoBruto ?? x.VolumeCarga ?? 0m,
-                    PlacaVeiculo = x.PlacaVeiculo ?? x.NotaFiscal.PlacaVeiculo,
-                    UnidadeEntrega = x.UnidadeEntrega.Localizacao,
+                                ? x.Grade.Produto.Nome
+                                : (x.Produto != null ? x.Produto.Nome : x.TipoCarga.ToString()),
+                    PesoCarga = x.NotaFiscal != null
+                                ? (x.NotaFiscal.PesoBruto ?? x.VolumeCarga ?? 0m)
+                                : (x.VolumeCarga ?? 0m),
+                    PlacaVeiculo = x.PlacaVeiculo ?? (x.NotaFiscal != null ? x.NotaFiscal.PlacaVeiculo : null),
+                    TipoVeiculo = x.TipoVeiculo.HasValue ? x.TipoVeiculo.Value.ToString() : null,
+                    UnidadeEntrega = x.UnidadeEntrega != null ? x.UnidadeEntrega.Nome : null,
                     Status = x.StatusAgendamento.ToString(),
                     CreatedAt = x.CreatedAt,
                     UpdatedAt = x.UpdatedAt,
                     DeletedAt = x.DeletedAt
                 })
-                .OrderBy(x => x.DataInicio)
                 .ToListAsync(cancellationToken);
+
+            return new PagedResponse<AgendamentoAdminResponse>
+            {
+                Items = items,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
         }
 
         public async Task<Agendamento> GetById(
