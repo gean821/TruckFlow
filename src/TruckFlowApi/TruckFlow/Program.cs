@@ -32,16 +32,16 @@ namespace TruckFlow
     public class Program
     {
         public static void Main(string[] args)
-        { 
+        {
             var builder = WebApplication.CreateBuilder(args);
-            
+
             builder.WebHost.ConfigureKestrel(serverOptions =>
             {
                 serverOptions.ListenAnyIP(8080);
             });
 
             builder.AddSerilogLogging();
-            
+
             // Add services to the container.
 
             builder.Services.AddCorsDependency();
@@ -65,8 +65,8 @@ namespace TruckFlow
             builder.Services.AddSecurity();
 
             builder.Services.AddEndpointsApiExplorer();
-            
-            builder.Services.AddSwaggerGen(x=>
+
+            builder.Services.AddSwaggerGen(x =>
             {
                 x.OperationFilter<FileUploadOperationFilter>();
             });
@@ -94,8 +94,8 @@ namespace TruckFlow
             })
                 .AddJsonOptions(options =>
                 {
-                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-            });
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                });
 
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
@@ -108,15 +108,13 @@ namespace TruckFlow
             app.UseCors("AllowFrontend");
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseMiddleware<RequestLoggingMiddleware>();
-            
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
 
-            }
-            else
+            // Configure the HTTP request pipeline.
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            if (!app.Environment.IsDevelopment())
             {
                 app.UseHttpsRedirection();
             }
