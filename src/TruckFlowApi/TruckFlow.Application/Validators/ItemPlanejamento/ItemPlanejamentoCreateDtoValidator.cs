@@ -1,9 +1,6 @@
-﻿using FluentValidation;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FluentValidation;
 using TruckFlow.Domain.Dto.ItensPlanejamento;
 
 namespace TruckFlow.Application.Validators.ItemPlanejamento
@@ -13,16 +10,26 @@ namespace TruckFlow.Application.Validators.ItemPlanejamento
         public ItemPlanejamentoCreateDtoValidator()
         {
             RuleFor(x => x.ProdutoId)
-                    .NotEmpty().WithMessage("O campo ProdutoId é obrigatório.");
-
-            RuleFor(x => x.QuantidadeTotalPlanejada)
-                .GreaterThan(0).WithMessage("A quantidade total planejada deve ser maior que zero.");
+                .NotEmpty().WithMessage("O campo ProdutoId é obrigatório.");
 
             RuleFor(x => x.CadenciaDiariaPlanejada)
-                .GreaterThan(0).WithMessage("A cadência diária planejada deve ser maior que zero.")
-                .Must((dto, cadencia) => cadencia <= dto.QuantidadeTotalPlanejada)
-                .WithMessage("A cadência diária planejada não pode ser maior que a quantidade total planejada.");
+                .GreaterThan(0).WithMessage("A meta diária deve ser maior que zero.");
+
+            RuleFor(x => x.DiasSemana)
+                .NotEmpty().WithMessage("Informe ao menos um dia da semana.")
+                .Must(SerListaDeDiasValida).WithMessage("Dias da semana inválidos (formato esperado: \"0,1,2,3,4,5,6\").");
+
+            RuleFor(x => x.ToleranciaExtra)
+                .GreaterThanOrEqualTo(0).When(x => x.ToleranciaExtra.HasValue)
+                .WithMessage("A tolerância não pode ser negativa.");
+        }
+
+        private static bool SerListaDeDiasValida(string? ds)
+        {
+            if (string.IsNullOrWhiteSpace(ds)) return false;
+
+            return ds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .All(p => int.TryParse(p, out var n) && n >= 0 && n <= 6);
         }
     }
 }
-

@@ -22,7 +22,7 @@ namespace TruckFlow.Domain.Entities
         public string? RawXml { get; set; }               // salvar XML (text)
         public NotaFiscalStatus Status { get; set; }
         public Guid FornecedorId { get; set; }
-        public required Fornecedor Fornecedor { get; set; }
+        public Fornecedor? Fornecedor { get; set; }
         public Guid? AgendamentoId { get; set; }
         public Agendamento? Agendamento { get; set; }
 

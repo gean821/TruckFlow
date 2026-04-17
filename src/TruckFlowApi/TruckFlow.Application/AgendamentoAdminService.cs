@@ -180,6 +180,15 @@ namespace TruckFlow.Application
             var agendamento = await _repo.GetById(agendamentoId, token)
                 ?? throw new NotFoundException("Agendamento não encontrado.");
 
+            var evento = await _eventoRepo.GetByAgendamentoId(agendamentoId, token);
+
+            if (evento is not null)
+            {
+                evento.ItemPlanejamento.EstornarRecebimento(evento.Quantidade);
+                evento.ItemPlanejamento.PlanejamentoRecebimento.RecalcularStatus();
+                await _eventoRepo.Remove(evento, token);
+            }
+
             agendamento.Cancelar();
             await _repo.Update(agendamento, token);
         }
@@ -216,51 +225,60 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-
             var empresaId = _currentUser.EmpresaId
                 ?? throw new BusinessException("Usuário não vinculado a empresa.");
 
             var agendamento = await _repo.GetByIdWithFornecedor(agendamentoId, token)
                     ?? throw new NotFoundException("Agendamento não encontrado.");
 
+            var agendamentoCompleto = await _repo.GetById(agendamentoId, token);
+            var produtoId = agendamentoCompleto?.Grade?.ProdutoId ?? agendamentoCompleto?.ProdutoId;
+
             agendamento.FinalizarOperacao();
 
-            var planejamento = await _recebimentoRepo
-                .GetPlanejamentoAtivoPorFornecedor(
-                    agendamento.FornecedorId,
-                    token)
-                ?? throw new BusinessException(
-                    "Não existe planejamento ativo para este fornecedor.");
+            var eventoExistente = await _eventoRepo.GetByAgendamentoId(agendamentoId, token);
 
-            Guid produtoId;
-
-            if (agendamento.ProdutoId.HasValue)
+            if (eventoExistente is not null)
             {
-                produtoId = agendamento.Grade!.ProdutoId;
+                var item = eventoExistente.ItemPlanejamento;
+                var delta = quantidadeRecebida - eventoExistente.Quantidade;
+
+                if (delta > 0)
+                {
+                    item.RegistrarRecebimento(delta);
+                }
+                else if (delta < 0)
+                {
+                    item.EstornarRecebimento(-delta);
+                }
+
+                item.PlanejamentoRecebimento.RecalcularStatus();
+                await _eventoRepo.SaveChangeAsync(token);
             }
-            else
+            else if (produtoId.HasValue)
             {
-                throw new BusinessException("Não foi possível identificar o produto deste agendamento.");
+                var planejamento = await _recebimentoRepo
+                    .GetPlanejamentoAtivoPorFornecedor(agendamento.FornecedorId, token)
+                    ?? throw new BusinessException(
+                        "Não existe planejamento ativo para este fornecedor.");
+
+                var item = planejamento.ItemDoProduto(produtoId.Value)
+                    ?? throw new BusinessException(
+                        "Nenhum item do planejamento compatível com a carga.");
+
+                var novoEvento = new RecebimentoEvento(
+                    item,
+                    quantidadeRecebida,
+                    agendamento.Id,
+                    "Recebimento via agendamento (admin)",
+                    empresaId
+                );
+
+                await _eventoRepo.AddAsync(novoEvento, token);
+
+                item.RegistrarRecebimento(quantidadeRecebida);
+                planejamento.RecalcularStatus();
             }
-
-            var item = planejamento.ItemPlanejamentos
-                .FirstOrDefault(i => i.ProdutoId == produtoId)
-             ?? throw new BusinessException(
-                 "Nenhum item do planejamento compatível com a carga."
-             );
-
-            var evento = new RecebimentoEvento(
-                item,
-                quantidadeRecebida,
-                agendamento.Id,
-                "Recebimento via agendamento (admin)",
-                empresaId
-            );
-
-            await _eventoRepo.AddAsync(evento, token);
-
-            item.RegistrarRecebimento(quantidadeRecebida);
-            planejamento.RecalcularStatus();
 
             await _repo.Update(agendamento, token);
         }

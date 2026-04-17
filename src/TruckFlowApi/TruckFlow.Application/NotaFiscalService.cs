@@ -236,8 +236,22 @@ namespace TruckFlow.Application
                 await _learningService.TryLearnEanAsync(item, token);
             }
 
+            var cnpjDestinatario = new string(dto.DestinatarioCpfCnpj
+                .Where(char.IsDigit)
+                .ToArray());
+
+            _logger.LogInformation(
+                "CNPJ destinatário da NF: {CnpjDestinatario}",
+                cnpjDestinatario
+            );
+
+            var empresa = await _empresaRepo.GetByCnpj(cnpjDestinatario, token)
+                    ??
+                    throw new BusinessException(
+                        $"Empresa destinatária não cadastrada. CNPJ recebido: {cnpjDestinatario}");
+
             var cnpjNota = new string(dto.EmitenteCnpj.Where(char.IsDigit).ToArray());
-            Console.WriteLine($"[DEBUG] Buscando Fornecedor pelo CNPJ: '{cnpjNota}'"); 
+            Console.WriteLine($"[DEBUG] Buscando Fornecedor pelo CNPJ: '{cnpjNota}'");
 
             var fornecedor = await _fornecedorRepo.GetByCnpj(cnpjNota, token)
                     ?? await _fornecedorRepo.GetByNome(dto.EmitenteNome, token);
@@ -250,6 +264,7 @@ namespace TruckFlow.Application
                 {
                     Nome = dto.EmitenteNome,
                     Cnpj = cnpjNota,
+                    EmpresaId = empresa.Id,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -266,20 +281,6 @@ namespace TruckFlow.Application
                     await _fornecedorRepo.Update(fornecedor, token);
                 }
             }
-
-            var cnpjDestinatario = new string(dto.DestinatarioCpfCnpj
-                .Where(char.IsDigit)
-                .ToArray());
-
-            _logger.LogInformation(
-                "CNPJ destinatário da NF: {CnpjDestinatario}",
-                cnpjDestinatario
-            ); 
-            
-            var empresa = await _empresaRepo.GetByCnpj(cnpjDestinatario, token)
-                    ??
-                    throw new BusinessException(
-                        $"Empresa destinatária não cadastrada. CNPJ recebido: {cnpjDestinatario}");
 
             Console.WriteLine($"[DEBUG] DTO DESTINATARIO: '{dto.DestinatarioCpfCnpj}'");
 

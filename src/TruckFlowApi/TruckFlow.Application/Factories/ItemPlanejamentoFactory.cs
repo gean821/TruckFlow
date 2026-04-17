@@ -47,17 +47,35 @@ namespace TruckFlow.Application.Factories
                     ?? throw new NotFoundException("Recebimento não encontrado.");
             }
 
+            if (recebimento is null)
+            {
+                throw new NotFoundException("Planejamento pai não informado.");
+            }
+
             var empresa = await _empresaRepo.GetById(dto.EmpresaId, token)
                ?? throw new NotFoundException("Empresa não encontrada.");
 
-            var item = new ItemPlanejamento 
+            var diasOperacao = RecebimentoFactory.ContarDiasOperacao(
+                recebimento.DataInicio,
+                recebimento.DataFim,
+                dto.DiasSemana);
+
+            if (diasOperacao == 0)
             {
-                PlanejamentoRecebimento = recebimento!,
-                PlanejamentoRecebimentoId = recebimento?.Id ?? dto.PlanejamentoRecebimentoId ?? Guid.Empty,
+                throw new BusinessException(
+                    "Os dias da semana selecionados não ocorrem dentro da vigência do planejamento.");
+            }
+
+            var item = new ItemPlanejamento
+            {
+                PlanejamentoRecebimento = recebimento,
+                PlanejamentoRecebimentoId = recebimento.Id,
                 Produto = produto,
                 ProdutoId = dto.ProdutoId,
                 CadenciaDiariaPlanejada = dto.CadenciaDiariaPlanejada,
-                QuantidadeTotalPlanejada = dto.QuantidadeTotalPlanejada,
+                QuantidadeTotalPlanejada = dto.CadenciaDiariaPlanejada * diasOperacao,
+                DiasSemana = RecebimentoFactory.NormalizarDias(dto.DiasSemana),
+                ToleranciaExtra = dto.ToleranciaExtra ?? 30m,
                 CreatedAt = DateTime.UtcNow,
                 Empresa = empresa
             };

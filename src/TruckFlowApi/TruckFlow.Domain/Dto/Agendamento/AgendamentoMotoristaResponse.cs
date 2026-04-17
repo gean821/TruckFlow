@@ -23,5 +23,8 @@ namespace TruckFlow.Domain.Dto.Agendamento
         public string? TipoVeiculo { get; set; }
         public required DateTime CreatedAt { get; set; }
         public string? Status { get; set; } // opcional
+
+        public bool Congelado { get; set; }
+        public string? MotivoCongelamento { get; set; }
     }
 }

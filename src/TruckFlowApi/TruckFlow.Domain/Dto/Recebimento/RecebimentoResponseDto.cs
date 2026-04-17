@@ -1,8 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.ItensPlanejamento;
 
 namespace TruckFlow.Domain.Dto.Recebimento
@@ -11,11 +8,13 @@ namespace TruckFlow.Domain.Dto.Recebimento
     {
         public Guid Id { get; set; }
         public string FornecedorNome { get; set; } = string.Empty;
+        public Guid FornecedorId { get; set; }
         public DateTime DataInicio { get; set; }
+        public DateTime DataFim { get; set; }
         public string Status { get; set; } = string.Empty;
 
         public decimal TotalItens { get; set; } = 0;
-         
+
         public List<ItemPlanejamentoResponseDto> Itens { get; set; } = [];
         public DateTime CreatedAt { get; set; }
     }

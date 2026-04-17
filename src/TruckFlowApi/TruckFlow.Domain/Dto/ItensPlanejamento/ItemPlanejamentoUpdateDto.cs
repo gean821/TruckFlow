@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 
 namespace TruckFlow.Domain.Dto.ItensPlanejamento
 {
@@ -11,7 +7,8 @@ namespace TruckFlow.Domain.Dto.ItensPlanejamento
         public required Guid ProdutoId { get; set; }
         public required Guid PlanejamentoRecebimentoId { get; set; }
 
-        public required decimal QuantidadeTotalPlanejada { get; set; }
         public required decimal CadenciaDiariaPlanejada { get; set; }
+        public required string DiasSemana { get; set; } = string.Empty;
+        public decimal? ToleranciaExtra { get; set; }
     }
 }
