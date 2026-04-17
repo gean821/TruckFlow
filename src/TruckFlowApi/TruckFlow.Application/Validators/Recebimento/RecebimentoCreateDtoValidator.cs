@@ -1,9 +1,5 @@
-﻿using FluentValidation;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FluentValidation;
 using TruckFlow.Application.Validators.ItemPlanejamento;
 using TruckFlow.Domain.Dto.Recebimento;
 
@@ -21,14 +17,17 @@ namespace TruckFlow.Application.Validators.Recebimento
                 .Must(date => date.Date >= DateTime.UtcNow.Date)
                 .WithMessage("A data de início não pode ser anterior à data atual.");
 
+            RuleFor(x => x.DataFim)
+                .NotEmpty().WithMessage("A data de fim é obrigatória.")
+                .GreaterThanOrEqualTo(x => x.DataInicio)
+                .WithMessage("A data de fim não pode ser anterior à data de início.");
+
             RuleFor(x => x.ItensPlanejamento)
                 .NotNull().WithMessage("É necessário informar ao menos um item de planejamento.")
                 .Must(x => x!.Count > 0).WithMessage("A lista de itens de planejamento não pode estar vazia.");
 
-            // Validação individual dos itens
             RuleForEach(x => x.ItensPlanejamento)
                 .SetValidator(new ItemPlanejamentoCreateDtoValidator());
         }
     }
- }
-
+}

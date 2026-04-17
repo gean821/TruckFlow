@@ -17,10 +17,13 @@ namespace TruckFlow.Domain.Entities
         public required decimal CadenciaDiariaPlanejada { get; set; }
         public decimal QuantidadeTotalRecebida { get; set; }
 
+        public string DiasSemana { get; set; } = string.Empty;
+        public decimal ToleranciaExtra { get; set; } = 30m;
+
         public ICollection<RecebimentoEvento>? RecebimentoEventos { get; set; } = [];
 
         public Guid EmpresaId { get; set; }
-        public required Empresa Empresa { get; set; }
+        public Empresa? Empresa { get; set; }
 
         public void RegistrarRecebimento(decimal quantidade)
         {
@@ -31,7 +34,54 @@ namespace TruckFlow.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
+        public void EstornarRecebimento(decimal quantidade)
+        {
+            if (quantidade <= 0)
+                throw new Exception("Quantidade inválida.");
+
+            QuantidadeTotalRecebida = Math.Max(0m, QuantidadeTotalRecebida - quantidade);
+            UpdatedAt = DateTime.UtcNow;
+        }
+
         public bool EstaConcluido()
             => QuantidadeTotalRecebida >= QuantidadeTotalPlanejada;
+
+        public IReadOnlyCollection<DayOfWeek> DiasSemanaEnum
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(DiasSemana))
+                    return Array.Empty<DayOfWeek>();
+
+                return DiasSemana
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => (DayOfWeek)int.Parse(x))
+                    .Distinct()
+                    .ToList();
+            }
+        }
+
+        public int QuantidadeDiasOperacao => DiasSemanaEnum.Count;
+
+        public bool OperaEm(DateTime data)
+            => DiasSemanaEnum.Contains(data.DayOfWeek);
+
+        public decimal QuantidadeRecebidaNoDia(DateTime data)
+        {
+            if (RecebimentoEventos is null)
+                return 0m;
+
+            return RecebimentoEventos
+                .Where(e => e.DataRecebimento.Date == data.Date)
+                .Sum(e => e.Quantidade);
+        }
+
+        public bool MetaDiariaAtingida(DateTime data)
+        {
+            if (!OperaEm(data))
+                return false;
+
+            return QuantidadeRecebidaNoDia(data) >= CadenciaDiariaPlanejada + ToleranciaExtra;
+        }
     }
 }

@@ -19,12 +19,20 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
 
             builder.Property(x => x.QuantidadeTotalPlanejada)
                 .HasPrecision(18, 2);
-            
+
             builder.Property(x => x.CadenciaDiariaPlanejada)
                 .HasPrecision(18, 2);
-            
+
             builder.Property(x => x.QuantidadeTotalRecebida)
                 .HasPrecision(18, 2);
+
+            builder.Property(x => x.ToleranciaExtra)
+                .HasPrecision(18, 2)
+                .HasDefaultValue(30m);
+
+            builder.Property(x => x.DiasSemana)
+                .HasMaxLength(32)
+                .HasDefaultValue(string.Empty);
 
 
             builder.HasOne(x => x.PlanejamentoRecebimento)

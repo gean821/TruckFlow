@@ -10,6 +10,7 @@ namespace TruckFlow.Domain.Enums
     {
         Planejado = 1,
         EmAndamento = 2,
-        Concluido = 3
+        Concluido = 3,
+        Encerrado = 4
     }
 }

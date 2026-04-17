@@ -21,6 +21,9 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.DataInicio)
                 .IsRequired();
 
+            builder.Property(x => x.DataFim)
+                .IsRequired();
+
             builder.Property(x => x.StatusRecebimento)
                 .IsRequired();
 

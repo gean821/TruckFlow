@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Domain.Dto.Recebimento;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
@@ -43,8 +45,75 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.ItemPlanejamentos)
                     .ThenInclude(x=> x.Produto)
                 .FirstOrDefaultAsync(x=> x.Id == id, token);
-            
+
             return recebimento!;
+        }
+
+        public async Task<PlanejamentoRecebimento?> GetByIdWithEventos(Guid id, CancellationToken token = default)
+        {
+            return await _db.PlanejamentosRecebimento
+                .Include(x => x.Fornecedor)
+                .Include(x => x.ItemPlanejamentos)
+                    .ThenInclude(i => i.Produto)
+                .Include(x => x.ItemPlanejamentos)
+                    .ThenInclude(i => i.RecebimentoEventos)
+                .FirstOrDefaultAsync(x => x.Id == id, token);
+        }
+
+        public async Task<PagedResponse<PlanejamentoRecebimento>> GetPagedAsync(
+            PlanejamentoListQueryDto query,
+            CancellationToken token = default)
+        {
+            var dbQuery = _db.PlanejamentosRecebimento
+                .AsNoTracking()
+                .Include(x => x.Fornecedor)
+                .Include(x => x.ItemPlanejamentos)
+                    .ThenInclude(i => i.Produto)
+                .AsQueryable();
+
+            if (query.FornecedorId.HasValue)
+                dbQuery = dbQuery.Where(x => x.FornecedorId == query.FornecedorId.Value);
+
+            if (query.Status.HasValue)
+                dbQuery = dbQuery.Where(x => x.StatusRecebimento == query.Status.Value);
+
+            if (query.ProdutoId.HasValue)
+                dbQuery = dbQuery.Where(x =>
+                    x.ItemPlanejamentos.Any(i => i.ProdutoId == query.ProdutoId.Value));
+
+            if (query.DataInicio.HasValue)
+                dbQuery = dbQuery.Where(x => x.DataFim >= query.DataInicio.Value);
+
+            if (query.DataFim.HasValue)
+                dbQuery = dbQuery.Where(x => x.DataInicio <= query.DataFim.Value);
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var search = query.Search.Trim();
+                dbQuery = dbQuery.Where(x =>
+                    x.Fornecedor.Nome.Contains(search) ||
+                    x.ItemPlanejamentos.Any(i => i.Produto.Nome.Contains(search)));
+            }
+
+            var pageNumber = query.PageNumber <= 0 ? 1 : query.PageNumber;
+            var pageSize = query.PageSize <= 0 ? 10 : query.PageSize;
+
+            var totalCount = await dbQuery.CountAsync(token);
+
+            var items = await dbQuery
+                .OrderByDescending(x => x.DataInicio)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(token);
+
+            return new PagedResponse<PlanejamentoRecebimento>
+            {
+                Items = items,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
         }
 
         public async Task<PlanejamentoRecebimento> UpdateRecebimento
@@ -78,13 +147,20 @@ namespace TruckFlowApi.Infra.Repositories
              Guid fornecedorId,
              CancellationToken token = default)
         {
+            var hoje = DateTime.UtcNow.Date;
+
             return await _db.PlanejamentosRecebimento
                 .Include(x => x.Fornecedor)
                 .Include(x => x.ItemPlanejamentos)
-                    .ThenInclude(x => x.Produto)
+                    .ThenInclude(i => i.Produto)
+                .Include(x => x.ItemPlanejamentos)
+                    .ThenInclude(i => i.RecebimentoEventos)
                 .Where(x =>
                     x.FornecedorId == fornecedorId &&
-                    x.StatusRecebimento == StatusRecebimento.Planejado
+                    (x.StatusRecebimento == StatusRecebimento.Planejado ||
+                     x.StatusRecebimento == StatusRecebimento.EmAndamento) &&
+                    x.DataInicio.Date <= hoje &&
+                    x.DataFim.Date >= hoje
                 )
                 .FirstOrDefaultAsync(token);
         }

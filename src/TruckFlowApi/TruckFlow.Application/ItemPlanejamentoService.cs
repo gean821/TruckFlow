@@ -82,9 +82,11 @@ namespace TruckFlow.Application
                 CadenciaDiariaPlanejada = x.CadenciaDiariaPlanejada,
                 QuantidadeTotalPlanejada = x.QuantidadeTotalPlanejada,
                 QuantidadeTotalRecebida = x.QuantidadeTotalRecebida,
-                FaltaReceber = x.QuantidadeTotalPlanejada - x.QuantidadeTotalRecebida,
+                FaltaReceber = Math.Max(0m, x.QuantidadeTotalPlanejada - x.QuantidadeTotalRecebida),
+                DiasSemana = x.DiasSemana,
+                ToleranciaExtra = x.ToleranciaExtra,
                 Fornecedor = x.PlanejamentoRecebimento!.Fornecedor.Nome,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = x.CreatedAt
             }).ToList();
         }
 
@@ -110,19 +112,32 @@ namespace TruckFlow.Application
                 throw new ValidationException(validation.Errors);
             }
 
-            var item = await _repo.GetById(id, token)
+            var item = await _repo.GetByIdWithPlanejamento(id, token)
                 ?? throw new NotFoundException("item não encontrado");
 
-            if (item.ProdutoId != dto.ProdutoId) {
-                
+            if (item.ProdutoId != dto.ProdutoId)
+            {
                 var produto = await _produtoRepo.GetById(dto.ProdutoId, token)
-                ?? throw new NotFoundException("produto não encontrado para ser atualizado");
+                    ?? throw new NotFoundException("produto não encontrado para ser atualizado");
                 item.Produto = produto;
                 item.ProdutoId = produto.Id;
             }
 
+            var diasOperacao = RecebimentoFactory.ContarDiasOperacao(
+                item.PlanejamentoRecebimento.DataInicio,
+                item.PlanejamentoRecebimento.DataFim,
+                dto.DiasSemana);
+
+            if (diasOperacao == 0)
+            {
+                throw new BusinessException(
+                    "Os dias da semana selecionados não ocorrem dentro da vigência do planejamento.");
+            }
+
             item.CadenciaDiariaPlanejada = dto.CadenciaDiariaPlanejada;
-            item.QuantidadeTotalPlanejada = dto.QuantidadeTotalPlanejada;
+            item.DiasSemana = RecebimentoFactory.NormalizarDias(dto.DiasSemana);
+            item.ToleranciaExtra = dto.ToleranciaExtra ?? item.ToleranciaExtra;
+            item.QuantidadeTotalPlanejada = dto.CadenciaDiariaPlanejada * diasOperacao;
             item.UpdatedAt = DateTime.UtcNow;
 
             var itemAtualizado = await _repo.UpdateItem(id, item, token);
@@ -168,8 +183,10 @@ namespace TruckFlow.Application
                 QuantidadeTotalPlanejada = item.QuantidadeTotalPlanejada,
                 QuantidadeTotalRecebida = item.QuantidadeTotalRecebida,
                 Fornecedor = item.PlanejamentoRecebimento!.Fornecedor.Nome,
-                FaltaReceber = item.QuantidadeTotalPlanejada - item.QuantidadeTotalRecebida,
-                CreatedAt = DateTime.UtcNow
+                FaltaReceber = Math.Max(0m, item.QuantidadeTotalPlanejada - item.QuantidadeTotalRecebida),
+                DiasSemana = item.DiasSemana,
+                ToleranciaExtra = item.ToleranciaExtra,
+                CreatedAt = item.CreatedAt
             };
     }
 }
