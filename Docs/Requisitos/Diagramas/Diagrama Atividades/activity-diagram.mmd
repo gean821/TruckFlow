@@ -1,0 +1,63 @@
+---
+title: TruckFlow - Diagrama de Atividades (Jornada de Agendamento e Descarga)
+---
+flowchart TD
+    classDef motorista fill:#D5F5E3,stroke:#1B5E20,color:#000
+    classDef sistema fill:#FFF9C4,stroke:#F57F17,color:#000
+    classDef admin fill:#D6EAF8,stroke:#0D47A1,color:#000
+    classDef decisao fill:#FFE0B2,stroke:#E65100,color:#000
+    classDef terminador fill:#FFCDD2,stroke:#B71C1C,color:#000
+
+    Start([Início]):::terminador --> A1
+    A1[Admin autentica no sistema web]:::admin --> A2
+    A2[Configura catálogo: Produtos, Fornecedores, Unidades e Docas]:::admin --> A3
+    A3[Cria Grade de horários]:::admin --> A4
+    A4[Cria Planejamento de Recebimento<br/>com metas diárias]:::admin --> S1
+    S1[Sistema gera Slots status=Disponível]:::sistema --> M1
+
+    M1[Motorista autentica no app mobile]:::motorista --> M2
+    M2[Seleciona Nova Carga]:::motorista --> D1{Como informar NF?}:::decisao
+    D1 -->|Escanear DANFE| M3[Abre câmera<br/>lê código de barras]:::motorista
+    D1 -->|Upload XML| M4[Seleciona arquivo XML]:::motorista
+    D1 -->|Digitar chave| M5[Informa 44 dígitos]:::motorista
+
+    M3 --> S2
+    M4 --> S2
+    M5 --> S2
+    S2[Sistema faz parse / busca da NF]:::sistema --> D2{NF válida?}:::decisao
+    D2 -->|Não| E1([Erro: NF não encontrada]):::terminador
+    D2 -->|Sim| S3[Retorna itens, peso, placa, fornecedor]:::sistema
+
+    S3 --> M6[Motorista confere itens]:::motorista --> D3{Itens sem vínculo?}:::decisao
+    D3 -->|Sim| M7[Vincula cada item ao<br/>produto do sistema]:::motorista --> M8
+    D3 -->|Não| M8
+    M8[Informa placa e tipo de veículo]:::motorista --> M9[Confirma conferência]:::motorista
+    M9 --> S4[Salva NF validada]:::sistema
+
+    S4 --> S5[Busca vagas disponíveis]:::sistema --> D4{Meta diária<br/>atingida?}:::decisao
+    D4 -->|Sim| S6[Marca vaga Congelada]:::sistema --> S7
+    D4 -->|Não| S7[Vaga reservável]:::sistema
+    S7 --> D5{Há vagas?}:::decisao
+    D5 -->|Não| E2([Sem horários disponíveis]):::terminador
+    D5 -->|Sim| M10[Motorista escolhe horário]:::motorista
+
+    M10 --> M11[Confirma reserva]:::motorista --> S8[Sistema valida]:::sistema
+    S8 --> D6{Reserva válida?}:::decisao
+    D6 -->|Não| E3([Erro de validação]):::terminador
+    D6 -->|Sim| S9[Slot: Disponível → Agendado]:::sistema
+    S9 --> S10[Pré-registra RecebimentoEvento<br/>com peso da NF]:::sistema
+    S10 --> M12[Motorista recebe Ticket<br/>com QR Code]:::motorista
+
+    M12 --> A5[Admin monitora Dashboard]:::admin --> D7{Cancelamento<br/>antecipado?}:::decisao
+    D7 -->|Sim| S11[Status → Cancelado<br/>estorna quantidade]:::sistema --> EndC([Fim - Cancelado]):::terminador
+    D7 -->|Não| A6[Caminhão chega: Check-in]:::admin
+    A6 --> S12[Status: Agendado → EmAndamento]:::sistema
+    S12 --> A7[Admin acompanha descarga]:::admin --> D8{Descarga OK?}:::decisao
+    D8 -->|Rejeitada| S13[Status → Cancelado<br/>estorna]:::sistema --> EndR([Fim - Rejeitado]):::terminador
+    D8 -->|Concluída| A8[Check-out com pesagem]:::admin
+    A8 --> S14[Status: EmAndamento → Finalizado]:::sistema
+    S14 --> S15[Ajusta evento com peso real<br/>e recalcula Planejamento]:::sistema
+    S15 --> M13[Motorista vê status Finalizado]:::motorista
+    M13 --> A9[Admin consulta Relatórios]:::admin --> D9{Meta total atingida?}:::decisao
+    D9 -->|Sim| A10[Encerra Planejamento]:::admin --> EndOk([Fim - Sucesso]):::terminador
+    D9 -->|Não| EndCont([Fim - Planejamento continua]):::terminador

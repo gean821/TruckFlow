@@ -1,0 +1,157 @@
+@startuml TruckFlow - Diagrama de Atividades
+title Diagrama de Atividades - TruckFlow\nJornada de Agendamento e Descarga de Matéria-Prima
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 13
+skinparam ActivityBackgroundColor #E3F2FD
+skinparam ActivityBorderColor #1565C0
+skinparam ActivityDiamondBackgroundColor #FFF3E0
+skinparam ActivityDiamondBorderColor #E65100
+skinparam ArrowColor #37474F
+skinparam PartitionBackgroundColor #FAFAFA
+skinparam PartitionBorderColor #455A64
+
+|#D6EAF8|Administrador (Web)|
+start
+:Acessa sistema web e autentica;
+:Configura catálogo\n(Produtos, Fornecedores, Unidades, Docas);
+:Cria Grade de horários\n(período, doca, produto, intervalo);
+:Cria Planejamento de Recebimento\n(metas diárias por fornecedor);
+
+|#FFF9C4|Sistema (Backend .NET)|
+:Gera Slots de agendamento\nstatus = **Disponível**;
+
+|#D5F5E3|Motorista (Mobile)|
+:Autentica no aplicativo;
+:Seleciona "Nova Carga" na Home;
+
+if (Como informar a Nota Fiscal?) then (Escanear DANFE)
+  :Abre câmera e lê código de barras\n(44 dígitos NF-e);
+elseif (Upload XML) then
+  :Seleciona arquivo XML da NF-e;
+else (Digitar chave)
+  :Digita chave de acesso (44 caracteres);
+endif
+
+|#FFF9C4|Sistema (Backend .NET)|
+:Busca/Parse da Nota Fiscal;
+
+if (NF válida e encontrada?) then (não)
+  |#D5F5E3|Motorista (Mobile)|
+  :Exibe erro\n"NF não encontrada/inválida";
+  stop
+else (sim)
+endif
+
+:Retorna dados da NF\n(fornecedor, itens, peso, placa);
+
+|#D5F5E3|Motorista (Mobile)|
+:Confere itens da NF;
+
+if (Existem itens sem vínculo\ncom produto do sistema?) then (sim)
+  :Vincula cada item ao\nproduto correspondente;
+else (não)
+endif
+
+:Informa placa e tipo de veículo;
+:Confirma conferência;
+
+|#FFF9C4|Sistema (Backend .NET)|
+:Salva Nota Fiscal validada;
+:Busca vagas disponíveis\n(fornecedor + data);
+:Para cada slot verifica\nmeta diária no Planejamento;
+
+if (Meta diária atingida?) then (sim)
+  :Marca vaga como **Congelada**\n(não reservável);
+else (não)
+  :Mantém vaga reservável;
+endif
+
+:Retorna lista de vagas;
+
+|#D5F5E3|Motorista (Mobile)|
+if (Há vagas disponíveis?) then (não)
+  :Exibe "Sem horários.\nTente outro dia";
+  stop
+else (sim)
+endif
+
+:Seleciona horário desejado;
+:Confirma reserva;
+
+|#FFF9C4|Sistema (Backend .NET)|
+:Valida reserva\n(slot livre + NF + meta);
+
+if (Reserva válida?) then (não)
+  |#D5F5E3|Motorista (Mobile)|
+  :Exibe erro de validação;
+  stop
+else (sim)
+endif
+
+:Atualiza Slot: **Disponível -> Agendado**;
+:Vincula NF, placa, volume, motorista;
+:Pré-registra RecebimentoEvento\n(quantidade da NF);
+:Atualiza ItemPlanejamento\n(QuantidadeTotalRecebida);
+
+|#D5F5E3|Motorista (Mobile)|
+:Exibe **Ticket** com QR Code\n(data, hora, doca, placa);
+:Acompanha status em\n"Meus Agendamentos";
+
+|#D6EAF8|Administrador (Web)|
+:Monitora Dashboard\n(KPIs, agendamentos do dia);
+
+note right
+  No dia da descarga:
+  caminhão chega à portaria
+end note
+
+if (Cancelamento antes da chegada?) then (sim)
+  |#FFF9C4|Sistema (Backend .NET)|
+  :Status -> **Cancelado**;
+  :Estorna quantidade\ndo ItemPlanejamento;
+  stop
+else (não)
+endif
+
+|#D6EAF8|Administrador (Web)|
+:Registra Check-in\n(confirma chegada);
+
+|#FFF9C4|Sistema (Backend .NET)|
+:Status: **Agendado -> EmAndamento**;
+:Aloca doca / libera operação;
+
+|#D6EAF8|Administrador (Web)|
+:Acompanha descarga no pátio;
+
+if (Descarga concluída\nou rejeitada?) then (concluída)
+  :Informa quantidade pesada\ne registra Check-out;
+  |#FFF9C4|Sistema (Backend .NET)|
+  :Status: **EmAndamento -> Finalizado**;
+  :Ajusta RecebimentoEvento\n(delta entre NF e pesagem real);
+  :Recalcula status do Planejamento\n(Planejado -> EmAndamento -> Concluído);
+else (rejeitada)
+  |#D6EAF8|Administrador (Web)|
+  :Cancela operação;
+  |#FFF9C4|Sistema (Backend .NET)|
+  :Status -> **Cancelado**;
+  :Estorna quantidade;
+  stop
+endif
+
+|#D5F5E3|Motorista (Mobile)|
+:Visualiza agendamento\ncomo **Finalizado**;
+
+|#D6EAF8|Administrador (Web)|
+:Consulta Dashboard e Relatórios;
+
+if (Meta total do Planejamento atingida?) then (sim)
+  :Encerra Planejamento\n(status Encerrado - irreversível);
+else (não)
+  :Mantém planejamento ativo\npara próximos recebimentos;
+endif
+
+stop
+
+@enduml
