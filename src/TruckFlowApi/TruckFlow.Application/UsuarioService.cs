@@ -150,7 +150,7 @@ namespace TruckFlow.Application
                 .FirstOrDefaultAsync(a => a.UsuarioId == id, token)
                 ?? throw new NotFoundException("Administrador não encontrado.");
 
-            ApplyPatch(adm, usuario, dto, token);
+            await ApplyPatch(adm, usuario, dto, token);
 
             var result = await _userManager.UpdateAsync(usuario);
 
@@ -312,28 +312,39 @@ namespace TruckFlow.Application
             return await MapMotoristaAsync(usuario);
         }
 
-        private void ApplyPatch(
-            Administrador adm,
-            Usuario user,
-            UserAdminEditDto dto,
-            CancellationToken token
+        private async Task ApplyPatch(
+                Administrador adm,
+                Usuario user,
+                UserAdminEditDto dto,
+                CancellationToken token
             )
         {
             if (dto.Username is not null)
             {
                 adm.UserName = dto.Username;
                 user.UserName = dto.Username;
+                user.NormalizedUserName = dto.Username.ToUpperInvariant();
             }
 
             if (dto.Email is not null)
+            {
                 user.Email = dto.Email;
+                user.NormalizedEmail = dto.Email.ToUpperInvariant();
+            }
 
             if (dto.Telefone is not null)
                 user.PhoneNumber = dto.Telefone;
 
             if (dto.Password is not null)
             {
-                user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, dto.Password);
+                var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, resetToken, dto.Password);
+
+                if (!result.Succeeded)
+                {
+                    var erros = string.Join("; ", result.Errors.Select(e => e.Description));
+                    throw new BadRequestException($"Senha inválida: {erros}");
+                }
             }
 
             adm.UpdatedAt = DateTime.UtcNow;
