@@ -137,24 +137,40 @@ namespace TruckFlow.Application
 
             return await MapUsuarioAsync(usuario);
         }
-        public async Task<UserAdminResponseDto> UpdateAdminAsync
-            (
-                Guid id,
-                UserAdminEditDto dto,
-                CancellationToken token = default
-            )
+        public async Task<UserAdminResponseDto> UpdateAdminAsync(
+            Guid id,
+            UserAdminEditDto dto,
+            CancellationToken token = default
+        )
         {
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuário não encontrado.");
 
-            usuario.Email = dto.Email;
-            usuario.UserName = dto.Username;
-            usuario.PhoneNumber = dto.Telefone;
-            usuario.UpdatedAt = DateTime.UtcNow;
+            var adm = await _db.Administrador
+                .FirstOrDefaultAsync(a => a.UsuarioId == id, token)
+                ?? throw new NotFoundException("Administrador não encontrado.");
 
-            await _userManager.UpdateAsync(usuario);
-            return await MapUsuarioAsync(usuario);
+            await ApplyPatch(adm, usuario, dto, token);
+
+            var result = await _userManager.UpdateAsync(usuario);
+
+            if (!result.Succeeded)
+            {
+                var erros = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new BadRequestException($"Erro ao atualizar usuário: {erros}");
+            }
+
+            await _db.SaveChangesAsync(token);
+
+            var usuarioAtualizado = await _db.Users
+                .Include(u => u.Administrador)
+                .Include(u => u.Empresa)
+                .FirstOrDefaultAsync(u => u.Id == id, token)
+                ?? throw new NotFoundException("Usuário não encontrado após atualização.");
+
+            return await MapUsuarioAsync(usuarioAtualizado);
         }
+
         public async Task DeleteAdminAsync(
             Guid id,
             CancellationToken token = default
@@ -294,6 +310,45 @@ namespace TruckFlow.Application
             await _db.SaveChangesAsync(token);
 
             return await MapMotoristaAsync(usuario);
+        }
+
+        private async Task ApplyPatch(
+                Administrador adm,
+                Usuario user,
+                UserAdminEditDto dto,
+                CancellationToken token
+            )
+        {
+            if (dto.Username is not null)
+            {
+                adm.UserName = dto.Username;
+                user.UserName = dto.Username;
+                user.NormalizedUserName = dto.Username.ToUpperInvariant();
+            }
+
+            if (dto.Email is not null)
+            {
+                user.Email = dto.Email;
+                user.NormalizedEmail = dto.Email.ToUpperInvariant();
+            }
+
+            if (dto.Telefone is not null)
+                user.PhoneNumber = dto.Telefone;
+
+            if (dto.Password is not null)
+            {
+                var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, resetToken, dto.Password);
+
+                if (!result.Succeeded)
+                {
+                    var erros = string.Join("; ", result.Errors.Select(e => e.Description));
+                    throw new BadRequestException($"Senha inválida: {erros}");
+                }
+            }
+
+            adm.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.UtcNow;
         }
 
         public async Task DeleteMotoristaAsync(
