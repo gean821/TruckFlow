@@ -41,28 +41,16 @@ namespace TruckFlow.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateAdmin
             (
                 [FromRoute] Guid id,
                 [FromBody] UserAdminEditDto dto,
                 CancellationToken token = default
             )
-        {
-            var usuarioAtualizado = await _service.UpdateAdminAsync(id, dto, token);
-            return Ok(usuarioAtualizado);
-        }
-
-        [Authorize(Roles = Roles.Admin)]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete
-           (
-               [FromRoute] Guid id,
-               CancellationToken token = default
-           )
-        {
-            await _service.DeleteAdminAsync(id, token);
-            return NoContent();
-        }
+            {
+                var usuarioAtualizado = await _service.UpdateAdminAsync(id, dto, token);
+                return Ok(usuarioAtualizado);
+            }
+        }   
     }
-}
