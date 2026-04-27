@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard TruckFlow — Gestão do Time</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; color: #1e293b; }
+.page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+.header { display: flex; align-items: center; gap: 16px; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; }
+.logo { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #1a1a2e, #2563eb); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 700; }
+.header-text h1 { font-size: 22px; font-weight: 600; color: #0f172a; }
+.header-text p { font-size: 13px; color: #64748b; margin-top: 2px; }
+.badge { display: inline-block; background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-left: 8px; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+.kpi { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+.kpi-label { font-size: 11px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.kpi-value { font-size: 28px; font-weight: 700; line-height: 1; }
+.kpi-sub { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+.card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+.card-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.card-title::before { content: ''; display: inline-block; width: 3px; height: 14px; background: #2563eb; border-radius: 2px; }
+.full { grid-column: 1 / -1; }
+
+.member-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+.member-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.member-name { font-size: 13px; font-weight: 600; color: #0f172a; }
+.member-sub { font-size: 11px; color: #64748b; }
+.stat-row { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 3px; }
+.stat-row span { font-weight: 600; color: #0f172a; }
+.bar-track { height: 5px; background: #f1f5f9; border-radius: 3px; margin-bottom: 8px; }
+.bar-fill { height: 5px; border-radius: 3px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead th { text-align: left; padding: 8px 10px; color: #64748b; font-weight: 600; border-bottom: 1px solid #e2e8f0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+tbody td { padding: 10px 10px; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: #f8fafc; }
+.sprint-name { font-weight: 600; color: #0f172a; }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+.pill-green { background: #dcfce7; color: #166534; }
+.pill-blue { background: #dbeafe; color: #1d4ed8; }
+.pill-amber { background: #fef9c3; color: #854d0e; }
+.progress-wrap { display: flex; align-items: center; gap: 8px; }
+.prog-bg { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; }
+.prog-fill { height: 6px; border-radius: 3px; }
+.prog-label { font-size: 11px; color: #94a3b8; min-width: 30px; text-align: right; }
+
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #64748b; }
+.leg-sq { width: 10px; height: 10px; border-radius: 2px; }
+
+.summary-box { background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px 20px; margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.sum-item { text-align: center; }
+.sum-val { font-size: 22px; font-weight: 700; }
+.sum-lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">TF</div>
+    <div class="header-text">
+      <h1>Dashboard da Equipe — TruckFlow <span class="badge">Sprint 1–9</span></h1>
+      <p>Visão consolidada · 9 Sprints · 6 membros · Dados exportados do Jira em 21/04/2026</p>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-label">Total de tasks</div>
+      <div class="kpi-value" style="color:#2563eb">137</div>
+      <div class="kpi-sub">toda a equipe</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Concluídas</div>
+      <div class="kpi-value" style="color:#16a34a">119</div>
+      <div class="kpi-sub">87% de conclusão</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Em andamento</div>
+      <div class="kpi-value" style="color:#d97706">5</div>
+      <div class="kpi-sub">in progress</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Horas registradas</div>
+      <div class="kpi-value">354,5h</div>
+      <div class="kpi-sub">tempo total do time</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Membros ativos</div>
+      <div class="kpi-value" style="color:#7c3aed">6</div>
+      <div class="kpi-sub">colaboradores</div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="card-title">Horas por sprint (equipe)</div>
+      <div class="legend">
+        <span class="leg"><span class="leg-sq" style="background:#2563eb"></span>Horas</span>
+      </div>
+      <div style="position:relative;height:220px;"><canvas id="horasChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tasks por sprint (equipe)</div>
+      <div class="legend">
+        <span class="leg"><span class="leg-sq" style="background:#16a34a"></span>Concluídas</span>
+        <span class="leg"><span class="leg-sq" style="background:#fbbf24"></span>Pendentes</span>
+      </div>
+      <div style="position:relative;height:220px;"><canvas id="tasksChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="card-title">Horas por membro</div>
+      <div style="position:relative;height:220px;"><canvas id="membHorasChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tasks concluídas vs total por membro</div>
+      <div style="position:relative;height:220px;"><canvas id="membTasksChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title">Horas por membro por sprint</div>
+    <div class="legend" id="stackedLegend"></div>
+    <div style="position:relative;height:280px;"><canvas id="stackedChart"></canvas></div>
+  </div>
+
+  <div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:12px">Membros da equipe</div>
+  <div class="row3" id="memberGrid"></div>
+
+  <div class="card">
+    <div class="card-title">Detalhamento por sprint</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Sprint</th>
+          <th style="text-align:right">Tasks</th>
+          <th style="text-align:right">Horas</th>
+          <th style="text-align:right">Concluídas</th>
+          <th style="text-align:right">Membros</th>
+          <th style="text-align:right">Taxa</th>
+          <th style="min-width:120px">Progresso</th>
+        </tr>
+      </thead>
+      <tbody id="sprintTable"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+const tc = dark ? '#94a3b8' : '#64748b';
+const gc = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+
+const sprints = [
+  { name: "S1", full: "TRUCK Sprint 1",        tasks: 17, done: 17, hours: 78.0,  members: 4 },
+  { name: "S2", full: "TruckFlow - Sprint 2",  tasks: 14, done: 14, hours: 29.0,  members: 4 },
+  { name: "S3", full: "TruckFlow - Sprint 3",  tasks:  7, done:  7, hours: 23.0,  members: 3 },
+  { name: "S4", full: "TruckFlow - Sprint 4",  tasks:  3, done:  3, hours: 11.0,  members: 2 },
+  { name: "S5", full: "TruckFlow - Sprint 5",  tasks: 31, done: 29, hours: 75.2,  members: 2 },
+  { name: "S6", full: "TruckFlow - Sprint 6",  tasks: 17, done: 14, hours: 37.7,  members: 2 },
+  { name: "S7", full: "TruckFlow - Sprint 7",  tasks: 26, done: 21, hours: 67.5,  members: 3 },
+  { name: "S8", full: "TruckFlow - Sprint 8",  tasks:  5, done:  3, hours:  6.5,  members: 4 },
+  { name: "S9", full: "TruckFlow - Sprint 9",  tasks: 11, done:  9, hours: 26.7,  members: 2 },
+];
+
+const members = [
+  { name: "Gean Luca",    initials: "GL", color: "#2563eb", bg: "#dbeafe", tasks: 87, done: 83, hours: 228.5, role: "Tech Lead / Backend" },
+  { name: "Felipe Tozadori", initials: "FT", color: "#16a34a", bg: "#dcfce7", tasks: 24, done: 22, hours: 89.0, role: "Frontend / Mobile" },
+  { name: "Gabriel Cesar", initials: "GC", color: "#d97706", bg: "#fef9c3", tasks: 13, done: 11, hours: 24.5, role: "Backend" },
+  { name: "Adriano Mota",  initials: "AM", color: "#dc2626", bg: "#fee2e2", tasks:  3, done:  3, hours: 12.5, role: "Backend" },
+  { name: "Gabriel Moura", initials: "GM", color: "#7c3aed", bg: "#ede9fe", tasks:  1, done:  0, hours:  0.0, role: "Colaborador" },
+  { name: "Davi Maia",     initials: "DM", color: "#475569", bg: "#f1f5f9", tasks:  1, done:  0, hours:  0.0, role: "Colaborador" },
+];
+
+const memberSprints = {
+  GL: [32.0, 7.0, 22.0, 8.0, 72.2, 33.5, 36.8, 4.5, 12.5],
+  FT: [34.0, 10.5, 1.0, 3.0, 3.0, 4.2, 17.2, 2.0, 14.2],
+  GC: [7.0, 4.0, 0.0, 0.0, 0.0, 0.0, 13.5, 0.0, 0.0],
+  AM: [5.0, 7.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+};
+
+const labels = sprints.map(s => s.name);
+const baseOpts = { responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { ticks: { color: tc, font: { size: 10 } }, grid: { display: false } },
+    y: { ticks: { color: tc, font: { size: 10 } }, grid: { color: gc } }
+  }
+};
+
+// Horas por sprint
+new Chart(document.getElementById('horasChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{ data: sprints.map(s => s.hours), backgroundColor: sprints.map(s => s.done===s.tasks?'#2563eb':'#93c5fd'), borderRadius: 5, borderSkipped: false }] },
+  options: { ...baseOpts, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + 'h' } } },
+    scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, ticks: { ...baseOpts.scales.y.ticks, callback: v => v + 'h' } } } }
+});
+
+// Tasks por sprint
+new Chart(document.getElementById('tasksChart'), {
+  type: 'bar',
+  data: { labels, datasets: [
+    { label: 'Concluídas', data: sprints.map(s => s.done), backgroundColor: '#16a34a', borderRadius: 4, borderSkipped: false, stack: 'a' },
+    { label: 'Pendentes',  data: sprints.map(s => s.tasks - s.done), backgroundColor: '#fbbf24', borderRadius: 0, stack: 'a' },
+  ]},
+  options: { ...baseOpts, plugins: { legend: { display: false } },
+    scales: {
+      x: { ...baseOpts.scales.x, stacked: true },
+      y: { ...baseOpts.scales.y, stacked: true }
+    }
+  }
+});
+
+// Horas por membro
+new Chart(document.getElementById('membHorasChart'), {
+  type: 'bar',
+  data: { labels: members.map(m => m.initials), datasets: [{ data: members.map(m => m.hours), backgroundColor: members.map(m => m.color), borderRadius: 5, borderSkipped: false }] },
+  options: { ...baseOpts, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => members[ctx.dataIndex].name + ': ' + ctx.parsed.y.toFixed(1) + 'h' } } },
+    scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, ticks: { ...baseOpts.scales.y.ticks, callback: v => v + 'h' } } } }
+});
+
+// Tasks por membro
+new Chart(document.getElementById('membTasksChart'), {
+  type: 'bar',
+  data: { labels: members.map(m => m.initials), datasets: [
+    { label: 'Concluídas', data: members.map(m => m.done), backgroundColor: members.map(m => m.color), borderRadius: 4, borderSkipped: false, stack: 'b' },
+    { label: 'Pendentes',  data: members.map(m => m.tasks - m.done), backgroundColor: members.map(m => m.bg), borderRadius: 0, stack: 'b' },
+  ]},
+  options: { ...baseOpts, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y } } },
+    scales: { x: { ...baseOpts.scales.x, stacked: true }, y: { ...baseOpts.scales.y, stacked: true } } }
+});
+
+// Stacked por sprint
+const initials4 = ['GL','FT','GC','AM'];
+const leg = document.getElementById('stackedLegend');
+members.slice(0,4).forEach(m => {
+  leg.innerHTML += `<span class="leg"><span class="leg-sq" style="background:${m.color}"></span>${m.name}</span>`;
+});
+new Chart(document.getElementById('stackedChart'), {
+  type: 'bar',
+  data: { labels,
+    datasets: members.slice(0,4).map((m, i) => ({
+      label: m.name,
+      data: memberSprints[initials4[i]].map(v => +v.toFixed(1)),
+      backgroundColor: m.color,
+      borderRadius: 3, borderSkipped: false, stack: 'c'
+    }))
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + 'h' } } },
+    scales: {
+      x: { ticks: { color: tc, font: { size: 10 } }, grid: { display: false }, stacked: true },
+      y: { ticks: { color: tc, font: { size: 10 }, callback: v => v + 'h' }, grid: { color: gc }, stacked: true }
+    }
+  }
+});
+
+// Cards dos membros
+const grid = document.getElementById('memberGrid');
+members.forEach(m => {
+  const rate = m.tasks > 0 ? Math.round(m.done / m.tasks * 100) : 0;
+  const maxH = 228.5;
+  grid.innerHTML += `
+    <div class="member-card">
+      <div class="member-header">
+        <div class="avatar" style="background:${m.bg};color:${m.color}">${m.initials}</div>
+        <div>
+          <div class="member-name">${m.name}</div>
+          <div class="member-sub">${m.role}</div>
+        </div>
+      </div>
+      <div class="stat-row">Horas registradas <span>${m.hours.toFixed(1)}h</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(m.hours/maxH*100)}%;background:${m.color}"></div></div>
+      <div class="stat-row">Tasks concluídas <span>${m.done} / ${m.tasks}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${rate}%;background:${m.color}"></div></div>
+      <div class="stat-row">Taxa de conclusão <span style="color:${rate>=80?'#16a34a':rate>=50?'#d97706':'#dc2626'}">${rate}%</span></div>
+    </div>`;
+});
+
+// Tabela de sprints
+const tbody = document.getElementById('sprintTable');
+sprints.forEach(s => {
+  const rate = Math.round(s.done / s.tasks * 100);
+  const pill = rate === 100 ? 'pill-green' : rate >= 70 ? 'pill-blue' : 'pill-amber';
+  tbody.innerHTML += `<tr>
+    <td class="sprint-name">${s.full}</td>
+    <td style="text-align:right">${s.tasks}</td>
+    <td style="text-align:right">${s.hours.toFixed(1)}h</td>
+    <td style="text-align:right"><span class="pill ${pill}">${s.done}</span></td>
+    <td style="text-align:right">${s.members}</td>
+    <td style="text-align:right">${rate}%</td>
+    <td>
+      <div class="progress-wrap">
+        <div class="prog-bg"><div class="prog-fill" style="width:${rate}%;background:${rate===100?'#16a34a':'#2563eb'}"></div></div>
+        <span class="prog-label">${rate}%</span>
+      </div>
+    </td>
+  </tr>`;
+});
+</script>
+</body>
+</html>
