@@ -67,6 +67,16 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.RawXml)
                 .HasColumnType("text");
 
+            builder.Property(x => x.StatusSefaz)
+                .IsRequired(false);
+
+            builder.Property(x => x.UltimaValidacaoSefaz)
+                .IsRequired(false);
+
+            builder.Property(x => x.FonteValidacao)
+                .HasConversion<int>()
+                .IsRequired();
+
             builder.HasOne<Fornecedor>(x => x.Fornecedor)
                 .WithOne(x => x.NotaFiscal)
                 .HasForeignKey<NotaFiscal>(x => x.FornecedorId)

@@ -14,5 +14,7 @@ namespace TruckFlow.Application.Interfaces
         Task<NotaFiscalParsedDto> SaveParsedNotaAsync(NotaFiscalParsedDto dto, Guid uploadedByUserId, CancellationToken token);
 
         Task<NotaFiscalParsedDto?> ObterPorChaveAsync(string chaveAcesso, CancellationToken token);
+
+        Task<SefazValidacaoResultadoDto> ValidarNaSefazAsync(string chaveAcesso, CancellationToken token);
     }
 }

@@ -2,6 +2,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NFe.Classes.Informacoes;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Application.Sefaz;
 using TruckFlow.Application.Validators.NotaFiscal;
 using TruckFlow.Domain.Dto.NotaFiscal;
 using TruckFlow.Domain.Entities;
@@ -29,6 +31,8 @@ namespace TruckFlow.Application
         private readonly ProdutoLearningService _learningService;
         private readonly ILogger<NotaFiscalService> _logger;
         private readonly IEmpresaRepositorio _empresaRepo;
+        private readonly ISefazClient _sefazClient;
+        private readonly SefazOptions _sefazOptions;
 
 
         public NotaFiscalService(
@@ -39,7 +43,9 @@ namespace TruckFlow.Application
             ProdutoLearningService learningService,
             IProdutoRepositorio produtoRepositorio,
             ILogger<NotaFiscalService> logger,
-            IEmpresaRepositorio empresaRepo
+            IEmpresaRepositorio empresaRepo,
+            ISefazClient sefazClient,
+            IOptions<SefazOptions> sefazOptions
             )
         {
             _repo = repo;
@@ -50,6 +56,8 @@ namespace TruckFlow.Application
             _learningService = learningService;
             _logger = logger;
             _empresaRepo = empresaRepo;
+            _sefazClient = sefazClient;
+            _sefazOptions = sefazOptions.Value;
         }
         public async Task<NotaFiscalParsedDto> ParseXmlAsync(
             Stream xmlStream,
@@ -382,6 +390,58 @@ namespace TruckFlow.Application
                     ValorTotal = i.ValorTotal
                 }).ToList() ?? new List<NotaFiscalItemDto>(),
                 ValidationWarnings = new List<string>()
+            };
+        }
+
+        public async Task<SefazValidacaoResultadoDto> ValidarNaSefazAsync(
+            string chaveAcesso,
+            CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(chaveAcesso) || chaveAcesso.Length != 44)
+            {
+                throw new BusinessException("Chave de acesso inválida (deve ter 44 dígitos).");
+            }
+
+            var uf = ChaveAcessoHelper.ExtrairUfEmitente(chaveAcesso)
+                     ?? _sefazOptions.UfEmitenteFallback
+                     ?? throw new BusinessException(
+                         "Não foi possível determinar a UF do emitente pela chave de acesso e nenhum fallback está configurado em Sefaz:UfEmitenteFallback.");
+
+            var resultado = await _sefazClient.ConsultarProtocoloAsync(chaveAcesso, uf, token);
+
+            bool persistida = false;
+            var notaExistente = await _repo.ObterPorChaveAsync(chaveAcesso, token);
+
+            if (notaExistente != null)
+            {
+                notaExistente.StatusSefaz = resultado.CStat;
+                notaExistente.UltimaValidacaoSefaz = DateTime.UtcNow;
+                notaExistente.FonteValidacao = FonteValidacao.ConsultaProtocolo;
+
+                if (resultado.Autorizada)
+                {
+                    notaExistente.Status = NotaFiscalStatus.Validada;
+                }
+                else if (resultado.Cancelada || resultado.Denegada)
+                {
+                    notaExistente.Status = NotaFiscalStatus.Rejeitada;
+                }
+
+                await _repo.SaveChangesAsync(token);
+                persistida = true;
+            }
+
+            return new SefazValidacaoResultadoDto
+            {
+                ChaveAcesso = resultado.ChaveAcesso,
+                CStat = resultado.CStat,
+                XMotivo = resultado.XMotivo,
+                Protocolo = resultado.Protocolo,
+                DataAutorizacao = resultado.DataAutorizacao,
+                Ambiente = resultado.Ambiente,
+                Autorizada = resultado.Autorizada,
+                NotaPersistidaAtualizada = persistida,
+                ValidadaEm = DateTime.UtcNow
             };
         }
     }

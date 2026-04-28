@@ -34,5 +34,9 @@ namespace TruckFlow.Domain.Entities
         public DateTime? UploadedAt { get; set; }
         public string? ValidationMessages { get; set; }  // lista/JSON de mensagens de validação
         public required TipoCarga TipoCarga { get; set; }
+
+        public int? StatusSefaz { get; set; }                     // cStat retornado pela SEFAZ (100 = autorizada)
+        public DateTime? UltimaValidacaoSefaz { get; set; }
+        public FonteValidacao FonteValidacao { get; set; } = FonteValidacao.XmlUpload;
     }
 }

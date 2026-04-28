@@ -67,5 +67,17 @@ namespace TruckFlow.Controllers
 
             return Ok(notaFiscalDto);
         }
+
+        [HttpPost("validar-sefaz/{chaveAcesso}")]
+        public async Task<IActionResult> ValidarNaSefaz(string chaveAcesso, CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(chaveAcesso) || chaveAcesso.Length != 44)
+            {
+                return BadRequest("Chave de acesso inválida.");
+            }
+
+            var resultado = await _service.ValidarNaSefazAsync(chaveAcesso, token);
+            return Ok(resultado);
+        }
     }
 }
