@@ -24,9 +24,11 @@ namespace TruckFlow.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken token)
+        public async Task<IActionResult> GetAll(
+            [FromQuery] LocalDescargaListQueryDto query,
+            CancellationToken token)
         {
-            var lista = await _service.GetAll(token);
+            var lista = await _service.GetAll(query, token);
             return Ok(lista);
         }
 

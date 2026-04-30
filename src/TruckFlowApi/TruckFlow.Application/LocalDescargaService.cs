@@ -70,14 +70,9 @@ namespace TruckFlow.Application
 
             return MapToResponse(entity);
         }
-        public async Task<List<LocalDescargaResponse>> GetAll(CancellationToken token = default)
+        public async Task<List<LocalDescargaResponse>> GetAll(LocalDescargaListQueryDto query, CancellationToken token = default)
         {
-            var listaDescarga = await _repo.GetAll(token);
-
-            if (listaDescarga.Count == 0)
-            {
-                return [];
-            }
+            var listaDescarga = await _repo.GetAll(query, token);
 
             var listaDto = listaDescarga.Select(x => new LocalDescargaResponse
             {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TruckFlow.Domain.Dto.LocalDescarga;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Database;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -25,11 +26,36 @@ namespace TruckFlowApi.Infra.Repositories
             return local;
         }
 
-        public async Task<List<LocalDescarga>> GetAll(CancellationToken token = default)
+        public async Task<List<LocalDescarga>> GetAll(LocalDescargaListQueryDto query, CancellationToken token = default)
         {
-                 return await _db.LocalDescarga
-                .Include(x=> x.Produtos)
-                .Include(x=> x.UnidadeEntrega)
+            var dbQuery = _db.LocalDescarga
+                .AsNoTracking()
+                .Include(x => x.Produtos)
+                .Include(x => x.UnidadeEntrega)
+                .AsQueryable();
+
+            if (query.Ativa.HasValue)
+            {
+                dbQuery = query.Ativa.Value
+                    ? dbQuery.Where(x => x.Ativa == true)
+                    : dbQuery.Where(x => x.Ativa != true);
+            }
+
+            if (query.UnidadeEntregaId.HasValue)
+            {
+                dbQuery = dbQuery.Where(x => x.UnidadeEntregaId == query.UnidadeEntregaId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var search = query.Search.Trim();
+                dbQuery = dbQuery.Where(x =>
+                    x.Nome.Contains(search) ||
+                    (x.UnidadeEntrega != null && x.UnidadeEntrega.Nome.Contains(search)));
+            }
+
+            return await dbQuery
+                .OrderBy(x => x.Nome)
                 .ToListAsync(token);
         }
 
