@@ -20,6 +20,7 @@ namespace TruckFlow.Domain.Dto.Dashboard
         public int EmAndamento { get; set; }
         public int Finalizados { get; set; }
         public int Atrasados { get; set; }
+        public int Cancelados { get; set; }
     }
 
     public class DashboardVolumeDto
