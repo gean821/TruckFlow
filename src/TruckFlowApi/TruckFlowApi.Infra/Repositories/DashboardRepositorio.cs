@@ -36,6 +36,10 @@ namespace TruckFlowApi.Infra.Repositories
             var atrasados = await _db.Agendamento
                 .CountAsync(x => x.StatusAgendamento == StatusAgendamento.Agendado && x.DataInicio < agora, token);
 
+            var canceladosHoje = await _db.Agendamento
+                  .CountAsync(x => x.StatusAgendamento == StatusAgendamento.Cancelado
+                  && x.DataInicio.Date == hoje, token);
+
             // Soma do volume (Prioriza PesoBruto da NF, se não tiver, usa VolumeCarga estimado)
             var volumeTotal = await _db.Agendamento
                 .Where(x => x.DataInicio.Date == hoje && x.StatusAgendamento != StatusAgendamento.Cancelado)
@@ -64,7 +68,8 @@ namespace TruckFlowApi.Infra.Repositories
                     TotalAgendamentos = totalAgendamentosHoje,
                     EmAndamento = emAndamento,
                     Finalizados = finalizadosHoje,
-                    Atrasados = atrasados
+                    Atrasados = atrasados,
+                    Cancelados = canceladosHoje
                 },
                 Volume = new DashboardVolumeDto
                 {

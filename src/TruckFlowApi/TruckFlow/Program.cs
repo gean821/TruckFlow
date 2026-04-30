@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application;
+using TruckFlow.Application.Sefaz;
 using TruckFlow.Configuration;
 using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Entities;
@@ -53,6 +54,7 @@ namespace TruckFlow
             builder.Services.AddUnidadeEntrega();
             builder.Services.AddGrade();
             builder.Services.AddNotaFiscal();
+            builder.Services.AddSefaz(builder.Configuration);
             builder.Services.AddAgendamento();
             builder.Services.AddUserAuth();
             builder.Services.AddDashboard();
