@@ -1,36 +1,93 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TruckFlow.Application.Exceptions;
+using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Contracts;
+using TruckFlow.Domain.Dto.User.Administrador;
 using TruckFlow.Domain.Entities;
 
-[ApiController]
-
-
-public class UsuarioController : ControllerBase
+namespace TruckFlow.Controllers
 {
-    [HttpPost("dev/criar-usuario-teste")]
-    public async Task<IActionResult> CriarUsuarioTeste(
-        [FromServices] UserManager<Usuario> userManager)
+    [ApiController]
+    [Route("v1/usuarios")]
+    [Authorize(Roles = Roles.Admin)]
+    public class UsuarioController : ControllerBase
     {
-        var userId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        private readonly IUsuarioService _service;
+        private readonly ICurrentUserService _currentUser;
 
-        if (await userManager.FindByIdAsync(userId.ToString()) != null)
-            return Ok("Usuário já existe");
-    
-        var user = new Usuario
+        public UsuarioController(
+            IUsuarioService service,
+            ICurrentUserService currentUser
+            )
         {
-            Id = userId,
-            UserName = "motorista.teste",
-            Email = "motorista@teste.com",
-            EmailConfirmed = true,
-            CreatedAt = DateTime.UtcNow
-        };
+            _service = service;
+            _currentUser = currentUser;
+        }
 
-        var result = await userManager.CreateAsync(user, "Teste@123");
+        [HttpGet]
+        public async Task<IActionResult> GetPaged(
+            [FromQuery] UsuarioListQueryDto query,
+            CancellationToken token)
+        {
+            var empresaId = _currentUser.EmpresaId
+                ?? throw new BusinessException("Usuário não vinculado a empresa.");
 
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
+            var result = await _service.GetPagedAdminsAsync(query, empresaId, token);
+            return Ok(result);
+        }
 
-        return Ok("Usuário criado");
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetRoles(CancellationToken token)
+        {
+            var roles = await _service.GetRolesAsync(token);
+            return Ok(roles);
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(
+            [FromRoute] Guid id,
+            CancellationToken token)
+        {
+            var usuario = await _service.GetAdminByIdAsync(id, token);
+            return Ok(usuario);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(
+            [FromBody] UserAdminRegisterDto dto,
+            CancellationToken token)
+        {
+            var empresaId = _currentUser.EmpresaId
+                ?? throw new BusinessException("Usuário não vinculado a empresa.");
+
+            dto.EmpresaId = empresaId;
+            var usuario = await _service.RegisterAdminAsync(dto, token);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = usuario.Id },
+                usuario);
+        }
+
+        [HttpPatch("{id:guid}")]
+        public async Task<IActionResult> Update(
+            [FromRoute] Guid id,
+            [FromBody] UserAdminEditDto dto,
+            CancellationToken token)
+        {
+            var usuario = await _service.UpdateAdminAsync(id, dto, token);
+            return Ok(usuario);
+        }
+
+        [HttpPatch("{id:guid}/status")]
+        public async Task<IActionResult> SetStatus(
+            [FromRoute] Guid id,
+            [FromBody] AlterarStatusUsuarioDto dto,
+            CancellationToken token)
+        {
+            var usuario = await _service.SetAdminStatusAsync(id, dto.Ativo, token);
+            return Ok(usuario);
+        }
     }
 }
-

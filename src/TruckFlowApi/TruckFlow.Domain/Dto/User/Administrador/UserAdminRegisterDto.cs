@@ -14,7 +14,14 @@ namespace TruckFlow.Domain.Dto.User.Administrador
         public required string Username { get; set; }
         public required string NomeReal { get; set; }
         public required string Telefone { get; set; }
+        public string? PhotoUrl { get; set; }
         public DateTime? CreatedAt { get; set; }
+
+        /// <summary>
+        /// Role do usuário a ser criado (ex.: Admin, Operador). Default Admin para
+        /// preservar callers existentes (SaaS registration, etc).
+        /// </summary>
+        public string Role { get; set; } = "Admin";
 
         public Guid EmpresaId { get; set; }
     }

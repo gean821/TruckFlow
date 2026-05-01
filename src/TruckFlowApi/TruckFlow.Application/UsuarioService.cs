@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Dto.User.Administrador;
 using TruckFlow.Domain.Dto.User.Motorista;
 using TruckFlow.Domain.Entities;
@@ -42,7 +43,6 @@ namespace TruckFlow.Application
             _empresaRepo = empresaRepo;
             _logger = logger;
         }
-
         public async Task<UserAdminResponseDto> RegisterAdminAsync
             (
                 UserAdminRegisterDto dto,
@@ -58,7 +58,6 @@ namespace TruckFlow.Application
                 Email = dto.Email,
                 CreatedAt = DateTime.UtcNow,
                 PhoneNumber = dto.Telefone,
-                Empresa = empresa,
                 EmpresaId = dto.EmpresaId
             };
 
@@ -72,29 +71,35 @@ namespace TruckFlow.Application
                 throw new Exception(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
             }
 
-            if (!await _roleManager.RoleExistsAsync(Roles.Admin))
+            var role = string.IsNullOrWhiteSpace(dto.Role) ? Roles.Admin : dto.Role.Trim();
+
+            if (!await _roleManager.RoleExistsAsync(role))
             {
-                await _roleManager.CreateAsync(new IdentityRole<Guid>(Roles.Admin));
+                await _roleManager.CreateAsync(new IdentityRole<Guid>(role));
             }
 
-            await _userManager.AddToRoleAsync(usuario, Roles.Admin);
+            await _userManager.AddToRoleAsync(usuario, role);
 
-            var administrador = new Administrador
+            if (role == Roles.Admin)
             {
-                UserName = usuario.UserName,
-                Nome = dto.NomeReal,
-                UsuarioId = usuario.Id,
-                Usuario = usuario,
-                CreatedAt = usuario.CreatedAt,
-                FuncaoAdm = FuncaoAdministrador.Colaborador,
-            };
+                var administrador = new Administrador
+                {
+                    UserName = usuario.UserName,
+                    Nome = dto.NomeReal,
+                    UsuarioId = usuario.Id,
+                    Usuario = usuario,
+                    CreatedAt = usuario.CreatedAt,
+                    FuncaoAdm = FuncaoAdministrador.Colaborador,
+                };
 
-            _db.Administrador.Add(administrador);
+                _db.Administrador.Add(administrador);
+            }
+
             await _db.SaveChangesAsync(token);
 
             _logger.LogInformation(
-                "Administrador registrado: {UsuarioId} (empresa {EmpresaId})",
-                usuario.Id, dto.EmpresaId);
+                "Usuário registrado: {UsuarioId} role {Role} (empresa {EmpresaId})",
+                usuario.Id, role, dto.EmpresaId);
 
             return await MapUsuarioAsync(usuario);
         }
@@ -144,9 +149,109 @@ namespace TruckFlow.Application
             };
         }
 
-        public Task<List<UserAdminResponseDto>> GetAllAsync(CancellationToken token = default)
+        public async Task<PagedResponse<UserAdminResponseDto>> GetPagedAdminsAsync(
+            UsuarioListQueryDto query,
+            Guid empresaId,
+            CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var dbQuery = _db.Users
+                .AsNoTracking()
+                .Include(u => u.Administrador)
+                .Include(u => u.Empresa)
+                .Where(u => u.EmpresaId == empresaId)
+                .Where(u => u.Administrador != null);
+
+            if (query.Status == "active")
+            {
+                dbQuery = dbQuery.Where(u => u.DeletedAt == null);
+            }
+
+            else if (query.Status == "inactive")
+            {
+                dbQuery = dbQuery.Where(u => u.DeletedAt != null);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var search = query.Search.Trim().ToUpper();
+                dbQuery = dbQuery.Where(u =>
+                    (u.NormalizedUserName != null && u.NormalizedUserName.Contains(search)) ||
+                    (u.NormalizedEmail != null && u.NormalizedEmail.Contains(search)) ||
+                    (u.Administrador != null && u.Administrador.Nome.ToUpper().Contains(search)));
+            }
+
+            var pageNumber = query.PageNumber <= 0 ? 1 : query.PageNumber;
+
+            var pageSize = query.PageSize <= 0 ? 20 : query.PageSize;
+
+            var totalCount = await dbQuery.CountAsync(token);
+
+            var users = await dbQuery
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(token);
+
+            var items = new List<UserAdminResponseDto>(users.Count);
+            
+            foreach (var u in users)
+            {
+                items.Add(await MapUsuarioAsync(u));
+            }
+
+            return new PagedResponse<UserAdminResponseDto>
+            {
+                Items = items,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
+        }
+
+        public async Task<List<string>> GetRolesAsync(CancellationToken token = default)
+        {
+            return await _roleManager.Roles
+                .AsNoTracking()
+                .Where(r => r.Name != null)
+                .Select(r => r.Name!)
+                .OrderBy(r => r)
+                .ToListAsync(token);
+        }
+
+        public async Task<UserAdminResponseDto> SetAdminStatusAsync(
+            Guid id,
+            bool ativo,
+            CancellationToken token = default)
+        {
+            var usuario = await _userManager.FindByIdAsync(id.ToString())
+                ?? throw new NotFoundException("Usuário não encontrado.");
+
+            usuario.DeletedAt = ativo ? null : DateTime.UtcNow;
+            usuario.UpdatedAt = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(usuario);
+
+            if (!result.Succeeded)
+            {
+                var erros = string.Join("; ", result.Errors.Select(e => e.Description));
+                _logger.LogWarning(
+                    "Falha ao alterar status do usuário {UsuarioId}: {Errors}",
+                    id, erros);
+                throw new BadRequestException($"Erro ao alterar status: {erros}");
+            }
+
+            _logger.LogInformation(
+                "Status do administrador {UsuarioId} alterado para {Status} (empresa {EmpresaId})",
+                id, ativo ? "ativo" : "inativo", usuario.EmpresaId);
+
+            var atualizado = await _db.Users
+                .AsNoTracking()
+                .Include(u => u.Administrador)
+                .Include(u => u.Empresa)
+                .FirstAsync(u => u.Id == id, token);
+
+            return await MapUsuarioAsync(atualizado);
         }
         public async Task<UserAdminResponseDto> GetAdminByIdAsync(
             Guid id,
