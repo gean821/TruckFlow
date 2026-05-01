@@ -1,5 +1,6 @@
 ﻿using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Dashboard;
+using TruckFlow.Domain.Dto.LocalDescarga;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
@@ -21,7 +22,7 @@ namespace TruckFlow.Application
         {
             var data = await _repo.GetDashboardSummaryAsync(token);
 
-            var locais = await _localDescargaRepo.GetAll(token);
+            var locais = await _localDescargaRepo.GetAll(new LocalDescargaListQueryDto(), token);
             var total = locais.Count;
             var livres = locais.Count(x => x.Ativa == true);
             var ocupadas = locais.Count(x => x.Ativa != true);
