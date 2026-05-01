@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Dto.Agendamento;
 using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;

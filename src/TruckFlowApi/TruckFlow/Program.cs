@@ -7,6 +7,7 @@ using TruckFlow.Configuration;
 using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Extensions.Agendamento;
+using TruckFlow.Extensions.Audit;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Cors;
 using TruckFlow.Extensions.Dashboard;
@@ -26,6 +27,7 @@ using TruckFlow.Extensions.UserContext;
 using TruckFlow.Filters;
 using TruckFlow.Middlewares;
 using TruckFlowApi.Infra.Database;
+using TruckFlowApi.Infra.Database.Interceptors;
 
 
 namespace TruckFlow
@@ -64,6 +66,7 @@ namespace TruckFlow
             builder.Services.AddEmpresa();
             builder.Services.AddUserContext();
             builder.Services.AddSaas();
+            builder.Services.AddAudit();
             builder.Services.AddSecurity();
 
             builder.Services.AddEndpointsApiExplorer();
@@ -73,9 +76,13 @@ namespace TruckFlow
                 x.OperationFilter<FileUploadOperationFilter>();
             });
 
-            builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
+            builder.Services.AddScoped<AuditSaveChangesInterceptor>();
+
+            builder.Services.AddDbContext<AppDbContext>((sp, optionsBuilder) =>
             {
-                optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+                optionsBuilder
+                    .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+                    .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>());
             });
 
             builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>

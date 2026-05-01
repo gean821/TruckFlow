@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Dto.LocalDescarga;
 using TruckFlow.Domain.Dto.Produto;
 using TruckFlow.Domain.Entities;

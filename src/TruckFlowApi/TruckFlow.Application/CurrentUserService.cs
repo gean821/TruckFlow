@@ -5,7 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Contracts;
 
 namespace TruckFlow.Application
 {
@@ -16,6 +16,15 @@ namespace TruckFlow.Application
         public Guid UserId =>
             Guid.Parse(_http.HttpContext!.User
                 .FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        public Guid? UserIdOrNull
+        {
+            get
+            {
+                var claim = _http.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                return Guid.TryParse(claim, out var id) ? id : null;
+            }
+        }
 
         public Guid? EmpresaId =>
             _http.HttpContext!.User

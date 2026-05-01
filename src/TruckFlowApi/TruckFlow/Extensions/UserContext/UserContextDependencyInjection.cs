@@ -1,5 +1,5 @@
 ﻿using TruckFlow.Application;
-using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Contracts;
 
 namespace TruckFlow.Extensions.UserContext
 {

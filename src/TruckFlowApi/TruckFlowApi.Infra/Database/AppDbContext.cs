@@ -48,6 +48,7 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new LocalDescargaConfiguracao());
             modelBuilder.ApplyConfiguration(new ProdutoFornecedorConfiguracao());
             modelBuilder.ApplyConfiguration(new EmpresaConfiguracao());
+            modelBuilder.ApplyConfiguration(new AuditLogConfiguracao());
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -68,6 +69,7 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<ItemPlanejamento> ItensPlanejamento { get; set; }
         public DbSet<RecebimentoEvento> RecebimentoEvento { get; set; }
         public DbSet<Empresa> Empresa { get; set; }
+        public DbSet<AuditLog> AuditLog { get; set; }
 
         private void ApplyGlobalFilters(ModelBuilder modelBuilder)
         {

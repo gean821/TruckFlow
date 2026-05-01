@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Application.Exceptions;
-using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Contracts;
 
 namespace TruckFlow.Application
 {
