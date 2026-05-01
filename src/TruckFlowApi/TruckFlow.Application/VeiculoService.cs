@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,13 +22,15 @@ namespace TruckFlow.Application
         private readonly IValidator<VeiculoUpdateDto> _updateValidator;
         private readonly IMotoristaRepositorio _motoristaRepo;
         private readonly VeiculoFactory _factory;
+        private readonly ILogger<VeiculoService> _logger;
 
         public VeiculoService(
             IVeiculoRepositorio repo,
             IValidator<VeiculoCreateDto> createValidator,
             IValidator<VeiculoUpdateDto> updateValidator,
             VeiculoFactory factory,
-            IMotoristaRepositorio motoristaRepo
+            IMotoristaRepositorio motoristaRepo,
+            ILogger<VeiculoService> logger
             )
         {
             _repo = repo;
@@ -35,6 +38,7 @@ namespace TruckFlow.Application
             _updateValidator = updateValidator;
             _factory = factory;
             _motoristaRepo = motoristaRepo;
+            _logger = logger;
         }
 
         public async Task<VeiculoResponse> CreateVeiculo(
@@ -45,6 +49,9 @@ namespace TruckFlow.Application
 
             if (!validationResult.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao criar veículo: {Errors}",
+                    string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validationResult.Errors);
             }
 
@@ -52,6 +59,10 @@ namespace TruckFlow.Application
 
             await _repo.CreateVeiculo(veiculoCriado, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Veículo criado: {VeiculoId} placa {Placa}",
+                veiculoCriado.Id, veiculoCriado.Placa);
 
             return MapToResponse(veiculoCriado);
         }
@@ -71,6 +82,10 @@ namespace TruckFlow.Application
 
             await _repo.Delete(veiculoEncontrado.Id, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Veículo excluído: {VeiculoId}",
+                id);
         }
 
         public async Task<List<VeiculoResponse>> GetAll(CancellationToken cancellationToken = default)
@@ -99,6 +114,9 @@ namespace TruckFlow.Application
 
             if (!validationResult.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar veículo {VeiculoId}: {Errors}",
+                    id, string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validationResult.Errors);
             }
 
@@ -112,6 +130,10 @@ namespace TruckFlow.Application
 
             var veiculoAtualizado = await _repo.Update(id, veiculoEncontrado, cancellationToken);
             await _repo.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Veículo atualizado: {VeiculoId} placa {Placa}",
+                id, veiculoAtualizado.Placa);
 
             return MapToResponse(veiculoAtualizado);
         }

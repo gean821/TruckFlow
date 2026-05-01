@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,13 +24,15 @@ namespace TruckFlow.Application
         private readonly IAuthService _authService;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly AppDbContext _db;
+        private readonly ILogger<UsuarioService> _logger;
 
         public UsuarioService(
             UserManager<Usuario> userManager,
             RoleManager<IdentityRole<Guid>> roleManager,
             IAuthService authService,
             IEmpresaRepositorio empresaRepo,
-            AppDbContext db
+            AppDbContext db,
+            ILogger<UsuarioService> logger
         )
         {
             _userManager = userManager;
@@ -37,6 +40,7 @@ namespace TruckFlow.Application
             _authService = authService;
             _db = db;
             _empresaRepo = empresaRepo;
+            _logger = logger;
         }
 
         public async Task<UserAdminResponseDto> RegisterAdminAsync
@@ -62,6 +66,9 @@ namespace TruckFlow.Application
 
             if (!usuarioCriado.Succeeded)
             {
+                _logger.LogWarning(
+                    "Falha ao registrar admin: {Errors}",
+                    string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
                 throw new Exception(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
             }
 
@@ -85,6 +92,10 @@ namespace TruckFlow.Application
             _db.Administrador.Add(administrador);
             await _db.SaveChangesAsync(token);
 
+            _logger.LogInformation(
+                "Administrador registrado: {UsuarioId} (empresa {EmpresaId})",
+                usuario.Id, dto.EmpresaId);
+
             return await MapUsuarioAsync(usuario);
         }
 
@@ -106,15 +117,25 @@ namespace TruckFlow.Application
 
             if (usuario == null || usuario.DeletedAt != null)
             {
+                _logger.LogWarning(
+                    "Falha de login admin: usuário não encontrado ou inativo (login {Login})",
+                    dto.Login);
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
             if (!await _userManager.CheckPasswordAsync(usuario, dto.Password))
             {
+                _logger.LogWarning(
+                    "Falha de login admin: senha inválida para {UsuarioId}",
+                    usuario.Id);
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
             var token = await _authService.GenerateTokenAsync(usuario, ct);
+
+            _logger.LogInformation(
+                "Login admin realizado: {UsuarioId} (empresa {EmpresaId})",
+                usuario.Id, usuario.EmpresaId);
 
             return new LoginAdminResponseDto
             {
@@ -157,6 +178,9 @@ namespace TruckFlow.Application
             if (!result.Succeeded)
             {
                 var erros = string.Join("; ", result.Errors.Select(e => e.Description));
+                _logger.LogWarning(
+                    "Falha ao atualizar admin {UsuarioId}: {Errors}",
+                    id, erros);
                 throw new BadRequestException($"Erro ao atualizar usuário: {erros}");
             }
 
@@ -167,6 +191,10 @@ namespace TruckFlow.Application
                 .Include(u => u.Empresa)
                 .FirstOrDefaultAsync(u => u.Id == id, token)
                 ?? throw new NotFoundException("Usuário não encontrado após atualização.");
+
+            _logger.LogInformation(
+                "Administrador atualizado: {UsuarioId} (empresa {EmpresaId})",
+                id, usuarioAtualizado.EmpresaId);
 
             return await MapUsuarioAsync(usuarioAtualizado);
         }
@@ -182,6 +210,10 @@ namespace TruckFlow.Application
             usuario.DeletedAt = DateTime.UtcNow;
 
             await _userManager.UpdateAsync(usuario);
+
+            _logger.LogInformation(
+                "Administrador excluído: {UsuarioId} (empresa {EmpresaId})",
+                id, usuario.EmpresaId);
         }
 
         public async Task<UserMotoristaResponseDto> RegisterMotoristaAsync
@@ -203,6 +235,9 @@ namespace TruckFlow.Application
 
             if (!usuarioCriado.Succeeded)
             {
+                _logger.LogWarning(
+                    "Falha ao registrar motorista: {Errors}",
+                    string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
                 throw new Exception(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
             }
 
@@ -226,6 +261,10 @@ namespace TruckFlow.Application
             _db.Motorista.Add(motorista);
             await _db.SaveChangesAsync(token);
 
+            _logger.LogInformation(
+                "Motorista registrado: {UsuarioId} (motorista {MotoristaId})",
+                usuario.Id, motorista.Id);
+
             return await MapMotoristaAsync(usuario);
         }
 
@@ -248,20 +287,30 @@ namespace TruckFlow.Application
 
             if (usuario == null || usuario.DeletedAt != null)
             {
+                _logger.LogWarning(
+                    "Falha de login motorista: usuário não encontrado ou inativo (login {Login})",
+                    dto.Login);
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
             if (!await _userManager.CheckPasswordAsync(usuario, dto.Password))
             {
+                _logger.LogWarning(
+                    "Falha de login motorista: senha inválida para {UsuarioId}",
+                    usuario.Id);
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
             var usuarioComMotorista = await _db.Users
-                .Include(u => u.Motorista) 
+                .Include(u => u.Motorista)
                 .FirstOrDefaultAsync(u => u.Id == usuario.Id, ct);
 
             var token = await _authService.GenerateTokenAsync(usuarioComMotorista!, ct);
-            
+
+            _logger.LogInformation(
+                "Login motorista realizado: {UsuarioId}",
+                usuario.Id);
+
             return new LoginMotoristaResponseDto
             {
                 Token = token,
@@ -308,6 +357,10 @@ namespace TruckFlow.Application
             motorista.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Motorista atualizado: {UsuarioId} (motorista {MotoristaId})",
+                id, motorista.Id);
 
             return await MapMotoristaAsync(usuario);
         }
@@ -361,6 +414,10 @@ namespace TruckFlow.Application
             usuario.DeletedAt = DateTime.UtcNow;
 
             await _userManager.UpdateAsync(usuario);
+
+            _logger.LogInformation(
+                "Motorista excluído: {UsuarioId}",
+                id);
         }
 
         public async Task ChangePasswordAsync(
@@ -379,8 +436,15 @@ namespace TruckFlow.Application
 
             if (!result.Succeeded)
             {
+                _logger.LogWarning(
+                    "Falha ao alterar senha do usuário {UsuarioId}: {Errors}",
+                    userId, string.Join(" | ", result.Errors.Select(e => e.Description)));
                 throw new Exception(string.Join(" | ", result.Errors.Select(e => e.Description)));
             }
+
+            _logger.LogInformation(
+                "Senha alterada para o usuário {UsuarioId}",
+                userId);
         }
 
         private async Task<UserAdminResponseDto> MapUsuarioAsync(Usuario usuario)

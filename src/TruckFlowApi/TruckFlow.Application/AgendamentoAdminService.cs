@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,7 @@ namespace TruckFlow.Application
         private readonly ICurrentUserService _currentUser;
         private readonly IProdutoRepositorio _produtoRepo;
         private readonly ILocalDescargaRepositorio _localRepo;
+        private readonly ILogger<AgendamentoAdminService> _logger;
         public AgendamentoAdminService
            (
             IAgendamentoRepositorio repo,
@@ -43,7 +45,8 @@ namespace TruckFlow.Application
             IEmpresaRepositorio empresaRepo,
             ICurrentUserService currentUser,
             IProdutoRepositorio produtoRepositorio,
-            ILocalDescargaRepositorio localDescargaRepositorio
+            ILocalDescargaRepositorio localDescargaRepositorio,
+            ILogger<AgendamentoAdminService> logger
             )
         {
             _repo = repo;
@@ -58,6 +61,7 @@ namespace TruckFlow.Application
             _currentUser = currentUser;
             _produtoRepo = produtoRepositorio;
             _localRepo = localDescargaRepositorio;
+            _logger = logger;
         }
 
         public async Task<AgendamentoAdminResponse> CreateAvulso(
@@ -65,7 +69,15 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            await _createValidator.ValidateAndThrowAsync(dto, token);
+            var validation = await _createValidator.ValidateAsync(dto, token);
+
+            if (!validation.IsValid)
+            {
+                _logger.LogWarning(
+                    "Validação falhou ao criar agendamento avulso: {Errors}",
+                    string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
+                throw new ValidationException(validation.Errors);
+            }
 
             var empresaId = _currentUser.EmpresaId ?? throw new UnauthorizedAccessException("Usuário sem empresa.");
             var empresa = await _empresaRepo.GetById(empresaId, token)
@@ -113,6 +125,11 @@ namespace TruckFlow.Application
             };
 
             await _repo.AddAgendamento(vaga, token);
+
+            _logger.LogInformation(
+                "Agendamento avulso criado: {AgendamentoId} (empresa {EmpresaId}, status {Status})",
+                vaga.Id, empresaId, vaga.StatusAgendamento);
+
             return MapToResponse(vaga);
         }
         public async Task<PagedResponse<AgendamentoAdminResponse>> GetByFiltros
@@ -160,6 +177,10 @@ namespace TruckFlow.Application
 
             agendamento.RegistrarChegada();
             await _repo.Update(agendamento, token);
+
+            _logger.LogInformation(
+                "Chegada registrada no agendamento {AgendamentoId} (empresa {EmpresaId})",
+                agendamentoId, agendamento.EmpresaId);
         }
 
         public async Task FinalizarOperacao(
@@ -171,6 +192,10 @@ namespace TruckFlow.Application
 
             agendamento.FinalizarOperacao();
             await _repo.Update(agendamento, token);
+
+            _logger.LogInformation(
+                "Operação finalizada no agendamento {AgendamentoId} (empresa {EmpresaId})",
+                agendamentoId, agendamento.EmpresaId);
         }
 
         public async Task CancelarAgendamento(
@@ -192,6 +217,10 @@ namespace TruckFlow.Application
 
             agendamento.Cancelar();
             await _repo.Update(agendamento, token);
+
+            _logger.LogInformation(
+                "Agendamento cancelado: {AgendamentoId} (empresa {EmpresaId})",
+                agendamentoId, agendamento.EmpresaId);
         }
         public async Task<AgendamentoAdminResponse> Update(
             Guid id,
@@ -199,11 +228,19 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            await _updateValidator.ValidateAndThrowAsync(dto, token);
+            var validation = await _updateValidator.ValidateAsync(dto, token);
+
+            if (!validation.IsValid)
+            {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar agendamento {AgendamentoId}: {Errors}",
+                    id, string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
+                throw new ValidationException(validation.Errors);
+            }
 
             var agendamento = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Agendamento não encontrado");
-           
+
             var novaDoca = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token)
                 ?? throw new BusinessException("Doca inválida");
 
@@ -217,6 +254,11 @@ namespace TruckFlow.Application
             agendamento.UpdatedAt = DateTime.UtcNow;
 
             await _repo.Update(agendamento, token);
+
+            _logger.LogInformation(
+                "Agendamento atualizado: {AgendamentoId} (empresa {EmpresaId})",
+                id, agendamento.EmpresaId);
+
             return MapToResponse(agendamento);
         }
 
@@ -282,6 +324,10 @@ namespace TruckFlow.Application
             }
 
             await _repo.Update(agendamento, token);
+
+            _logger.LogInformation(
+                "Agendamento finalizado: {AgendamentoId} qtd {Quantidade} (empresa {EmpresaId})",
+                agendamentoId, quantidadeRecebida, empresaId);
         }
         public async Task Delete(
             Guid id,
@@ -298,6 +344,10 @@ namespace TruckFlow.Application
             }
 
             await _repo.Delete(agendamento, token);
+
+            _logger.LogInformation(
+                "Agendamento excluído: {AgendamentoId} (empresa {EmpresaId})",
+                id, agendamento.EmpresaId);
         }
         private static AgendamentoAdminResponse MapToResponse(Agendamento agendamento)
         {

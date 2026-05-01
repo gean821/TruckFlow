@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,17 +22,20 @@ namespace TruckFlow.Application
         private readonly IValidator<UnidadeEntregaCreateDto> _createValidator;
         private readonly IValidator<UnidadeEntregaUpdateDto> _updateValidator;
         private readonly CurrentUserGuard _currentUser;
+        private readonly ILogger<UnidadeEntregaService> _logger;
 
         public UnidadeEntregaService(
             IUnidadeEntregaRepositorio repo,
             IValidator<UnidadeEntregaCreateDto> createValidator,
             IValidator<UnidadeEntregaUpdateDto> updateValidator,
-            CurrentUserGuard currentUser)
+            CurrentUserGuard currentUser,
+            ILogger<UnidadeEntregaService> logger)
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _currentUser = currentUser;
+            _logger = logger;
         }
 
         public async Task<UnidadeEntregaResponse> CreateUnidadeEntrega(
@@ -42,7 +46,12 @@ namespace TruckFlow.Application
             var validation = await _createValidator.ValidateAsync(dto, token);
 
             if (!validation.IsValid)
+            {
+                _logger.LogWarning(
+                    "Validação falhou ao criar unidade de entrega: {Errors}",
+                    string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
+            }
 
             var empresaId = _currentUser.GetEmpresaId();
 
@@ -65,6 +74,10 @@ namespace TruckFlow.Application
 
             await _repo.CreateUnidadeEntrega(entity, token);
             await _repo.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Unidade de entrega criada: {UnidadeId} {Nome} (empresa {EmpresaId})",
+                entity.Id, entity.Nome, empresaId);
 
             return MapToResponse(entity);
         }
@@ -92,12 +105,16 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            _currentUser.GetEmpresaId();
+            var empresaId = _currentUser.GetEmpresaId();
 
             var unidade = await _repo.GetById(id,token)
                 ?? throw new NotFoundException("Unidade de entrega não encontrada");
 
             await _repo.Delete(unidade, token);
+
+            _logger.LogInformation(
+                "Unidade de entrega excluída: {UnidadeId} (empresa {EmpresaId})",
+                id, empresaId);
         }
 
         public async Task<UnidadeEntregaResponse> UpdateUnidadeEntrega(
@@ -106,12 +123,17 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            _currentUser.GetEmpresaId();
+            var empresaId = _currentUser.GetEmpresaId();
 
             var validation = await _updateValidator.ValidateAsync(dto, token);
 
             if (!validation.IsValid)
+            {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar unidade de entrega {UnidadeId}: {Errors}",
+                    id, string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
+            }
 
             var unidade = await _repo.GetById(id,token)
                 ?? throw new NotFoundException("Unidade de entrega não encontrada");
@@ -119,6 +141,10 @@ namespace TruckFlow.Application
             ApplyPatch(unidade, dto);
 
             await _repo.Update(unidade, token);
+
+            _logger.LogInformation(
+                "Unidade de entrega atualizada: {UnidadeId} (empresa {EmpresaId})",
+                id, empresaId);
 
             return MapToResponse(unidade);
         }
@@ -136,6 +162,11 @@ namespace TruckFlow.Application
             unidade.UpdatedAt = DateTime.UtcNow;
 
             await _repo.Update(unidade, token);
+
+            _logger.LogInformation(
+                "Unidade de entrega {UnidadeId} mudou status para {Ativa}",
+                id, status);
+
             return MapToResponse(unidade);
         }
 

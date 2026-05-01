@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace TruckFlow.Application
         private readonly IProdutoRepositorio _produtoRepositorio;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly CurrentUserGuard _currentUser;
+        private readonly ILogger<PlanejamentoRecebimentoService> _logger;
         public PlanejamentoRecebimentoService
             (
                 IPlanejamentoRecebimentoRepositorio planeRepo,
@@ -36,7 +38,8 @@ namespace TruckFlow.Application
                 IFornecedorRepositorio repo,
                 IProdutoRepositorio produtoRepositorio,
                 IEmpresaRepositorio empresaRepo,
-                CurrentUserGuard guard
+                CurrentUserGuard guard,
+                ILogger<PlanejamentoRecebimentoService> logger
             )
         {
             _planeRepo = planeRepo;
@@ -47,6 +50,7 @@ namespace TruckFlow.Application
             _produtoRepositorio = produtoRepositorio;
             _empresaRepo = empresaRepo;
             _currentUser = guard;
+            _logger = logger;
         }
 
         public async Task<RecebimentoResponseDto> CreateRecebimento
@@ -56,9 +60,12 @@ namespace TruckFlow.Application
             )
         {
             ValidationResult validationResult = await _createValidator.ValidateAsync(recebimento, token);
-            
+
             if (!validationResult.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao criar planejamento de recebimento: {Errors}",
+                    string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validationResult.Errors);
             }
 
@@ -67,8 +74,12 @@ namespace TruckFlow.Application
             var novoRecebimento = await _factory.CreateRecebimentoFromDto(recebimento, empresaId, token);
 
             var recebimentoCriado = await _planeRepo.CreateRecebimento(novoRecebimento, token);
-            
+
             await _planeRepo.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Planejamento de recebimento criado: {PlanejamentoId} (empresa {EmpresaId}, fornecedor {FornecedorId})",
+                recebimentoCriado.Id, empresaId, recebimentoCriado.FornecedorId);
 
             return MapToResponse(recebimentoCriado);
         }
@@ -88,6 +99,10 @@ namespace TruckFlow.Application
 
             await _planeRepo.DeleteRecebimento(recebimento.Id, token);
             await _planeRepo.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Planejamento de recebimento excluído: {PlanejamentoId} (empresa {EmpresaId})",
+                id, recebimento.EmpresaId);
         }
 
         public async Task<RecebimentoResponseDto> UpdateRecebimento
@@ -101,6 +116,9 @@ namespace TruckFlow.Application
 
             if (!validationResult.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar planejamento de recebimento {PlanejamentoId}: {Errors}",
+                    id, string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validationResult.Errors);
             }
 
@@ -158,6 +176,11 @@ namespace TruckFlow.Application
                 .ToList();
 
             var recebimentoAtualizado = await _planeRepo.UpdateRecebimento(id, recebimentoEncontrado, token);
+
+            _logger.LogInformation(
+                "Planejamento de recebimento atualizado: {PlanejamentoId} (empresa {EmpresaId})",
+                id, empresaId);
+
             return MapToResponse(recebimentoAtualizado);
         }
 
@@ -308,6 +331,10 @@ namespace TruckFlow.Application
 
             await _planeRepo.UpdateRecebimento(id, planejamento, token);
             await _planeRepo.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Planejamento de recebimento encerrado: {PlanejamentoId} (empresa {EmpresaId})",
+                id, planejamento.EmpresaId);
         }
 
         private static RecebimentoResponseDto MapToResponse(PlanejamentoRecebimento recebimento) =>

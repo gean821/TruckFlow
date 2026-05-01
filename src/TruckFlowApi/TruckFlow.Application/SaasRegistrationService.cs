@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,13 +23,15 @@ namespace TruckFlow.Application
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly IAuthService _authService;
         private readonly IEmpresaRepositorio _empresaRepo;
+        private readonly ILogger<SaaSRegistrationService> _logger;
 
         public SaaSRegistrationService(
             AppDbContext db,
             UserManager<Usuario> userManager,
             RoleManager<IdentityRole<Guid>> roleManager,
             IAuthService authService,
-            IEmpresaRepositorio empresaRepo
+            IEmpresaRepositorio empresaRepo,
+            ILogger<SaaSRegistrationService> logger
             )
         {
             _db = db;
@@ -36,6 +39,7 @@ namespace TruckFlow.Application
             _roleManager = roleManager;
             _authService = authService;
             _empresaRepo = empresaRepo;
+            _logger = logger;
         }
 
         public async Task<LoginAdminResponseDto> RegisterAsync(
@@ -86,6 +90,9 @@ namespace TruckFlow.Application
 
                 if (!result.Succeeded)
                 {
+                    _logger.LogWarning(
+                        "Falha ao registrar SaaS (usuário admin): {Errors}",
+                        string.Join(" | ", result.Errors.Select(e => e.Description)));
                     throw new Exception(string.Join(" | ", result.Errors.Select(e => e.Description)));
                 }
 
@@ -112,6 +119,10 @@ namespace TruckFlow.Application
                 await transaction.CommitAsync(token);
 
                 var jwt = await _authService.GenerateTokenAsync(usuario, token);
+
+                _logger.LogInformation(
+                    "Registro SaaS concluído: empresa {EmpresaId} ({NomeFantasia}), admin {UsuarioId}",
+                    empresa.Id, empresa.NomeFantasia, usuario.Id);
 
                 return new LoginAdminResponseDto
                 {

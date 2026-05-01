@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,13 +24,15 @@ namespace TruckFlow.Application
         private readonly IValidator<LocalDescargaUpdateDto> _updateValidator;
         private readonly IUnidadeEntregaRepositorio _unidadeEntregaRepositorio;
         private readonly ICurrentUserService _currentUser;
+        private readonly ILogger<LocalDescargaService> _logger;
 
         public LocalDescargaService(
             ILocalDescargaRepositorio repo,
             IValidator<LocalDescargaCreateDto> createValidator,
             IValidator<LocalDescargaUpdateDto> updateValidator,
             IUnidadeEntregaRepositorio unidadeEntregaRepositorio,
-            ICurrentUserService currentUser
+            ICurrentUserService currentUser,
+            ILogger<LocalDescargaService> logger
             )
         {
             _repo = repo;
@@ -37,6 +40,7 @@ namespace TruckFlow.Application
             _updateValidator = updateValidator;
             _unidadeEntregaRepositorio = unidadeEntregaRepositorio;
             _currentUser = currentUser;
+            _logger = logger;
         }
 
         public async Task<LocalDescargaResponse> CreateLocalDescarga(
@@ -49,6 +53,9 @@ namespace TruckFlow.Application
 
             if (!validation.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao criar local de descarga: {Errors}",
+                    string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
             }
 
@@ -68,6 +75,10 @@ namespace TruckFlow.Application
 
             await _repo.CreateLocalDescarga(entity, token);
             await _repo.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Local de descarga criado: {LocalId} {Nome} (empresa {EmpresaId}, ativa {Ativa})",
+                entity.Id, entity.Nome, empresaId, entity.Ativa);
 
             return MapToResponse(entity);
         }
@@ -101,13 +112,17 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            ValidateEnterprise();
+            var empresaId = ValidateEnterprise();
             var localEncontrado = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Local não encontrado");
 
 
             await _repo.Delete(localEncontrado, token);
             await _repo.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Local de descarga excluído: {LocalId} (empresa {EmpresaId})",
+                id, empresaId);
         }
 
         public async Task<LocalDescargaResponse> GetById(
@@ -128,11 +143,14 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            ValidateEnterprise();
+            var empresaId = ValidateEnterprise();
             ValidationResult validation = await _updateValidator.ValidateAsync(local, token);
 
             if (!validation.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar local de descarga {LocalId}: {Errors}",
+                    id, string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
             }
 
@@ -141,7 +159,7 @@ namespace TruckFlow.Application
 
             var unidade = await _unidadeEntregaRepositorio.GetById(local.UnidadeEntregaId, token)
                     ?? throw new NotFoundException("Unidade não encontrada");
-               
+
             localEncontrado.Nome = local.Nome;
             localEncontrado.UnidadeEntrega.Id = unidade.Id;
             localEncontrado.UpdatedAt = DateTime.UtcNow;
@@ -154,6 +172,10 @@ namespace TruckFlow.Application
 
 
             await _repo.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Local de descarga atualizado: {LocalId} (empresa {EmpresaId})",
+                id, empresaId);
 
             return MapToResponse(localDescargaAtualizado);
         }
@@ -172,6 +194,11 @@ namespace TruckFlow.Application
             local.UpdatedAt = DateTime.UtcNow;
 
             await _repo.Update(local, token);
+
+            _logger.LogInformation(
+                "Local de descarga {LocalId} mudou status para {Ativa}",
+                localId, ativa);
+
             return MapToResponse(local);
         }
 
