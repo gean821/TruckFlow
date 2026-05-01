@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -17,14 +18,17 @@ namespace TruckFlow.Application
     {
         private readonly IConfiguration _configuration;
         private readonly UserManager<Usuario> _userManager;
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IConfiguration configuration,
-            UserManager<Usuario> userManager
+            UserManager<Usuario> userManager,
+            ILogger<AuthService> logger
             )
         {
             _configuration = configuration;
             _userManager = userManager;
+            _logger = logger;
         }
 
         public async Task<string> GenerateTokenAsync(Usuario usuario, CancellationToken ct = default)
@@ -44,6 +48,11 @@ namespace TruckFlow.Application
             };
 
             var token = handler.CreateToken(tokenDescriptor);
+
+            _logger.LogInformation(
+                "Token JWT gerado para o usuário {UsuarioId}",
+                usuario.Id);
+
             return handler.WriteToken(token);
         }
 

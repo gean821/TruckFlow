@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,15 +19,18 @@ namespace TruckFlow.Application
         private readonly IEmpresaRepositorio _repo;
         private readonly IValidator<EmpresaCreateDto> _createValidator;
         private readonly IValidator<EmpresaUpdateDto> _updateValidator;
+        private readonly ILogger<EmpresaService> _logger;
 
         public EmpresaService(
             IEmpresaRepositorio repo,
             IValidator<EmpresaCreateDto> createValidator,
-            IValidator<EmpresaUpdateDto> updateValidator)
+            IValidator<EmpresaUpdateDto> updateValidator,
+            ILogger<EmpresaService> logger)
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
+            _logger = logger;
         }
 
         public async Task<EmpresaResponseDto> CreateEmpresa(
@@ -34,17 +38,29 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            await _createValidator.ValidateAndThrowAsync(dto, token);
+            var validation = await _createValidator.ValidateAsync(dto, token);
+
+            if (!validation.IsValid)
+            {
+                _logger.LogWarning(
+                    "Validação falhou ao criar empresa: {Errors}",
+                    string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
+                throw new ValidationException(validation.Errors);
+            }
 
             var existing = await _repo.GetByCnpj(dto.Cnpj, token);
 
-            if (existing is not null) { 
+            if (existing is not null) {
                 throw new BusinessException("CNPJ já cadastrado.");
             }
 
             var empresa = EmpresaFactory.Create(dto);
 
             await _repo.CreateEmpresa(empresa, token);
+
+            _logger.LogInformation(
+                "Empresa criada: {EmpresaId} {NomeFantasia}",
+                empresa.Id, empresa.NomeFantasia);
 
             return MapToResponse(empresa);
         }
@@ -75,7 +91,15 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            await _updateValidator.ValidateAndThrowAsync(dto, token);
+            var validation = await _updateValidator.ValidateAsync(dto, token);
+
+            if (!validation.IsValid)
+            {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar empresa {EmpresaId}: {Errors}",
+                    id, string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
+                throw new ValidationException(validation.Errors);
+            }
 
             var empresa = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Empresa não encontrada.");
@@ -85,6 +109,10 @@ namespace TruckFlow.Application
             empresa.UpdatedAt = DateTime.UtcNow;
 
             await _repo.Update(empresa, token);
+
+            _logger.LogInformation(
+                "Empresa atualizada: {EmpresaId}",
+                id);
 
             return MapToResponse(empresa);
         }
@@ -100,6 +128,10 @@ namespace TruckFlow.Application
             empresa.DeletedAt = DateTime.UtcNow;
 
             await _repo.Update(empresa, token);
+
+            _logger.LogInformation(
+                "Empresa desativada: {EmpresaId}",
+                id);
         }
 
         private static void ApplyPatch(Empresa empresa, EmpresaUpdateDto dto)

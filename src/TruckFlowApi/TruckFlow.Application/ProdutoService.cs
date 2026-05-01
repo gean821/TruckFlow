@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace TruckFlow.Application
         private readonly ProdutoFactory _factory;
         private readonly ILocalDescargaRepositorio _localRepo;
         private readonly CurrentUserGuard _currentUser;
+        private readonly ILogger<ProdutoService> _logger;
 
         public ProdutoService(
             IProdutoRepositorio repo,
@@ -29,7 +31,8 @@ namespace TruckFlow.Application
             IValidator<ProdutoEditDto> editValidator,
             ProdutoFactory factory,
             ILocalDescargaRepositorio localRepo,
-            CurrentUserGuard currentUser)
+            CurrentUserGuard currentUser,
+            ILogger<ProdutoService> logger)
         {
             _repo = repo;
             _createValidator = createValidator;
@@ -37,6 +40,7 @@ namespace TruckFlow.Application
             _factory = factory;
             _localRepo = localRepo;
             _currentUser = currentUser;
+            _logger = logger;
         }
 
         public async Task<ProdutoResponse> CreateProduto(
@@ -48,6 +52,9 @@ namespace TruckFlow.Application
 
             if (!validation.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao criar produto: {Errors}",
+                    string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
             }
 
@@ -56,6 +63,10 @@ namespace TruckFlow.Application
             var entity = await _factory.CreateProdutoFromDto(dto, empresaId, token);
 
             await _repo.CreateProduto(entity, token);
+
+            _logger.LogInformation(
+                "Produto criado: {ProdutoId} {Nome} (empresa {EmpresaId})",
+                entity.Id, entity.Nome, empresaId);
 
             return MapToResponse(entity);
         }
@@ -87,6 +98,10 @@ namespace TruckFlow.Application
                 ?? throw new NotFoundException("Produto não encontrado");
 
             await _repo.DeleteProduto(produto, token);
+
+            _logger.LogInformation(
+                "Produto excluído: {ProdutoId} (empresa {EmpresaId})",
+                id, produto.EmpresaId);
         }
 
         public async Task<ProdutoResponse> UpdateProduto(
@@ -98,6 +113,9 @@ namespace TruckFlow.Application
 
             if (!validation.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar produto {ProdutoId}: {Errors}",
+                    id, string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
             }
 
@@ -107,6 +125,10 @@ namespace TruckFlow.Application
             await ApplyPatch(produto, dto, token);
 
             await _repo.UpdateProduto(produto, token);
+
+            _logger.LogInformation(
+                "Produto atualizado: {ProdutoId} (empresa {EmpresaId})",
+                id, produto.EmpresaId);
 
             return MapToResponse(produto);
         }

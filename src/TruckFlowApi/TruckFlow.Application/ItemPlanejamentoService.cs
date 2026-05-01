@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace TruckFlow.Application
         private readonly IProdutoRepositorio _produtoRepo;
         private readonly IRecebimentoEventoRepositorio _eventoRepo;
         private readonly IUsuarioService _usuarioService;
+        private readonly ILogger<ItemPlanejamentoService> _logger;
 
         public ItemPlanejamentoService(
             IItemPlanejamentoRepositorio repo,
@@ -32,7 +34,8 @@ namespace TruckFlow.Application
             ItemPlanejamentoFactory factory,
             IProdutoRepositorio produtoRepo,
             IRecebimentoEventoRepositorio eventoRepo,
-            IUsuarioService usuarioService)
+            IUsuarioService usuarioService,
+            ILogger<ItemPlanejamentoService> logger)
         {
             _repo = repo;
             _createValidator = createValidator;
@@ -41,6 +44,7 @@ namespace TruckFlow.Application
             _produtoRepo = produtoRepo;
             _eventoRepo = eventoRepo;
             _usuarioService = usuarioService;
+            _logger = logger;
         }
 
         public async Task<ItemPlanejamentoResponseDto> CreateItem
@@ -50,14 +54,21 @@ namespace TruckFlow.Application
             )
         {
             ValidationResult validation = await _createValidator.ValidateAsync(dto, token);
-            
+
             if (!validation.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao criar item de planejamento: {Errors}",
+                    string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
             }
 
             var novoItem = await _factory.CreateItemFromDto(dto, null, token);
             var itemCriado = await _repo.CreateItem(novoItem, token);
+
+            _logger.LogInformation(
+                "Item de planejamento criado: {ItemId} (planejamento {PlanejamentoId})",
+                itemCriado.Id, itemCriado.PlanejamentoRecebimentoId);
 
             return MapToResponse(itemCriado, token);
         }
@@ -70,6 +81,9 @@ namespace TruckFlow.Application
             var planejamentoId = item.PlanejamentoRecebimentoId;
             await _repo.DeleteItem(item.Id, token);
 
+            _logger.LogInformation(
+                "Item de planejamento excluído: {ItemId} (planejamento {PlanejamentoId})",
+                id, planejamentoId);
         }
         public async Task<List<ItemPlanejamentoResponseDto>> GetAll(CancellationToken token = default)
         {
@@ -106,9 +120,12 @@ namespace TruckFlow.Application
         {
 
             ValidationResult validation = await _updateValidator.ValidateAsync(dto, token);
-            
+
             if (!validation.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar item de planejamento {ItemId}: {Errors}",
+                    id, string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
             }
 
@@ -141,6 +158,11 @@ namespace TruckFlow.Application
             item.UpdatedAt = DateTime.UtcNow;
 
             var itemAtualizado = await _repo.UpdateItem(id, item, token);
+
+            _logger.LogInformation(
+                "Item de planejamento atualizado: {ItemId} (planejamento {PlanejamentoId})",
+                id, item.PlanejamentoRecebimentoId);
+
             return MapToResponse(itemAtualizado, token);
         }
 
@@ -172,6 +194,10 @@ namespace TruckFlow.Application
             // 2️⃣ Atualiza domínio
             item.RegistrarRecebimento(quantidade);
             item.PlanejamentoRecebimento.RecalcularStatus();
+
+            _logger.LogInformation(
+                "Recebimento manual registrado em item: {ItemId} qtd {Quantidade} (empresa {EmpresaId})",
+                itemPlanejamentoId, quantidade, empresa);
         }
 
         private static ItemPlanejamentoResponseDto MapToResponse(ItemPlanejamento item, CancellationToken token = default) =>

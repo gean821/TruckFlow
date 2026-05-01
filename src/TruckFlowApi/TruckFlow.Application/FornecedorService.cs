@@ -2,6 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,7 @@ namespace TruckFlow.Application
         private readonly IProdutoRepositorio _produtoRepo;
         private readonly FornecedorFactory _factory;
         private readonly CurrentUserGuard _currentUser;
+        private readonly ILogger<FornecedorService> _logger;
 
         public FornecedorService(
             IFornecedorRepositorio repo,
@@ -33,7 +35,8 @@ namespace TruckFlow.Application
             IValidator<FornecedorUpdateDto> updateValidator,
             IProdutoRepositorio produtoRepo,
             FornecedorFactory factory,
-            CurrentUserGuard currentUser)
+            CurrentUserGuard currentUser,
+            ILogger<FornecedorService> logger)
         {
             _repo = repo;
             _createValidator = createValidator;
@@ -41,6 +44,7 @@ namespace TruckFlow.Application
             _produtoRepo = produtoRepo;
             _factory = factory;
             _currentUser = currentUser;
+            _logger = logger;
         }
         public async Task<FornecedorResponse> CreateFornecedor(
             FornecedorCreateDto dto,
@@ -51,6 +55,9 @@ namespace TruckFlow.Application
 
             if (!validation.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao criar fornecedor: {Errors}",
+                    string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
             }
 
@@ -78,6 +85,10 @@ namespace TruckFlow.Application
 
             await _repo.CreateFornecedor(fornecedor, token);
             await _repo.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Fornecedor criado: {FornecedorId} {Nome} (empresa {EmpresaId})",
+                fornecedor.Id, fornecedor.Nome, empresaId);
 
             return MapToResponse(fornecedor);
         }
@@ -118,7 +129,12 @@ namespace TruckFlow.Application
             var validation = await _updateValidator.ValidateAsync(dto, token);
 
             if (!validation.IsValid)
+            {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar fornecedor {FornecedorId}: {Errors}",
+                    id, string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
+            }
 
             var fornecedor = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Fornecedor não encontrado");
@@ -126,6 +142,10 @@ namespace TruckFlow.Application
             ApplyPatch(fornecedor, dto);
 
             await _repo.Update(fornecedor, token);
+
+            _logger.LogInformation(
+                "Fornecedor atualizado: {FornecedorId} (empresa {EmpresaId})",
+                id, fornecedor.EmpresaId);
 
             return MapToResponse(fornecedor);
         }
@@ -139,6 +159,10 @@ namespace TruckFlow.Application
                 ?? throw new NotFoundException("Fornecedor não encontrado");
 
             await _repo.Delete(fornecedor, token);
+
+            _logger.LogInformation(
+                "Fornecedor excluído: {FornecedorId} (empresa {EmpresaId})",
+                id, fornecedor.EmpresaId);
         }
 
         public async Task<FornecedorResponse> AddProdutoToFornecedorAsync(
@@ -162,6 +186,10 @@ namespace TruckFlow.Application
 
             await _repo.SaveChangesAsync(token);
 
+            _logger.LogInformation(
+                "Produto {ProdutoId} associado ao fornecedor {FornecedorId} (empresa {EmpresaId})",
+                produtoId, fornecedorId, fornecedor.EmpresaId);
+
             return MapToResponse(fornecedor);
         }
 
@@ -181,6 +209,10 @@ namespace TruckFlow.Application
             fornecedor.Produtos.Remove(produto);
 
             await _repo.SaveChangesAsync(token);
+
+            _logger.LogInformation(
+                "Produto {ProdutoId} desassociado do fornecedor {FornecedorId} (empresa {EmpresaId})",
+                produtoId, fornecedorId, fornecedor.EmpresaId);
 
             return MapToResponse(fornecedor);
         }

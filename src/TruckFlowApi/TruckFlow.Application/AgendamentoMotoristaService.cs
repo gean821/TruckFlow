@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,18 +20,21 @@ namespace TruckFlow.Application
         private readonly INotaFiscalRepositorio _notaRepo;
         private readonly IPlanejamentoRecebimentoRepositorio _planejamentoRepo;
         private readonly IRecebimentoEventoRepositorio _eventoRepo;
+        private readonly ILogger<AgendamentoMotoristaService> _logger;
 
         public AgendamentoMotoristaService(
             IAgendamentoRepositorio repo,
             INotaFiscalRepositorio notaRepo,
             IPlanejamentoRecebimentoRepositorio planejamentoRepo,
-            IRecebimentoEventoRepositorio eventoRepo
+            IRecebimentoEventoRepositorio eventoRepo,
+            ILogger<AgendamentoMotoristaService> logger
             )
         {
             _repo = repo;
             _notaRepo = notaRepo;
             _planejamentoRepo = planejamentoRepo;
             _eventoRepo = eventoRepo;
+            _logger = logger;
         }
 
         public async Task<List<AgendamentoMotoristaResponse>> GetDriverAppointments(
@@ -108,6 +112,10 @@ namespace TruckFlow.Application
                     await _planejamentoRepo.SaveChangesAsync(token);
                 }
             }
+
+            _logger.LogInformation(
+                "Agendamento reservado pelo motorista: {AgendamentoId} (usuário {UsuarioId}, empresa {EmpresaId})",
+                vaga.Id, dto.UsuarioId, vaga.EmpresaId);
 
             return MapToResponse(vaga);
         }

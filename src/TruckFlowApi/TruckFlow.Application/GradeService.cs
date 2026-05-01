@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,7 @@ namespace TruckFlow.Application
         private readonly IAgendamentoRepositorio _agendamentoRepo;
         private readonly ILocalDescargaRepositorio _localDescargaRepo;
         private readonly CurrentUserGuard _currentUser;
+        private readonly ILogger<GradeService> _logger;
 
         public GradeService(
             IGradeRepositorio repo,
@@ -41,7 +43,8 @@ namespace TruckFlow.Application
             IUnidadeEntregaRepositorio unidadeEntregaRepo,
             IAgendamentoRepositorio agendamentoRepositorio,
             ILocalDescargaRepositorio descargaRepo,
-            CurrentUserGuard guard
+            CurrentUserGuard guard,
+            ILogger<GradeService> logger
             )
         {
             _repo = repo;
@@ -53,6 +56,7 @@ namespace TruckFlow.Application
             _agendamentoRepo = agendamentoRepositorio;
             _localDescargaRepo = descargaRepo;
             _currentUser = guard;
+            _logger = logger;
         }
 
         public async Task<PagedResponse<GradeResponse>> GetPagedGrades(
@@ -77,7 +81,12 @@ namespace TruckFlow.Application
             var validation = await _createValidator.ValidateAsync(dto, token);
 
             if (!validation.IsValid)
+            {
+                _logger.LogWarning(
+                    "Validação falhou ao criar grade: {Errors}",
+                    string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
+            }
 
             var empresaId = _currentUser.GetEmpresaId();
 
@@ -108,6 +117,10 @@ namespace TruckFlow.Application
 
             await _repo.SaveChangesAsync(token);
 
+            _logger.LogInformation(
+                "Grade criada: {GradeId} (empresa {EmpresaId}, slots {Slots})",
+                grade.Id, empresaId, slots.Count);
+
             return MapToResponse(grade);
         }
         public async Task<List<GradeResponse>> GetAll(CancellationToken cancellationToken = default)
@@ -136,6 +149,9 @@ namespace TruckFlow.Application
 
             if (!validation.IsValid)
             {
+                _logger.LogWarning(
+                    "Validação falhou ao atualizar grade {GradeId}: {Errors}",
+                    id, string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validation.Errors);
             }
 
@@ -154,6 +170,11 @@ namespace TruckFlow.Application
             await ApplyPatch(grade, dto, token);
 
             await _repo.Update(grade, token);
+
+            _logger.LogInformation(
+                "Grade atualizada: {GradeId} (empresa {EmpresaId})",
+                id, grade.EmpresaId);
+
             return MapToResponse(grade);
         }
         public async Task DeleteGrade(
@@ -174,6 +195,10 @@ namespace TruckFlow.Application
             }
 
             await _repo.Delete(gradeEncontrada, cancellationToken);
+
+            _logger.LogInformation(
+                "Grade excluída: {GradeId} (empresa {EmpresaId})",
+                id, gradeEncontrada.EmpresaId);
         }
         private async Task ApplyPatch(
             Grade grade,

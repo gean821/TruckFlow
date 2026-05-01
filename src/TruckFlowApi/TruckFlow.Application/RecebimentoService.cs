@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,17 +18,20 @@ namespace TruckFlow.Application
         private readonly IRecebimentoEventoRepositorio _eventoRepo;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly ICurrentUserService _currentUser;
+        private readonly ILogger<RecebimentoService> _logger;
 
         public RecebimentoService(
             IItemPlanejamentoRepositorio itemRepo,
             IRecebimentoEventoRepositorio eventoRepo,
             IEmpresaRepositorio empresaRepo,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            ILogger<RecebimentoService> logger)
         {
             _itemRepo = itemRepo;
             _eventoRepo = eventoRepo;
             _empresaRepo = empresaRepo;
             _currentUser = currentUser;
+            _logger = logger;
         }
 
         public async Task RegistrarRecebimentoManual(
@@ -54,6 +58,10 @@ namespace TruckFlow.Application
             await _eventoRepo.AddAsync(evento, token);
             item.RegistrarRecebimento(quantidade);
             item.PlanejamentoRecebimento.RecalcularStatus();
+
+            _logger.LogInformation(
+                "Recebimento manual registrado: item {ItemId} qtd {Quantidade} (empresa {EmpresaId})",
+                itemPlanejamentoId, quantidade, empresaId);
         }
     }
 }
