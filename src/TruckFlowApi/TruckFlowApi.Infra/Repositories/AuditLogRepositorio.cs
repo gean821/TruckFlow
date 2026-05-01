@@ -82,22 +82,80 @@ namespace TruckFlowApi.Infra.Repositories
             };
         }
 
-        public async Task<IReadOnlyDictionary<Guid, string?>> GetUserNamesAsync(
+        public async Task<IReadOnlyDictionary<Guid, string>> GetUserDisplayNamesAsync(
             IReadOnlyCollection<Guid> userIds,
             CancellationToken token = default)
         {
             if (userIds.Count == 0)
             {
-                return new Dictionary<Guid, string?>();
+                return new Dictionary<Guid, string>();
             }
 
             var pares = await _db.Users
                 .AsNoTracking()
                 .Where(u => userIds.Contains(u.Id))
-                .Select(u => new { u.Id, u.UserName })
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    AdminNome = u.Administrador != null ? u.Administrador.Nome : null,
+                    MotoristaNomeReal = u.Motorista != null ? u.Motorista.NomeReal : null,
+                    MotoristaUsername = u.Motorista != null ? u.Motorista.Username : null
+                })
                 .ToListAsync(token);
 
-            return pares.ToDictionary(x => x.Id, x => x.UserName);
+            return pares.ToDictionary(
+                x => x.Id,
+                x => x.AdminNome
+                     ?? x.MotoristaNomeReal
+                     ?? x.MotoristaUsername
+                     ?? x.UserName
+                     ?? "Usuário");
+        }
+
+        public async Task<IReadOnlyDictionary<Guid, string>> GetEntityLabelsAsync(
+            string entityName,
+            IReadOnlyCollection<Guid> ids,
+            CancellationToken token = default)
+        {
+            if (ids.Count == 0)
+            {
+                return new Dictionary<Guid, string>();
+            }
+
+            switch (entityName)
+            {
+                case "Empresa":
+                    return await _db.Empresa.AsNoTracking()
+                        .Where(e => ids.Contains(e.Id))
+                        .ToDictionaryAsync(e => e.Id, e => e.NomeFantasia, token);
+
+                case "UnidadeEntrega":
+                    return await _db.UnidadeEntrega.AsNoTracking()
+                        .Where(e => ids.Contains(e.Id))
+                        .ToDictionaryAsync(e => e.Id, e => e.Nome, token);
+
+                case "LocalDescarga":
+                    return await _db.LocalDescarga.AsNoTracking()
+                        .Where(e => ids.Contains(e.Id))
+                        .ToDictionaryAsync(e => e.Id, e => e.Nome, token);
+
+                case "Produto":
+                    return await _db.Produto.AsNoTracking()
+                        .Where(e => ids.Contains(e.Id))
+                        .ToDictionaryAsync(e => e.Id, e => e.Nome, token);
+
+                case "Fornecedor":
+                    return await _db.Fornecedor.AsNoTracking()
+                        .Where(e => ids.Contains(e.Id))
+                        .ToDictionaryAsync(e => e.Id, e => e.Nome, token);
+
+                case "Usuario":
+                    return await GetUserDisplayNamesAsync(ids, token);
+
+                default:
+                    return new Dictionary<Guid, string>();
+            }
         }
     }
 }
