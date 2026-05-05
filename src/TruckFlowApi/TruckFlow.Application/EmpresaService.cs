@@ -136,60 +136,39 @@ namespace TruckFlow.Application
 
         private static void ApplyPatch(Empresa empresa, EmpresaUpdateDto dto)
         {
-            if (dto.RazaoSocial != null)
-            {
-                empresa.RazaoSocial = dto.RazaoSocial;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.RazaoSocial))
+                empresa.RazaoSocial = dto.RazaoSocial.Trim();
 
-            if (dto.NomeFantasia != null)
-            {
-                empresa.NomeFantasia = dto.NomeFantasia;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.NomeFantasia))
+                empresa.NomeFantasia = dto.NomeFantasia.Trim();
 
-            if (dto.Email != null)
-            {
-                empresa.Email = dto.Email;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                empresa.Email = dto.Email.Trim();
 
-            if (dto.Telefone != null)
-            {
-                empresa.Telefone = dto.Telefone;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.Telefone))
+                empresa.Telefone = dto.Telefone.Trim();
 
-            if (dto.Cep != null)
-            {
-                empresa.Cep = dto.Cep;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.Cep))
+                empresa.Cep = dto.Cep.Trim();
 
-            if (dto.Logradouro != null)
-            {
-                empresa.Logradouro = dto.Logradouro;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.Logradouro))
+                empresa.Logradouro = dto.Logradouro.Trim();
 
-            if (dto.Numero != null)
-            {
-                empresa.Numero = dto.Numero;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.Numero))
+                empresa.Numero = dto.Numero.Trim();
 
+            // Complemento é opcional — null = não alterar, string vazia = limpar
             if (dto.Complemento != null)
-            {
-                empresa.Complemento = dto.Complemento;
-            }
+                empresa.Complemento = string.IsNullOrWhiteSpace(dto.Complemento) ? null : dto.Complemento.Trim();
 
-            if (dto.Bairro != null)
-            {
-                empresa.Bairro = dto.Bairro;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.Bairro))
+                empresa.Bairro = dto.Bairro.Trim();
 
-            if (dto.Cidade != null)
-            {
-                empresa.Cidade = dto.Cidade;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.Cidade))
+                empresa.Cidade = dto.Cidade.Trim();
 
-            if (dto.Estado != null)
-            {
-                empresa.Estado = dto.Estado;
-            }
+            if (!string.IsNullOrWhiteSpace(dto.Estado))
+                empresa.Estado = dto.Estado.Trim();
         }
 
         private static EmpresaResponseDto MapToResponse(Empresa empresa)
@@ -201,6 +180,12 @@ namespace TruckFlow.Application
                 NomeFantasia = empresa.NomeFantasia,
                 Cnpj = empresa.Cnpj,
                 Email = empresa.Email,
+                Telefone = empresa.Telefone,       
+                Cep = empresa.Cep,                 
+                Logradouro = empresa.Logradouro,  
+                Numero = empresa.Numero,           
+                Complemento = empresa.Complemento, 
+                Bairro = empresa.Bairro,
                 Cidade = empresa.Cidade,
                 Estado = empresa.Estado,
                 Ativa = empresa.Ativa,
