@@ -8,15 +8,21 @@ namespace TruckFlow.Domain.Dto.Empresa
 {
     public sealed class EmpresaResponseDto
     {
-        public Guid Id { get; init; }
-        public string RazaoSocial { get; init; } = default!;
-        public string NomeFantasia { get; init; } = default!;
-        public string Cnpj { get; init; } = default!;
-        public string Email { get; init; } = default!;
-        public string Cidade { get; init; } = default!;
-        public string Estado { get; init; } = default!;
-        public bool Ativa { get; init; }
-        public DateTime CreatedAt { get; init; }
+        public Guid Id { get; set; }
+        public string RazaoSocial { get; set; }
+        public string NomeFantasia { get; set; }
+        public string Cnpj { get; set; }
+        public string Email { get; set; }
+        public string Telefone { get; set; }      
+        public string Cep { get; set; }           
+        public string Logradouro { get; set; }    
+        public string Numero { get; set; }        
+        public string? Complemento { get; set; }  
+        public string Bairro { get; set; }        
+        public string Cidade { get; set; }
+        public string Estado { get; set; }
+        public bool Ativa { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 
 }
