@@ -15,10 +15,12 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
 
         public Task AddRangeAsync(List<Agendamento> agendamentos, CancellationToken token = default);
 
-        public Task<List<Agendamento>> GetAvailable(
-            Guid fornecedorId,
+        public Task<List<Agendamento>> GetAvailableByProdutos(
+            IReadOnlyCollection<Guid> produtoIds,
+            Guid? fornecedorIdNota,
             DateTime dataInicio,
             DateTime dataFim,
+            Guid empresaId,
             CancellationToken token = default
             );
         public Task<Agendamento> GetById(Guid id, CancellationToken token = default);
@@ -38,5 +40,24 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             CancellationToken cancellationToken = default);
         public Task SaveChangesAsync(CancellationToken token = default);
         Task<Agendamento?> GetByIdWithFornecedor(Guid id, CancellationToken token = default);
+
+        Task<List<Agendamento>> GetExpiradosCandidatos(
+            DateTime referenciaUtc,
+            int batchSize,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retorna agendamentos ATIVOS na mesma doca cuja janela [DataInicio, DataFim) sobrepõe
+        /// com [inicioUtc, fimUtc), independente do produto. Uma doca não pode receber dois
+        /// caminhões no mesmo horário, mesmo que sejam do mesmo produto.
+        /// "Ativos" = Disponivel | Pendente | Agendado | EmAndamento (Cancelado/Expirado/Finalizado não bloqueiam).
+        /// Se <paramref name="excludeAgendamentoId"/> é informado, ele é ignorado (uso típico: edição).
+        /// </summary>
+        Task<List<Agendamento>> GetConflitosAsync(
+            Guid localDescargaId,
+            DateTime inicioUtc,
+            DateTime fimUtc,
+            Guid? excludeAgendamentoId,
+            CancellationToken cancellationToken = default);
     }
 }

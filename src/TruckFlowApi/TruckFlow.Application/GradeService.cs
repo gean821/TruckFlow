@@ -93,8 +93,12 @@ namespace TruckFlow.Application
             var produto = await _produtoRepo.GetById(dto.ProdutoId, token)
                 ?? throw new NotFoundException("Produto não encontrado");
 
-            var fornecedor = await _fornecedorRepo.GetById(dto.FornecedorId, token)
-                ?? throw new NotFoundException("Fornecedor não encontrado");
+            Fornecedor? fornecedor = null;
+            if (dto.FornecedorId.HasValue)
+            {
+                fornecedor = await _fornecedorRepo.GetById(dto.FornecedorId.Value, token)
+                    ?? throw new NotFoundException("Fornecedor não encontrado");
+            }
 
             var descarga = await _localDescargaRepo.GetById(dto.LocalDescargaId, token)
                 ?? throw new NotFoundException("Local de descarga não encontrado");
@@ -108,9 +112,40 @@ namespace TruckFlow.Application
                 descarga.UnidadeEntrega
             );
 
-            await _repo.CreateGrade(grade, token);
-
             var slots = grade.GerarSlots();
+
+            if (slots.Count > 0)
+            {
+                var minInicio = slots.Min(s => s.DataInicio);
+                var maxFim = slots.Max(s => s.DataFim);
+
+                var candidatos = await _agendamentoRepo.GetConflitosAsync(
+                    descarga.Id,
+                    minInicio,
+                    maxFim,
+                    excludeAgendamentoId: null,
+                    token);
+
+                foreach (var slot in slots)
+                {
+                    var conflito = candidatos.FirstOrDefault(c =>
+                        c.DataInicio < slot.DataFim && slot.DataInicio < c.DataFim);
+
+                    if (conflito is not null)
+                    {
+                        var inicioBrt = TimeZoneInfo.ConvertTimeFromUtc(conflito.DataInicio, Grade.OperationalTimeZone);
+                        var fimBrt = TimeZoneInfo.ConvertTimeFromUtc(conflito.DataFim, Grade.OperationalTimeZone);
+                        var docaNome = conflito.LocalDescarga?.Nome ?? descarga.Nome;
+                        var produtoNome = conflito.Produto?.Nome ?? "carga geral";
+
+                        throw new BusinessException(
+                            $"Conflito ao criar grade: a doca '{docaNome}' já tem um agendamento de '{produtoNome}' " +
+                            $"entre {inicioBrt:dd/MM/yyyy HH:mm} e {fimBrt:dd/MM/yyyy HH:mm}.");
+                    }
+                }
+            }
+
+            await _repo.CreateGrade(grade, token);
 
             if (slots.Count > 0)
                 await _agendamentoRepo.AddRangeAsync(slots, token);
@@ -257,7 +292,7 @@ namespace TruckFlow.Application
             {
                 Id = g.Id,
                 Produto = g.Produto.Nome,
-                Fornecedor = g.Fornecedor.Nome,
+                Fornecedor = g.Fornecedor?.Nome ?? "-",
                 ProdutoId = g.ProdutoId,
                 DataInicio = g.DataInicio,
                 DataFim = g.DataFim,

@@ -12,7 +12,7 @@ namespace TruckFlow.Extensions.Empresa
     {
         public static IServiceCollection AddEmpresa(this IServiceCollection services)
         {
-            services.AddScoped<IEmpresaService, EmpresaService>();
+            services.AddTransient<IEmpresaService, EmpresaService>();
             services.AddTransient<IEmpresaRepositorio, EmpresaRepositorio>();
             services.AddTransient<IProdutoRepositorio, ProdutoRepositorio>();
             services.AddTransient<IValidator<EmpresaCreateDto>, EmpresaCreateValidator>();

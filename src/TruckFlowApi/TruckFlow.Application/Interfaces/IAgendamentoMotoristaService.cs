@@ -16,7 +16,7 @@ namespace TruckFlow.Application.Interfaces
             );
 
         public Task<List<AgendamentoMotoristaResponse>> GetAvailableAppointments(
-            Guid FornecedorId,
+            string chaveAcesso,
             DateTime data,
             CancellationToken token = default
             );

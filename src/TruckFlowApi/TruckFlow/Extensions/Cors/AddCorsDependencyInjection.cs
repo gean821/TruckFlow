@@ -13,7 +13,8 @@ namespace TruckFlow.Extensions.Cors
                 {
                     policy.WithOrigins(
                              "http://localhost:5173",
-                             "https://truck-flow-app.vercel.app" 
+                             "https://truck-flow-app.vercel.app",
+                             "http://192.168.18.6:8080"
                          )
                          .AllowAnyHeader()
                          .AllowAnyMethod();

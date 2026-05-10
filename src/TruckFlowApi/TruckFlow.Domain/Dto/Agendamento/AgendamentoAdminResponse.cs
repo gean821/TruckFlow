@@ -17,12 +17,12 @@ namespace TruckFlow.Domain.Dto.Agendamento
         public required DateTime DataFim { get; set; } 
 
         public required string Produto { get; set; } 
-        public required string FornecedorNome { get; set; }
+        public string? FornecedorNome { get; set; }
 
         public string? PlacaVeiculo { get; set; }
         public string? TipoVeiculo {get;set;}
         
-        public decimal PesoCarga { get; set; }
+        public decimal? PesoCarga { get; set; }
 
         public required string Status { get; set; }
 

@@ -175,11 +175,11 @@ namespace TruckFlow.Application
 
             if (infNFe.ide.dhEmi != DateTimeOffset.MinValue)
             {
-                dataEmissao = infNFe.ide.dhEmi.DateTime;
+                dataEmissao = infNFe.ide.dhEmi.UtcDateTime;
             }
             else if (infNFe.ide.dEmi != DateTime.MinValue)
             {
-                dataEmissao = infNFe.ide.dEmi;
+                dataEmissao = DateTime.SpecifyKind(infNFe.ide.dEmi, DateTimeKind.Utc);
             }
             else
             {
@@ -298,7 +298,7 @@ namespace TruckFlow.Application
                 Numero = dto.Numero,
                 EmpresaId = empresa.Id,
                 Serie = dto.Serie,
-                DataEmissao = dto.DataEmissao,
+                DataEmissao = DateTime.SpecifyKind(dto.DataEmissao, DateTimeKind.Utc),
                 EmitenteNome = dto.EmitenteNome,
                 EmitenteCnpj = dto.EmitenteCnpj,
                 DestinatarioNome = dto.DestinatarioNome,
@@ -309,8 +309,24 @@ namespace TruckFlow.Application
                 PesoBruto = dto.PesoBruto,
                 VolumeQuantidade = dto.VolumeQuantidade,
                 PlacaVeiculo = dto.PlacaVeiculo,
-                TipoCarga = dto.TipoCarga
+                TipoCarga = dto.TipoCarga,
+                UploadedByUserId = uploadedByUserId,
+                UploadedAt = DateTime.UtcNow
             };
+
+            nota.Itens = dto.Itens.Select(i => new NotaFiscalItem
+            {
+                NotaFiscal = nota,
+                Codigo = i.Codigo,
+                Descricao = i.Descricao,
+                Quantidade = i.Quantidade,
+                Unidade = i.Unidade,
+                ValorUnitario = i.ValorUnitario,
+                ValorTotal = i.ValorTotal,
+                ProdutoId = i.ProdutoSistemaId,
+                EmpresaId = empresa.Id,
+                CreatedAt = DateTime.UtcNow
+            }).ToList();
 
             _logger.LogInformation(
             "Fornecedor final vinculado | ID: {Id} | Nome: {Nome} | CNPJ: {Cnpj}",

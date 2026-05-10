@@ -15,8 +15,8 @@ namespace TruckFlow.Domain.Entities
         public Guid? GradeId { get; set; }
         public Usuario? Usuario { get; set; }
         public Guid? UsuarioId { get; set; }
-        public required Fornecedor Fornecedor { get; set; }
-        public required Guid FornecedorId { get; set; }
+        public Fornecedor? Fornecedor { get; set; }
+        public Guid? FornecedorId { get; set; }
         public required TipoCarga TipoCarga { get; set; }
         public decimal? VolumeCarga { get; set; }
         public DateTime DataInicio { get; set; }
@@ -24,6 +24,8 @@ namespace TruckFlow.Domain.Entities
         public StatusAgendamento StatusAgendamento { get; set; }
         public UnidadeEntrega? UnidadeEntrega { get; set; }
         public Guid? UnidadeEntregaId { get; set; }
+        public LocalDescarga? LocalDescarga { get; set; }
+        public Guid? LocalDescargaId { get; set; }
         public NotaFiscal? NotaFiscal { get; set; }
         public Guid? NotaFiscalId { get; set; }
         public ICollection<Notificacao> Notificacoes { get; set; } = [];
@@ -58,9 +60,27 @@ namespace TruckFlow.Domain.Entities
                 throw new Exception("A vaga não está disponível para reserva.");
             }
 
-            if (FornecedorId != notaFiscal.FornecedorId)
+            if (DataFim <= DateTime.UtcNow)
             {
-                throw new Exception("A Nota Fiscal não pertence ao fornecedor desta vaga.");
+                throw new Exception("Esta vaga já expirou e não pode mais ser reservada.");
+            }
+
+            if (!ProdutoId.HasValue)
+            {
+                throw new Exception("Vaga sem produto definido. Contate o administrador.");
+            }
+
+            var temProdutoNaNota = notaFiscal.Itens?
+                .Any(i => i.ProdutoId == ProdutoId) == true;
+
+            if (!temProdutoNaNota)
+            {
+                throw new Exception("A nota fiscal não contém o produto desta vaga.");
+            }
+
+            if (FornecedorId.HasValue && FornecedorId != notaFiscal.FornecedorId)
+            {
+                throw new Exception("Esta vaga é exclusiva de outro fornecedor.");
             }
 
             StatusAgendamento = StatusAgendamento.Agendado;
@@ -84,5 +104,14 @@ namespace TruckFlow.Domain.Entities
 
         public void Cancelar()
             => AlterarStatus(StatusAgendamento.Cancelado);
+
+        public bool PodeExpirarNaData(DateTime referenciaUtc)
+            => DataFim <= referenciaUtc
+               && (StatusAgendamento == StatusAgendamento.Disponivel
+                   || StatusAgendamento == StatusAgendamento.Pendente
+                   || StatusAgendamento == StatusAgendamento.Agendado);
+
+        public void Expirar()
+            => AlterarStatus(StatusAgendamento.Expirado);
     }
 }

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(dotnet build *)",
+      "Bash(Measure-Object -Line)",
+      "PowerShell(Get-ChildItem C:\\\\tf-mobile\\\\truckflow-driver-app -Force | Where-Object { -not $_.PSIsContainer -or $_.Name -in 'src','app','android','ios','assets' } | Select-Object Name, Mode, Length)"
+    ]
+  }
+}

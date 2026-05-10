@@ -38,6 +38,12 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .HasForeignKey(x => x.NotaFiscalId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(x => x.Produto)
+                .WithMany()
+                .HasForeignKey(x => x.ProdutoId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
             builder.Property(x => x.EmpresaId)
                    .IsRequired();
 
@@ -47,6 +53,7 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasIndex(x => x.EmpresaId);
+            builder.HasIndex(x => x.ProdutoId);
         }
     }
 }
