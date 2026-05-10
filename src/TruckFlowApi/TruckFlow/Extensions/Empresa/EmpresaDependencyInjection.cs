@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using TruckFlow.Application;
-using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Validators.Empresa;
 using TruckFlow.Domain.Dto.Empresa;
