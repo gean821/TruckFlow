@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TruckFlowApi.Infra.Database;
@@ -11,9 +12,11 @@ using TruckFlowApi.Infra.Database;
 namespace TruckFlowApi.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260501202314_make-fornecedor-opcional-link-produto-no-item")]
+    partial class makefornecedoropcionallinkprodutonoitem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -226,9 +229,6 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<Guid?>("GradeId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("LocalDescargaId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("NotaFiscalId")
                         .HasColumnType("uuid");
 
@@ -279,8 +279,6 @@ namespace TruckFlowApi.Infra.Migrations
                     b.HasIndex("UnidadeEntregaId");
 
                     b.HasIndex("UsuarioId");
-
-                    b.HasIndex("LocalDescargaId", "DataInicio", "DataFim");
 
                     b.ToTable("Agendamento", (string)null);
                 });
@@ -1425,11 +1423,6 @@ namespace TruckFlowApi.Infra.Migrations
                         .HasForeignKey("GradeId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("TruckFlow.Domain.Entities.LocalDescarga", "LocalDescarga")
-                        .WithMany()
-                        .HasForeignKey("LocalDescargaId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("TruckFlow.Domain.Entities.NotaFiscal", "NotaFiscal")
                         .WithOne("Agendamento")
                         .HasForeignKey("TruckFlow.Domain.Entities.Agendamento", "NotaFiscalId")
@@ -1454,8 +1447,6 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Navigation("Fornecedor");
 
                     b.Navigation("Grade");
-
-                    b.Navigation("LocalDescarga");
 
                     b.Navigation("NotaFiscal");
 

@@ -64,6 +64,7 @@ namespace TruckFlow.Application
                 ?? throw new NotFoundException("Nota Fiscal não encontrada.");
 
             var produtoId = vaga.Grade?.ProdutoId ?? vaga.ProdutoId;
+            var fornecedorIdParaPlanejamento = vaga.FornecedorId ?? nota.FornecedorId;
 
             PlanejamentoRecebimento? planejamento = null;
             ItemPlanejamento? item = null;
@@ -71,7 +72,7 @@ namespace TruckFlow.Application
             if (produtoId.HasValue)
             {
                 planejamento = await _planejamentoRepo.GetPlanejamentoAtivoPorFornecedor(
-                    vaga.FornecedorId, token);
+                    fornecedorIdParaPlanejamento, token);
 
                 item = planejamento?.ItemDoProduto(produtoId.Value);
 
@@ -80,6 +81,23 @@ namespace TruckFlow.Application
                 {
                     throw new BusinessException(
                         "Meta diária atingida para este produto. Grade congelada.");
+                }
+            }
+
+            if (vaga.LocalDescargaId.HasValue)
+            {
+                var conflitos = await _repo.GetConflitosAsync(
+                    vaga.LocalDescargaId.Value,
+                    vaga.DataInicio,
+                    vaga.DataFim,
+                    excludeAgendamentoId: vaga.Id,
+                    token);
+
+                if (conflitos.Count > 0)
+                {
+                    throw new BusinessException(
+                        "Esta vaga conflita com outro agendamento ativo no mesmo horário e doca. " +
+                        "Por favor, escolha outro horário.");
                 }
             }
 
@@ -122,23 +140,44 @@ namespace TruckFlow.Application
 
         public async Task<List<AgendamentoMotoristaResponse>> GetAvailableAppointments
             (
-                Guid fornecedorId,
+                string chaveAcesso,
                 DateTime data,
                 CancellationToken token = default
             )
         {
-            var inicioDia = DateTime.SpecifyKind(data.Date, DateTimeKind.Utc);
-            var fimDia = inicioDia.AddDays(1).AddTicks(-1);
+            var nota = await _notaRepo.ObterPorChaveAsync(chaveAcesso, token)
+                ?? throw new NotFoundException("Nota fiscal não encontrada. Faça o upload primeiro.");
 
-            var vagas = await _repo.GetAvailable(
-                fornecedorId,
+            var produtoIds = nota.Itens
+                .Where(i => i.ProdutoId.HasValue)
+                .Select(i => i.ProdutoId!.Value)
+                .Distinct()
+                .ToList();
+
+            if (produtoIds.Count == 0)
+            {
+                _logger.LogInformation(
+                    "Nota {ChaveAcesso} não tem itens vinculados a produtos cadastrados — sem vagas para retornar.",
+                    chaveAcesso);
+                return new List<AgendamentoMotoristaResponse>();
+            }
+
+            var inicioDiaLocal = DateTime.SpecifyKind(data.Date, DateTimeKind.Unspecified);
+            var fimDiaLocal = inicioDiaLocal.AddDays(1).AddTicks(-1);
+            var inicioDia = TimeZoneInfo.ConvertTimeToUtc(inicioDiaLocal, Grade.OperationalTimeZone);
+            var fimDia = TimeZoneInfo.ConvertTimeToUtc(fimDiaLocal, Grade.OperationalTimeZone);
+
+            var vagas = await _repo.GetAvailableByProdutos(
+                produtoIds,
+                nota.FornecedorId,
                 inicioDia,
                 fimDia,
+                nota.EmpresaId,
                 token
             );
 
             var planejamento = await _planejamentoRepo.GetPlanejamentoAtivoPorFornecedor(
-                fornecedorId, token);
+                nota.FornecedorId, token);
 
             return vagas
                 .Select(v => MapToResponse(v, planejamento, data))

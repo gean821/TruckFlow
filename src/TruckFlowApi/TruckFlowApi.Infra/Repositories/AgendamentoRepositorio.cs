@@ -32,30 +32,39 @@ namespace TruckFlowApi.Infra.Repositories
         {
             await _db.Agendamento.AddRangeAsync(agendamentos, token);
         }
-        public async Task<List<Agendamento>> GetAvailable(
-            Guid fornecedorId,
+        public async Task<List<Agendamento>> GetAvailableByProdutos(
+            IReadOnlyCollection<Guid> produtoIds,
+            Guid? fornecedorIdNota,
             DateTime dataInicio,
             DateTime dataFim,
+            Guid empresaId,
             CancellationToken token = default
             )
         {
+            if (produtoIds.Count == 0)
+            {
+                return new List<Agendamento>();
+            }
+
             var agora = DateTime.UtcNow;
-            Console.WriteLine($"[DEBUG] Buscando vagas para FornecedorId: {fornecedorId} entre {dataInicio} e {dataFim}");
 
-            IQueryable<Agendamento> query = _db.Agendamento
-                .Where(x =>
-                    x.FornecedorId == fornecedorId &&
-                    x.StatusAgendamento == StatusAgendamento.Disponivel &&
-                    x.DataInicio >= dataInicio &&
-                    x.DataInicio <= dataFim
-                );
-
-            return await query
-                .OrderBy(x => x.DataInicio)
+            return await _db.Agendamento
+                .AsNoTracking()
                 .Include(x => x.Grade)
-                    .ThenInclude(x => x.Produto)
+                    .ThenInclude(g => g!.Produto)
+                .Include(x => x.Produto)
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.Fornecedor)
+                .Where(x => x.EmpresaId == empresaId)
+                .Where(x => x.StatusAgendamento == StatusAgendamento.Disponivel)
+                .Where(x => x.DataInicio >= dataInicio && x.DataInicio <= dataFim)
+                .Where(x => x.DataFim > agora)
+                .Where(x =>
+                    (x.ProdutoId.HasValue && produtoIds.Contains(x.ProdutoId.Value)) ||
+                    (x.Grade != null && produtoIds.Contains(x.Grade.ProdutoId))
+                )
+                .Where(x => x.FornecedorId == null || x.FornecedorId == fornecedorIdNota)
+                .OrderBy(x => x.DataInicio)
                 .ToListAsync(token);
         }
 
@@ -260,6 +269,49 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Fornecedor)
                 .ThenInclude(x => x.Recebimentos)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
+        }
+
+        public async Task<List<Agendamento>> GetExpiradosCandidatos(
+            DateTime referenciaUtc,
+            int batchSize,
+            CancellationToken cancellationToken = default)
+        {
+            return await _db.Agendamento
+                .Where(x => x.DataFim <= referenciaUtc)
+                .Where(x =>
+                    x.StatusAgendamento == StatusAgendamento.Disponivel
+                    || x.StatusAgendamento == StatusAgendamento.Pendente
+                    || x.StatusAgendamento == StatusAgendamento.Agendado)
+                .OrderBy(x => x.DataFim)
+                .Take(batchSize)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<Agendamento>> GetConflitosAsync(
+            Guid localDescargaId,
+            DateTime inicioUtc,
+            DateTime fimUtc,
+            Guid? excludeAgendamentoId,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _db.Agendamento
+                .AsNoTracking()
+                .Include(x => x.Produto)
+                .Include(x => x.LocalDescarga)
+                .Where(x => x.LocalDescargaId == localDescargaId)
+                .Where(x =>
+                    x.StatusAgendamento == StatusAgendamento.Disponivel
+                    || x.StatusAgendamento == StatusAgendamento.Pendente
+                    || x.StatusAgendamento == StatusAgendamento.Agendado
+                    || x.StatusAgendamento == StatusAgendamento.EmAndamento)
+                .Where(x => x.DataInicio < fimUtc && inicioUtc < x.DataFim);
+
+            if (excludeAgendamentoId.HasValue)
+            {
+                query = query.Where(x => x.Id != excludeAgendamentoId.Value);
+            }
+
+            return await query.OrderBy(x => x.DataInicio).ToListAsync(cancellationToken);
         }
     }
 }

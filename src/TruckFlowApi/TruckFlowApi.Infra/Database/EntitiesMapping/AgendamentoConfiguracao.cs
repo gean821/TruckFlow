@@ -50,12 +50,20 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .WithMany(x => x.Agendamentos)
                 .HasForeignKey(x => x.FornecedorId)
                 .OnDelete(DeleteBehavior.Restrict)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.HasOne<UnidadeEntrega>(x => x.UnidadeEntrega)
                 .WithMany(x => x.Agendamentos)
                 .HasForeignKey(x=> x.UnidadeEntregaId)
                 .IsRequired();
+
+            builder.HasOne(x => x.LocalDescarga)
+                .WithMany()
+                .HasForeignKey(x => x.LocalDescargaId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            builder.HasIndex(x => new { x.LocalDescargaId, x.DataInicio, x.DataFim });
 
             builder.HasOne(x => x.Empresa)
                 .WithMany()

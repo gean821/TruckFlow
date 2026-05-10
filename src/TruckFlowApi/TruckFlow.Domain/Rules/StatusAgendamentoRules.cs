@@ -10,32 +10,31 @@ namespace TruckFlow.Domain.Rules
         {
             return atual switch
             {
-                // Vaga aberta só pode ser reservada
                 StatusAgendamento.Disponivel =>
-                novo == StatusAgendamento.Agendado
-                || novo == StatusAgendamento.Cancelado,
+                    novo == StatusAgendamento.Agendado
+                    || novo == StatusAgendamento.Cancelado
+                    || novo == StatusAgendamento.Expirado,
 
-                // (Opcional) Se existir fluxo pendente
                 StatusAgendamento.Pendente =>
                     novo == StatusAgendamento.Agendado
+                    || novo == StatusAgendamento.Cancelado
+                    || novo == StatusAgendamento.Expirado,
+
+                StatusAgendamento.Agendado =>
+                    novo == StatusAgendamento.EmAndamento
+                    || novo == StatusAgendamento.Cancelado
+                    || novo == StatusAgendamento.Expirado,
+
+                StatusAgendamento.EmAndamento =>
+                    novo == StatusAgendamento.Finalizado
                     || novo == StatusAgendamento.Cancelado,
 
-                // Caminhão a caminho
-                StatusAgendamento.Agendado =>
-                    novo == StatusAgendamento.EmAndamento   // Check-in
-                    || novo == StatusAgendamento.Cancelado, // No-show
+                StatusAgendamento.Expirado =>
+                    novo == StatusAgendamento.Finalizado
+                    || novo == StatusAgendamento.Cancelado,
 
-                // Caminhão na doca
-                StatusAgendamento.EmAndamento =>
-                    novo == StatusAgendamento.Finalizado    // Check-out
-                    || novo == StatusAgendamento.Cancelado, // Rejeição
-
-                // Estados finais
-                StatusAgendamento.Finalizado =>
-                    false,
-
-                StatusAgendamento.Cancelado =>
-                    false,
+                StatusAgendamento.Finalizado => false,
+                StatusAgendamento.Cancelado => false,
 
                 _ => false
             };

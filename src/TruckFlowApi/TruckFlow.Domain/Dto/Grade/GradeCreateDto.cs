@@ -8,8 +8,8 @@ namespace TruckFlow.Domain.Dto.Grade
 {
     public class GradeCreateDto
     {
-        public Guid FornecedorId { get; set; }
-        public Guid ProdutoId { get; set; }        
+        public Guid? FornecedorId { get; set; }
+        public Guid ProdutoId { get; set; }
         public Guid LocalDescargaId { get; set; }
         public required DateOnly DataInicio { get; set; }
         public required DateOnly DataFim { get; set; }

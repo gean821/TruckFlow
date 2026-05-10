@@ -17,7 +17,7 @@ namespace TruckFlow.Application.Factories
             GradeCreateDto dto,
             Guid empresaId,
             Produto produto,
-            Fornecedor fornecedor,
+            Fornecedor? fornecedor,
             LocalDescarga localDescarga,
             UnidadeEntrega unidade
             )
@@ -27,7 +27,7 @@ namespace TruckFlow.Application.Factories
                 Produto = produto,
                 ProdutoId = produto.Id,
                 Fornecedor = fornecedor,
-                FornecedorId = fornecedor.Id,
+                FornecedorId = fornecedor?.Id,
                 LocalDescarga = localDescarga,
                 LocalDescargaId = localDescarga.Id,
                 UnidadeEntrega = unidade,

@@ -18,6 +18,14 @@ namespace TruckFlow.Domain.Entities
         public required decimal ValorUnitario { get; set; }
         public required decimal ValorTotal { get; set; }
 
+        /// <summary>
+        /// Vínculo opcional ao produto cadastrado no sistema (preenchido durante o parse
+        /// quando EAN/código bate com produto da empresa). Usado para casar o item da nota
+        /// com vagas de agendamento abertas para esse produto.
+        /// </summary>
+        public Guid? ProdutoId { get; set; }
+        public Produto? Produto { get; set; }
+
         public Guid EmpresaId { get; set; }
         public Empresa? Empresa { get; set; }
     }

@@ -80,11 +80,16 @@ namespace TruckFlow.Application
             }
 
             var empresaId = _currentUser.EmpresaId ?? throw new UnauthorizedAccessException("Usuário sem empresa.");
+
             var empresa = await _empresaRepo.GetById(empresaId, token)
                 ?? throw new NotFoundException("Empresa não encontrada.");
 
-            var fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId, token)
-                ?? throw new NotFoundException("Fornecedor não encontrado");
+            Fornecedor? fornecedor = null;
+            if (dto.FornecedorId.HasValue)
+            {
+                fornecedor = await _fornecedorRepositorio.GetById(dto.FornecedorId.Value, token)
+                    ?? throw new NotFoundException("Fornecedor não encontrado");
+            }
 
             Produto? produto = null;
             if (dto.ProdutoId.HasValue && dto.ProdutoId.Value != Guid.Empty)
@@ -99,17 +104,28 @@ namespace TruckFlow.Application
             var unidade = await _unidadeRepo.GetById(localDescarga.UnidadeEntregaId, token)
                 ?? throw new NotFoundException("Unidade de entrega não encontrada.");
 
+            var inicioUtc = DateTime.SpecifyKind(dto.DataInicio, DateTimeKind.Utc);
+            var fimUtc = DateTime.SpecifyKind(dto.DataFim, DateTimeKind.Utc);
+
+            await EnsureNoConflitoAsync(
+                localDescarga.Id,
+                inicioUtc,
+                fimUtc,
+                excludeAgendamentoId: null,
+                token);
+
             var vaga = new Agendamento
             {
                 FornecedorId = dto.FornecedorId,
-                Fornecedor = fornecedor,
                 Produto = produto,
                 ProdutoId = produto?.Id,
                 TipoCarga = dto.TipoCarga,
-                UnidadeEntregaId = localDescarga.UnidadeEntregaId, 
+                UnidadeEntregaId = localDescarga.UnidadeEntregaId,
                 UnidadeEntrega = unidade,
-                DataInicio = dto.DataInicio,
-                DataFim = dto.DataFim,
+                LocalDescargaId = localDescarga.Id,
+                LocalDescarga = localDescarga,
+                DataInicio = DateTime.SpecifyKind(dto.DataInicio, DateTimeKind.Utc),
+                DataFim = DateTime.SpecifyKind(dto.DataFim, DateTimeKind.Utc),
                 UsuarioId = dto.MotoristaId,
                 NotaFiscalId = dto.NotaFiscalId,
                 VolumeCarga = dto.VolumeCarga,
@@ -139,13 +155,17 @@ namespace TruckFlow.Application
             )
         {
             var dataInicio = filtros.DataInicio.HasValue
-                ? DateTime.SpecifyKind(filtros.DataInicio.Value.Date, DateTimeKind.Utc)
+                ? TimeZoneInfo.ConvertTimeToUtc(
+                    DateTime.SpecifyKind(filtros.DataInicio.Value.Date, DateTimeKind.Unspecified),
+                    Grade.OperationalTimeZone)
                 : (DateTime?)null;
 
             var dataFim = filtros.DataFim.HasValue
-                ? DateTime.SpecifyKind(
-                    filtros.DataFim.Value.Date.AddDays(1).AddTicks(-1),
-                    DateTimeKind.Utc)
+                ? TimeZoneInfo.ConvertTimeToUtc(
+                    DateTime.SpecifyKind(
+                        filtros.DataFim.Value.Date.AddDays(1).AddTicks(-1),
+                        DateTimeKind.Unspecified),
+                    Grade.OperationalTimeZone)
                 : (DateTime?)null;
 
             if (dataInicio.HasValue && dataFim.HasValue && dataFim < dataInicio)
@@ -245,13 +265,20 @@ namespace TruckFlow.Application
                 ?? throw new BusinessException("Doca inválida");
 
             agendamento.UnidadeEntregaId = dto.UnidadeEntregaId;
-            agendamento.DataInicio = dto.DataInicio;
-            agendamento.DataFim = dto.DataFim;
+            agendamento.DataInicio = DateTime.SpecifyKind(dto.DataInicio, DateTimeKind.Utc);
+            agendamento.DataFim = DateTime.SpecifyKind(dto.DataFim, DateTimeKind.Utc);
 
             agendamento.UsuarioId = dto.MotoristaId;
             agendamento.NotaFiscalId = dto.NotaFiscalId;
 
             agendamento.UpdatedAt = DateTime.UtcNow;
+
+            await EnsureNoConflitoAsync(
+                agendamento.LocalDescargaId,
+                agendamento.DataInicio,
+                agendamento.DataFim,
+                excludeAgendamentoId: agendamento.Id,
+                token);
 
             await _repo.Update(agendamento, token);
 
@@ -298,10 +325,10 @@ namespace TruckFlow.Application
                 item.PlanejamentoRecebimento.RecalcularStatus();
                 await _eventoRepo.SaveChangeAsync(token);
             }
-            else if (produtoId.HasValue)
+            else if (produtoId.HasValue && agendamento.FornecedorId.HasValue)
             {
                 var planejamento = await _recebimentoRepo
-                    .GetPlanejamentoAtivoPorFornecedor(agendamento.FornecedorId, token)
+                    .GetPlanejamentoAtivoPorFornecedor(agendamento.FornecedorId.Value, token)
                     ?? throw new BusinessException(
                         "Não existe planejamento ativo para este fornecedor.");
 
@@ -343,18 +370,59 @@ namespace TruckFlow.Application
                 throw new BusinessException("Não é possível remover um agendamento em andamento.");
             }
 
+            if (agendamento.StatusAgendamento == StatusAgendamento.Finalizado)
+            {
+                throw new BusinessException("Não é possível remover um agendamento finalizado.");
+            }
+
             await _repo.Delete(agendamento, token);
 
             _logger.LogInformation(
                 "Agendamento excluído: {AgendamentoId} (empresa {EmpresaId})",
                 id, agendamento.EmpresaId);
         }
+
+        private async Task EnsureNoConflitoAsync(
+            Guid? localDescargaId,
+            DateTime inicioUtc,
+            DateTime fimUtc,
+            Guid? excludeAgendamentoId,
+            CancellationToken token)
+        {
+            if (!localDescargaId.HasValue)
+            {
+                return;
+            }
+
+            var conflitos = await _repo.GetConflitosAsync(
+                localDescargaId.Value,
+                inicioUtc,
+                fimUtc,
+                excludeAgendamentoId,
+                token);
+
+            if (conflitos.Count == 0)
+            {
+                return;
+            }
+
+            var c = conflitos[0];
+            var inicioBrt = TimeZoneInfo.ConvertTimeFromUtc(c.DataInicio, Grade.OperationalTimeZone);
+            var fimBrt = TimeZoneInfo.ConvertTimeFromUtc(c.DataFim, Grade.OperationalTimeZone);
+            var docaNome = c.LocalDescarga?.Nome ?? "esta doca";
+            var produtoNome = c.Produto?.Nome ?? "carga geral";
+
+            throw new BusinessException(
+                $"Conflito: a doca '{docaNome}' já tem um agendamento de '{produtoNome}' " +
+                $"entre {inicioBrt:dd/MM/yyyy HH:mm} e {fimBrt:dd/MM/yyyy HH:mm}.");
+        }
+
         private static AgendamentoAdminResponse MapToResponse(Agendamento agendamento)
         {
             return new AgendamentoAdminResponse
             {
                 Id = agendamento.Id,
-                FornecedorNome = agendamento.Fornecedor.Nome,
+                FornecedorNome = agendamento.Fornecedor?.Nome,
                 MotoristaNome = agendamento.Usuario?.Motorista?.NomeReal,
                 DataInicio = agendamento.DataInicio,
                 DataFim = agendamento.DataFim,

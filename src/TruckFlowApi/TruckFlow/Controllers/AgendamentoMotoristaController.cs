@@ -16,18 +16,26 @@ namespace TruckFlow.Controllers
         }
 
         /// <summary>
-        /// Lista os horários disponíveis (vagas) para um determinado fornecedor e dia.
+        /// Lista os horários disponíveis (vagas) compatíveis com os produtos da nota fiscal informada.
+        /// O backend resolve a nota pela chave de acesso (já persistida via /parse + /save) e cruza
+        /// os produtos dos itens com as vagas abertas. Vagas restritas a um fornecedor específico
+        /// só aparecem se o fornecedor da nota bater.
         /// </summary>
-        /// <param name="fornecedorId">ID do Fornecedor que o motorista vai carregar</param>
+        /// <param name="chaveAcesso">Chave de acesso da NF-e (44 dígitos), já salva no sistema</param>
         /// <param name="data">Data desejada (Ex: 2025-01-20)</param>
         [HttpGet("disponiveis")]
         [ProducesResponseType(typeof(List<AgendamentoMotoristaResponse>), 200)]
         public async Task<IActionResult> GetAvailableAppointments(
-            [FromQuery] Guid fornecedorId,
+            [FromQuery] string chaveAcesso,
             [FromQuery] DateTime data,
             CancellationToken token)
         {
-            var vagas = await _service.GetAvailableAppointments(fornecedorId, data, token);
+            if (string.IsNullOrWhiteSpace(chaveAcesso) || chaveAcesso.Length != 44)
+            {
+                return BadRequest("Chave de acesso inválida.");
+            }
+
+            var vagas = await _service.GetAvailableAppointments(chaveAcesso, data, token);
             return Ok(vagas);
         }
 

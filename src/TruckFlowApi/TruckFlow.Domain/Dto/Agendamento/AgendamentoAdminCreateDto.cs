@@ -10,8 +10,8 @@ namespace TruckFlow.Domain.Dto.Agendamento
     public sealed class AgendamentoAdminCreateDto
     {
 
-        public required Guid FornecedorId { get; set; }        
-        public Guid LocalDescargaId { get; set; }        
+        public Guid? FornecedorId { get; set; }
+        public Guid LocalDescargaId { get; set; }
         public Guid? ProdutoId { get; set; }
         public Guid EmpresaId { get; set; }
         public required DateTime DataInicio { get; set; }

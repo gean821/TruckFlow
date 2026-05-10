@@ -16,8 +16,8 @@ namespace TruckFlow.Domain.Entities
         public LocalDescarga? LocalDescarga { get; set; }
         public Guid? LocalDescargaId { get; set; }
         public  Guid? UnidadeEntregaId { get; set; }
-        public required Fornecedor Fornecedor { get; set; }
-        public required Guid FornecedorId { get; set; }
+        public Fornecedor? Fornecedor { get; set; }
+        public Guid? FornecedorId { get; set; }
         public DateOnly DataInicio { get; set; }
         public DateOnly DataFim { get; set; }
         public TimeOnly HoraInicial { get; set; }
@@ -30,7 +30,7 @@ namespace TruckFlow.Domain.Entities
 
         public ICollection<Agendamento> Agendamentos { get; set; } = [];
 
-        private static readonly TimeZoneInfo OperationalTimeZone = ResolveOperationalTimeZone();
+        public static readonly TimeZoneInfo OperationalTimeZone = ResolveOperationalTimeZone();
 
         private static TimeZoneInfo ResolveOperationalTimeZone()
         {
@@ -78,10 +78,14 @@ namespace TruckFlow.Domain.Entities
                         slots.Add(new Agendamento
                         {
                             GradeId = Id,
+                            Produto = Produto,
+                            ProdutoId = ProdutoId,
                             Fornecedor = Fornecedor,
                             FornecedorId = FornecedorId,
                             UnidadeEntrega = UnidadeEntrega,
                             UnidadeEntregaId = UnidadeEntregaId,
+                            LocalDescarga = LocalDescarga,
+                            LocalDescargaId = LocalDescargaId,
                             EmpresaId = EmpresaId,
                             DataInicio = inicioUtc,
                             DataFim = fimUtc,

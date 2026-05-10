@@ -22,6 +22,10 @@ namespace TruckFlow.Application.Validators.AgendamentoMotorista
                 .NotEmpty().WithMessage("A data de início é obrigatória.")
                 .GreaterThan(DateTime.Now).WithMessage("A data deve ser futura.");
 
+            RuleFor(x => x.DataFim)
+                .NotEmpty().WithMessage("A data de fim é obrigatória.")
+                .GreaterThan(x => x.DataInicio).WithMessage("A data de fim deve ser posterior à data de início.");
+
 
             When(x => x.MotoristaId.HasValue, () =>
             {
