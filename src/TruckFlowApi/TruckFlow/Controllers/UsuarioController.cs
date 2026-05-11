@@ -33,7 +33,7 @@ namespace TruckFlow.Controllers
             var empresaId = _currentUser.EmpresaId
                 ?? throw new BusinessException("Usuário não vinculado a empresa.");
 
-            var result = await _service.GetPagedAdminsAsync(query, empresaId, token);
+            var result = await _service.GetPagedUsers(query, empresaId, token);
             return Ok(result);
         }
 

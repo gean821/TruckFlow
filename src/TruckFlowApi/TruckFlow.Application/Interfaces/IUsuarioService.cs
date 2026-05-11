@@ -16,7 +16,7 @@ namespace TruckFlow.Application.Interfaces
         public Task<UserAdminResponseDto> RegisterAdminAsync(UserAdminRegisterDto Usuario, CancellationToken token = default);
         public Task<LoginAdminResponseDto> LoginAdminAsync(UserAdminLoginDto dto, CancellationToken token = default);
         public Task<UserAdminResponseDto> GetAdminByIdAsync(Guid id, CancellationToken token);
-        public Task<PagedResponse<UserAdminResponseDto>> GetPagedAdminsAsync(UsuarioListQueryDto query, Guid empresaId, CancellationToken token = default);
+        public Task<PagedResponse<UserAdminResponseDto>> GetPagedUsers(UsuarioListQueryDto query, Guid empresaId, CancellationToken token = default);
         public Task<List<string>> GetRolesAsync(CancellationToken token = default);
         public Task<UserAdminResponseDto> UpdateAdminAsync(Guid id, UserAdminEditDto dto, CancellationToken token = default);
         public Task<UserAdminResponseDto> SetAdminStatusAsync(Guid id, bool ativo, CancellationToken token = default);

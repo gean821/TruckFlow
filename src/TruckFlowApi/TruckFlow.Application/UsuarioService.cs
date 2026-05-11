@@ -148,7 +148,7 @@ namespace TruckFlow.Application
             };
         }
 
-        public async Task<PagedResponse<UserAdminResponseDto>> GetPagedAdminsAsync(
+        public async Task<PagedResponse<UserAdminResponseDto>> GetPagedUsers(
             UsuarioListQueryDto query,
             Guid empresaId,
             CancellationToken token = default)
@@ -157,8 +157,8 @@ namespace TruckFlow.Application
                 .AsNoTracking()
                 .Include(u => u.Administrador)
                 .Include(u => u.Empresa)
-                .Where(u => u.EmpresaId == empresaId)
-                .Where(u => u.Administrador != null);
+                .Where(u => u.EmpresaId == empresaId);
+                //.Where(u => u.Administrador != null);
 
             if (query.Status == "active")
             {
