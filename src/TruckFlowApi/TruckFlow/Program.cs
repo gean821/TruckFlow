@@ -111,6 +111,8 @@ namespace TruckFlow
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 db.Database.Migrate();
+
+                scope.ServiceProvider.SeedRolesAsync().GetAwaiter().GetResult();
             }
 
             app.UseRouting();

@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Grade;
+using TruckFlow.Domain.Entities;
 
 
 namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
+    [Authorize(Roles = RoleGroups.CanManageGrade)]
     public class GradeController(IGradeService service) : ControllerBase
     {
         private readonly IGradeService _service = service;

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TruckFlow.Application.Interfaces;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -48,7 +49,19 @@ namespace TruckFlow.Application
                     totalExpirados++;
                 }
 
-                await _repo.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _repo.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Conflito de concorrência ao expirar agendamentos. " +
+                        "Algum(ns) registro(s) foram modificados em paralelo " +
+                        "(provavelmente reservados por motoristas). " +
+                        "O próximo ciclo do worker reprocessará os pendentes.");
+                    break;
+                }
 
                 if (candidatos.Count < BatchSize)
                 {

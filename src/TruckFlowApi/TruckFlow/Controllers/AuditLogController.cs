@@ -8,7 +8,7 @@ namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/audit")]
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Roles = RoleGroups.CanViewAuditLogs)]
     public class AuditLogController(IAuditLogService service) : ControllerBase
     {
         private readonly IAuditLogService _service = service;

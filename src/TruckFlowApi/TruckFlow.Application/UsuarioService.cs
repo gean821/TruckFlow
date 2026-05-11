@@ -89,7 +89,6 @@ namespace TruckFlow.Application
                     UsuarioId = usuario.Id,
                     Usuario = usuario,
                     CreatedAt = usuario.CreatedAt,
-                    FuncaoAdm = FuncaoAdministrador.Colaborador,
                 };
 
                 _db.Administrador.Add(administrador);

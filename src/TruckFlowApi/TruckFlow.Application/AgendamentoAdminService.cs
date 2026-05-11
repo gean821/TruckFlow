@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -140,7 +141,17 @@ namespace TruckFlow.Application
                     : StatusAgendamento.Disponivel
             };
 
-            await _repo.AddAgendamento(vaga, token);
+            try
+            {
+                await _repo.AddAgendamento(vaga, token);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+                when (ex.InnerException is PostgresException pg && pg.SqlState == "23P01")
+            {
+                throw new BusinessException(
+                    "Conflito detectado: outro agendamento foi criado em paralelo " +
+                    "nesta doca para um horário sobreposto. Atualize a tela e tente novamente.");
+            }
 
             _logger.LogInformation(
                 "Agendamento avulso criado: {AgendamentoId} (empresa {EmpresaId}, status {Status})",
@@ -280,7 +291,17 @@ namespace TruckFlow.Application
                 excludeAgendamentoId: agendamento.Id,
                 token);
 
-            await _repo.Update(agendamento, token);
+            try
+            {
+                await _repo.Update(agendamento, token);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+                when (ex.InnerException is PostgresException pg && pg.SqlState == "23P01")
+            {
+                throw new BusinessException(
+                    "Conflito detectado: outro agendamento ocupa esta doca em horário " +
+                    "sobreposto à nova janela informada.");
+            }
 
             _logger.LogInformation(
                 "Agendamento atualizado: {AgendamentoId} (empresa {EmpresaId})",

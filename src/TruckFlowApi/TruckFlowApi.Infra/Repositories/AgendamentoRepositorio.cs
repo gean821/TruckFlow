@@ -313,5 +313,11 @@ namespace TruckFlowApi.Infra.Repositories
 
             return await query.OrderBy(x => x.DataInicio).ToListAsync(cancellationToken);
         }
+
+        public Task<Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction> BeginTransactionAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return _db.Database.BeginTransactionAsync(cancellationToken);
+        }
     }
 }

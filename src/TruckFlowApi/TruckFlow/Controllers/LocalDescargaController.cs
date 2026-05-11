@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.LocalDescarga;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[controller]")]
+    [Authorize(Roles = RoleGroups.CanManageMasterData)]
     public class LocalDescargaController(ILocalDescargaService service) : ControllerBase
     {
         private readonly ILocalDescargaService _service = service;

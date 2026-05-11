@@ -11,7 +11,6 @@ namespace TruckFlow.Domain.Dto.Agendamento
     {
         public Guid AgendamentoId { get; set; }
         public required string NotaFiscalChaveAcesso{ get; set; }
-        public Guid UsuarioId { get; set; }
         public string? PlacaVeiculo { get; set; }
         public TipoVeiculo? TipoVeiculo { get; set; }
     }

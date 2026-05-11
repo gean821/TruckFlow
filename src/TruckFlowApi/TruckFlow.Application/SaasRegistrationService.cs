@@ -102,12 +102,12 @@ namespace TruckFlow.Application
                 }
 
                 await _userManager.AddToRoleAsync(usuario, Roles.Admin);
+                await _userManager.AddToRoleAsync(usuario, Roles.Gerente);
 
                 var administrador = new Administrador
                 {
                     UsuarioId = usuario.Id,
                     Nome = dto.NomeAdmin,
-                    FuncaoAdm = FuncaoAdministrador.Gerente,
                     UserName = dto.Username,
                     Usuario = usuario,
                     CreatedAt = DateTime.UtcNow

@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Dto.Agendamento;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
@@ -21,13 +24,16 @@ namespace TruckFlow.Application
         private readonly IPlanejamentoRecebimentoRepositorio _planejamentoRepo;
         private readonly IRecebimentoEventoRepositorio _eventoRepo;
         private readonly ILogger<AgendamentoMotoristaService> _logger;
+        private readonly CurrentUserGuard _guard;
+
 
         public AgendamentoMotoristaService(
             IAgendamentoRepositorio repo,
             INotaFiscalRepositorio notaRepo,
             IPlanejamentoRecebimentoRepositorio planejamentoRepo,
             IRecebimentoEventoRepositorio eventoRepo,
-            ILogger<AgendamentoMotoristaService> logger
+            ILogger<AgendamentoMotoristaService> logger,
+            CurrentUserGuard guard
             )
         {
             _repo = repo;
@@ -35,18 +41,16 @@ namespace TruckFlow.Application
             _planejamentoRepo = planejamentoRepo;
             _eventoRepo = eventoRepo;
             _logger = logger;
+            _guard = guard;
         }
 
         public async Task<List<AgendamentoMotoristaResponse>> GetDriverAppointments(
-            Guid motoristaId,
             CancellationToken token = default)
         {
-            var meusAgendamentos = await _repo.GetByMotoristaId(motoristaId, token);
+            var motoristaId = _guard.GetMotoristaId();
 
-            if (meusAgendamentos.Count == 0)
-            {
-                return [];
-            }
+            var meusAgendamentos = await _repo.GetByMotoristaId(motoristaId, token)
+                ?? throw new NotFoundException("Nenhum agendamento para o motorista.");
 
             return meusAgendamentos.Select(MapToResponse).ToList();
         }
@@ -57,6 +61,9 @@ namespace TruckFlow.Application
                 CancellationToken token = default
             )
         {
+
+            var usuarioId = _guard.GetUserId();
+
             var vaga = await _repo.GetById(dto.AgendamentoId, token)
                 ?? throw new NotFoundException("Horário não encontrado para o agendamento.");
 
@@ -102,38 +109,56 @@ namespace TruckFlow.Application
             }
 
             vaga.Reservar(
-                usuarioId: dto.UsuarioId,
+                usuarioId: usuarioId,
                 notaFiscal: nota,
                 placaVeiculo: dto.PlacaVeiculo,
                 tipoVeiculo: dto.TipoVeiculo
             );
 
-            await _repo.Update(vaga, token);
-
-            if (item is not null)
+            await using var tx = await _repo.BeginTransactionAsync(token);
+            try
             {
-                var quantidade = nota.PesoBruto ?? 0m;
-                if (quantidade > 0)
+                await _repo.Update(vaga, token);
+
+                if (item is not null)
                 {
-                    var evento = new RecebimentoEvento(
-                        item,
-                        quantidade,
-                        agendamentoId: vaga.Id,
-                        observacao: "Reserva via agendamento",
-                        empresaId: vaga.EmpresaId
-                    );
+                    var quantidade = nota.PesoBruto ?? 0m;
+                    if (quantidade > 0)
+                    {
+                        var evento = new RecebimentoEvento(
+                            item,
+                            quantidade,
+                            agendamentoId: vaga.Id,
+                            observacao: "Reserva via agendamento",
+                            empresaId: vaga.EmpresaId
+                        );
 
-                    await _eventoRepo.AddAsync(evento, token);
+                        await _eventoRepo.AddAsync(evento, token);
 
-                    item.RegistrarRecebimento(quantidade);
-                    planejamento!.RecalcularStatus();
-                    await _planejamentoRepo.SaveChangesAsync(token);
+                        item.RegistrarRecebimento(quantidade);
+                        planejamento!.RecalcularStatus();
+                        await _planejamentoRepo.SaveChangesAsync(token);
+                    }
                 }
+
+                await tx.CommitAsync(token);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new BusinessException(
+                    "Vaga já foi reservada por outro motorista. Atualize a lista e tente outra.");
+            }
+            catch (DbUpdateException ex)
+                when (ex.InnerException is PostgresException pg && pg.SqlState == "23P01")
+            {
+                throw new BusinessException(
+                    "Conflito de horário detectado: outro agendamento ativo sobrepõe esta vaga. " +
+                    "Atualize a lista e escolha outra.");
             }
 
             _logger.LogInformation(
                 "Agendamento reservado pelo motorista: {AgendamentoId} (usuário {UsuarioId}, empresa {EmpresaId})",
-                vaga.Id, dto.UsuarioId, vaga.EmpresaId);
+                vaga.Id, usuarioId, vaga.EmpresaId);
 
             return MapToResponse(vaga);
         }

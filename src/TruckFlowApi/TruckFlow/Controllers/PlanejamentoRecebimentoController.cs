@@ -1,12 +1,15 @@
 using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Recebimento;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("/v1/[Controller]")]
+    [Authorize(Roles = RoleGroups.CanManageGrade)]
     public class PlanejamentoRecebimentoController : ControllerBase
     {
         private readonly IPlanejamentoRecebimentoService _service;

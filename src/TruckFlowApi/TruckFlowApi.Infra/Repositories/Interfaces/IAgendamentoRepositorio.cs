@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage;
 using TruckFlow.Domain.Dto.Agendamento;
 using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;
@@ -59,5 +60,7 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             DateTime fimUtc,
             Guid? excludeAgendamentoId,
             CancellationToken cancellationToken = default);
+
+        Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
     }
 }

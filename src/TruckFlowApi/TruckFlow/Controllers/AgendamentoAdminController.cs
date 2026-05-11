@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Agendamento;
+using TruckFlow.Domain.Entities;
 namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
+    [Authorize(Roles = RoleGroups.CanManageGrade)]
     public sealed class AgendamentoAdminController : ControllerBase
     {
         private readonly IAgendamentoAdminService _service;
@@ -24,6 +27,7 @@ namespace TruckFlow.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = RoleGroups.CanViewSchedule)]
         public async Task<IActionResult> GetById(
             [FromRoute] Guid id,
             CancellationToken token)
@@ -33,6 +37,7 @@ namespace TruckFlow.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = RoleGroups.CanViewSchedule)]
         public async Task<IActionResult> GetByFilters
             (
                 [FromQuery] AgendamentoFilterDto filtros,
@@ -45,6 +50,7 @@ namespace TruckFlow.Controllers
 
 
         [HttpPatch("{agendamentoId}/check-in")]
+        [Authorize(Roles = RoleGroups.CanCheckIn)]
         public async Task<IActionResult> CheckIn([FromRoute] Guid agendamentoId, CancellationToken token = default)
         {
             await _service.RegistrarChegadaAsync(agendamentoId, token);
@@ -52,6 +58,7 @@ namespace TruckFlow.Controllers
         }
 
         [HttpPatch("{agendamentoId}/check-out")]
+        [Authorize(Roles = RoleGroups.CanCheckIn)]
         public async Task<IActionResult> CheckOut([FromRoute] Guid agendamentoId, CancellationToken token = default)
         {
             await _service.FinalizarOperacao(agendamentoId, token);

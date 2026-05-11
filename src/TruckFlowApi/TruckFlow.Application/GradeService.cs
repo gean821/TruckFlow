@@ -2,6 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -145,12 +146,23 @@ namespace TruckFlow.Application
                 }
             }
 
-            await _repo.CreateGrade(grade, token);
+            try
+            {
+                await _repo.CreateGrade(grade, token);
 
-            if (slots.Count > 0)
-                await _agendamentoRepo.AddRangeAsync(slots, token);
+                if (slots.Count > 0)
+                    await _agendamentoRepo.AddRangeAsync(slots, token);
 
-            await _repo.SaveChangesAsync(token);
+                await _repo.SaveChangesAsync(token);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+                when (ex.InnerException is PostgresException pg && pg.SqlState == "23P01")
+            {
+                throw new BusinessException(
+                    "Conflito detectado ao criar a grade: algum dos slots gerados sobrepõe " +
+                    "um agendamento existente nesta doca. Pode ter sido criado em paralelo. " +
+                    "Atualize e tente novamente.");
+            }
 
             _logger.LogInformation(
                 "Grade criada: {GradeId} (empresa {EmpresaId}, slots {Slots})",

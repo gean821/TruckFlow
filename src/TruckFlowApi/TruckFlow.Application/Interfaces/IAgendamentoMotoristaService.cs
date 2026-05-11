@@ -23,7 +23,6 @@ namespace TruckFlow.Application.Interfaces
 
         public Task<List<AgendamentoMotoristaResponse>> GetDriverAppointments
             (
-                Guid motoristaId,
                 CancellationToken token = default
             );
     }

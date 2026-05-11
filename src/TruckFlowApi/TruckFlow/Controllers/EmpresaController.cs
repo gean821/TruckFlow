@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Empresa;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
+    [Authorize(Roles = RoleGroups.CanManageMasterData)]
     public class EmpresaController(IEmpresaService empresaService) : ControllerBase
     {
         private readonly IEmpresaService _empresaService = empresaService;

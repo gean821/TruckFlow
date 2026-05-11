@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Agendamento;
 
@@ -6,6 +7,7 @@ namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
+    [Authorize(Roles = "Motorista")]
     public class AgendamentoMotoristaController : ControllerBase
     {
         private readonly IAgendamentoMotoristaService _service;
@@ -41,16 +43,13 @@ namespace TruckFlow.Controllers
 
         /// <summary>
         /// Lista o histórico e agendamentos futuros do motorista logado.
+        /// O motorista é identificado pelo claim "MotoristaId" do JWT.
         /// </summary>
-        [HttpGet("meus-agendamentos/{motoristaId}")]
+        [HttpGet("meus-agendamentos")]
         [ProducesResponseType(typeof(List<AgendamentoMotoristaResponse>), 200)]
-        public async Task<IActionResult> GetDriverAppointments
-            (
-                [FromRoute] Guid motoristaId,
-                CancellationToken token = default
-            )
+        public async Task<IActionResult> GetDriverAppointments(CancellationToken token = default)
         {
-            var agendamentos = await _service.GetDriverAppointments(motoristaId, token);
+            var agendamentos = await _service.GetDriverAppointments(token);
             return Ok(agendamentos);
         }
 
@@ -60,13 +59,12 @@ namespace TruckFlow.Controllers
         /// </summary>
         [HttpPost("reservar")]
         [ProducesResponseType(typeof(AgendamentoMotoristaResponse), 200)]
-        [ProducesResponseType(400)] // Erro de negócio (vaga ocupada, etc)
-        [ProducesResponseType(404)] // Vaga não encontrada
+        [ProducesResponseType(400)] 
+        [ProducesResponseType(404)]
         public async Task<IActionResult> ReservarVaga(
             [FromBody] ReservarAgendamentoDto dto,
             CancellationToken token = default)
         {
-            //var usuarioId = dto.UsuarioId ?? Guid.NewGuid(); // ou usuário fake
             var resultado = await _service.BookAppointment(dto,token);
             return Ok(resultado);
         }

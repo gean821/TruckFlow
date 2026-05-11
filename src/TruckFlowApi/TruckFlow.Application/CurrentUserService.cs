@@ -15,13 +15,13 @@ namespace TruckFlow.Application
 
         public Guid UserId =>
             Guid.Parse(_http.HttpContext!.User
-                .FindFirst(ClaimTypes.NameIdentifier)!.Value);
+                .FindFirst("UserId")!.Value);
 
         public Guid? UserIdOrNull
         {
             get
             {
-                var claim = _http.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var claim = _http.HttpContext?.User?.FindFirst("UserId")?.Value;
                 return Guid.TryParse(claim, out var id) ? id : null;
             }
         }
@@ -38,5 +38,10 @@ namespace TruckFlow.Application
 
         public bool IsMotorista =>
             _http.HttpContext!.User.IsInRole("Motorista");
+
+        public Guid? MotoristaId =>
+          _http.HttpContext!.User.FindFirst("MotoristaId") != null
+        ? Guid.Parse(_http.HttpContext!.User.FindFirst("MotoristaId")!.Value)
+            : null;
     }
 }

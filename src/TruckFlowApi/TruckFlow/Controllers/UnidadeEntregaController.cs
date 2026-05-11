@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.UnidadeEntrega;
 using TruckFlow.Domain.Entities;
@@ -6,6 +7,7 @@ namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
+    [Authorize(Roles = RoleGroups.CanManageMasterData)]
     public class UnidadeEntregaController : ControllerBase
     {
         private readonly IUnidadeEntregaService _service;

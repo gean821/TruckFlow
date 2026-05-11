@@ -10,7 +10,7 @@ namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/usuarios")]
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Roles = RoleGroups.CanManageUsers)]
     public class UsuarioController : ControllerBase
     {
         private readonly IUsuarioService _service;

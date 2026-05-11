@@ -8,6 +8,7 @@ namespace TruckFlow.Controllers
 {
     [Route("v1/[Controller]")]
     [ApiController]
+    [Authorize(Roles = Roles.Motorista)]
     public class MotoristaController: ControllerBase
     {
         private readonly IMotoristaService _service;
@@ -17,7 +18,6 @@ namespace TruckFlow.Controllers
             _service = service;
         }
 
-        [Authorize(Roles = Roles.Motorista)]
         [HttpGet("veiculos")]
         public async Task<IActionResult> GetMeusVeiculos(CancellationToken token)
         {
@@ -27,7 +27,6 @@ namespace TruckFlow.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = Roles.Motorista)]
         [HttpGet()]
         public async Task<IActionResult> GetMe(CancellationToken token = default)
         {

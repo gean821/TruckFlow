@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.NotaFiscal;
 
@@ -6,6 +7,9 @@ namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
+    // Endpoints compartilhados entre motorista (parse/save/buscar via mobile) e admin (consulta).
+    // Por isso só [Authorize] (qualquer autenticado), sem restrição de role.
+    [Authorize]
     public class NotaFiscalController : ControllerBase
     {
         private readonly INotaFiscalService _service;

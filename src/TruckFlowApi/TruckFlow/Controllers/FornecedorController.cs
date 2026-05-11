@@ -2,17 +2,18 @@
 using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Fornecedor;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
+    [Authorize(Roles = RoleGroups.CanManageMasterData)]
     public class FornecedorController(IFornecedorService service) : ControllerBase
     {
         private readonly IFornecedorService _service = service;
 
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> CreateFornecedor(
             [FromBody] FornecedorCreateDto fornecedor,
             CancellationToken ct

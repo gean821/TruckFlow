@@ -21,9 +21,6 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .IsRequired()
                 .HasMaxLength(250);
 
-            builder.Property(x => x.FuncaoAdm)
-                .IsRequired();
-
             builder.Property(x => x.CreatedAt)
                 .IsRequired();
 

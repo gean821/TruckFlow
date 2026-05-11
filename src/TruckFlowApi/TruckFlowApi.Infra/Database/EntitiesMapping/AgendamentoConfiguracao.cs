@@ -17,6 +17,11 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
 
             builder.HasKey(x => x.Id);
 
+            builder.Property<uint>("xmin")
+                .HasColumnType("xid")
+                .ValueGeneratedOnAddOrUpdate()
+                .IsConcurrencyToken();
+
             builder.Property(x => x.StatusAgendamento)
                 .IsRequired();
 
