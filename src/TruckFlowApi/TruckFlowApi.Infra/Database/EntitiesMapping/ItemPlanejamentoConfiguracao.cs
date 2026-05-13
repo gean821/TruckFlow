@@ -17,6 +17,11 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
 
             builder.HasKey(x => x.Id);
 
+            builder.Property<uint>("xmin")
+                .HasColumnType("xid")
+                .ValueGeneratedOnAddOrUpdate()
+                .IsConcurrencyToken();
+
             builder.Property(x => x.QuantidadeTotalPlanejada)
                 .HasPrecision(18, 2);
 
@@ -25,6 +30,10 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
 
             builder.Property(x => x.QuantidadeTotalRecebida)
                 .HasPrecision(18, 2);
+
+            builder.Property(x => x.QuantidadeReservada)
+                .HasPrecision(18, 2)
+                .HasDefaultValue(0m);
 
             builder.Property(x => x.ToleranciaExtra)
                 .HasPrecision(18, 2)

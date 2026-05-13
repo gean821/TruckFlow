@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Recebimento;
@@ -29,6 +29,26 @@ namespace TruckFlow.Controllers
                 token
             );
 
+            return NoContent();
+        }
+
+        [HttpGet("orfaos")]
+        public async Task<IActionResult> GetOrfaos(
+            [FromQuery] RecebimentoOrfaoQueryDto query,
+            CancellationToken token)
+        {
+            var orfaos = await _service.GetOrfaos(query, token);
+            return Ok(orfaos);
+        }
+
+        [HttpPost("orfaos/{id}/vincular")]
+        public async Task<IActionResult> VincularOrfao(
+            [FromRoute] Guid id,
+            [FromBody] VincularOrfaoDto dto,
+            CancellationToken token
+        )
+        {
+            await _service.VincularOrfao(id, dto.ItemPlanejamentoId, token);
             return NoContent();
         }
     }

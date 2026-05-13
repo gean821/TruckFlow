@@ -28,6 +28,7 @@ namespace TruckFlow.Domain.Dto.Agendamento
 
         public string? MotoristaNome { get; set; }
         public string? UnidadeEntrega { get; set; } 
+        public string? LocalDescarga { get; set; } 
         public required DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }

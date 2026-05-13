@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using System;
@@ -26,8 +26,7 @@ namespace TruckFlow.Application
         private readonly ILocalDescargaRepositorio _descargaRepo;
         private readonly IFornecedorRepositorio _fornecedorRepositorio;
         private readonly IUnidadeEntregaRepositorio _unidadeRepo;
-        private readonly IRecebimentoEventoRepositorio _eventoRepo;
-        private readonly IPlanejamentoRecebimentoRepositorio _recebimentoRepo;
+        private readonly IAgendamentoRecebimentoLifecycleService _lifecycle;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly ICurrentUserService _currentUser;
         private readonly IProdutoRepositorio _produtoRepo;
@@ -41,8 +40,7 @@ namespace TruckFlow.Application
             ILocalDescargaRepositorio descargaRepositorio,
             IFornecedorRepositorio fornecedorRepositorio,
             IUnidadeEntregaRepositorio entregaRepositorio,
-            IRecebimentoEventoRepositorio eventoRepo,
-            IPlanejamentoRecebimentoRepositorio recebimentoRepositorio,
+            IAgendamentoRecebimentoLifecycleService lifecycle,
             IEmpresaRepositorio empresaRepo,
             ICurrentUserService currentUser,
             IProdutoRepositorio produtoRepositorio,
@@ -56,8 +54,7 @@ namespace TruckFlow.Application
             _descargaRepo = descargaRepositorio;
             _fornecedorRepositorio = fornecedorRepositorio;
             _unidadeRepo = entregaRepositorio;
-            _eventoRepo = eventoRepo;
-            _recebimentoRepo = recebimentoRepositorio;
+            _lifecycle = lifecycle;
             _empresaRepo = empresaRepo;
             _currentUser = currentUser;
             _produtoRepo = produtoRepositorio;
@@ -115,6 +112,10 @@ namespace TruckFlow.Application
                 excludeAgendamentoId: null,
                 token);
 
+            var statusInicial = dto.MotoristaId.HasValue || !string.IsNullOrWhiteSpace(dto.PlacaVeiculo)
+                ? StatusAgendamento.Agendado
+                : StatusAgendamento.Disponivel;
+
             var vaga = new Agendamento
             {
                 FornecedorId = dto.FornecedorId,
@@ -135,15 +136,20 @@ namespace TruckFlow.Application
                 EmpresaId = empresa.Id,
                 Grade = null,
                 GradeId = null,
-
-                StatusAgendamento = dto.MotoristaId.HasValue || !string.IsNullOrWhiteSpace(dto.PlacaVeiculo)
-                    ? StatusAgendamento.Agendado
-                    : StatusAgendamento.Disponivel
+                StatusAgendamento = statusInicial
             };
 
+            await using var tx = await _repo.BeginTransactionAsync(token);
             try
             {
                 await _repo.AddAgendamento(vaga, token);
+
+                if (statusInicial == StatusAgendamento.Agendado && dto.VolumeCarga > 0)
+                {
+                    await _lifecycle.AoReservarAsync(vaga, dto.VolumeCarga, token);
+                }
+
+                await tx.CommitAsync(token);
             }
             catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
                 when (ex.InnerException is PostgresException pg && pg.SqlState == "23P01")
@@ -151,6 +157,19 @@ namespace TruckFlow.Application
                 throw new BusinessException(
                     "Conflito detectado: outro agendamento foi criado em paralelo " +
                     "nesta doca para um horário sobreposto. Atualize a tela e tente novamente.");
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+                when (ex.InnerException is PostgresException pg && pg.SqlState == "23505")
+            {
+                throw new BusinessException(
+                    "Este agendamento já possui uma reserva ativa de recebimento. " +
+                    "Atualize a tela e tente novamente.");
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+            {
+                throw new BusinessException(
+                    "O planejamento de recebimento foi alterado em paralelo. " +
+                    "Atualize a tela e tente novamente.");
             }
 
             _logger.LogInformation(
@@ -195,7 +214,7 @@ namespace TruckFlow.Application
         {
             var agendamento = await _repo.GetById(id, token)
                    ?? throw new NotFoundException("Agendamento não encontrado");
-            
+
             return MapToResponse(agendamento);
         }
         public async Task RegistrarChegadaAsync(
@@ -237,17 +256,22 @@ namespace TruckFlow.Application
             var agendamento = await _repo.GetById(agendamentoId, token)
                 ?? throw new NotFoundException("Agendamento não encontrado.");
 
-            var evento = await _eventoRepo.GetByAgendamentoId(agendamentoId, token);
-
-            if (evento is not null)
+            await using var tx = await _repo.BeginTransactionAsync(token);
+            try
             {
-                evento.ItemPlanejamento.EstornarRecebimento(evento.Quantidade);
-                evento.ItemPlanejamento.PlanejamentoRecebimento.RecalcularStatus();
-                await _eventoRepo.Remove(evento, token);
-            }
+                await _lifecycle.AoCancelarOuExpirarAsync(agendamento, token);
 
-            agendamento.Cancelar();
-            await _repo.Update(agendamento, token);
+                agendamento.Cancelar();
+                await _repo.Update(agendamento, token);
+
+                await tx.CommitAsync(token);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+            {
+                throw new BusinessException(
+                    "O agendamento ou o planejamento foi alterado em paralelo. " +
+                    "Atualize a tela e tente novamente.");
+            }
 
             _logger.LogInformation(
                 "Agendamento cancelado: {AgendamentoId} (empresa {EmpresaId})",
@@ -275,6 +299,8 @@ namespace TruckFlow.Application
             var novaDoca = await _unidadeRepo.GetById(dto.UnidadeEntregaId, token)
                 ?? throw new BusinessException("Doca inválida");
 
+            var pesoAnterior = agendamento.VolumeCarga ?? 0m;
+
             agendamento.UnidadeEntregaId = dto.UnidadeEntregaId;
             agendamento.DataInicio = DateTime.SpecifyKind(dto.DataInicio, DateTimeKind.Utc);
             agendamento.DataFim = DateTime.SpecifyKind(dto.DataFim, DateTimeKind.Utc);
@@ -291,9 +317,22 @@ namespace TruckFlow.Application
                 excludeAgendamentoId: agendamento.Id,
                 token);
 
+            await using var tx = await _repo.BeginTransactionAsync(token);
             try
             {
                 await _repo.Update(agendamento, token);
+
+                var pesoAtual = agendamento.VolumeCarga ?? 0m;
+                if (agendamento.StatusAgendamento == StatusAgendamento.Agendado
+                    || agendamento.StatusAgendamento == StatusAgendamento.EmAndamento)
+                {
+                    if (pesoAnterior != pesoAtual)
+                    {
+                        await _lifecycle.AoAtualizarReservaAsync(agendamento, pesoAtual, token);
+                    }
+                }
+
+                await tx.CommitAsync(token);
             }
             catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
                 when (ex.InnerException is PostgresException pg && pg.SqlState == "23P01")
@@ -301,6 +340,12 @@ namespace TruckFlow.Application
                 throw new BusinessException(
                     "Conflito detectado: outro agendamento ocupa esta doca em horário " +
                     "sobreposto à nova janela informada.");
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+            {
+                throw new BusinessException(
+                    "O agendamento ou o planejamento foi alterado em paralelo. " +
+                    "Atualize a tela e tente novamente.");
             }
 
             _logger.LogInformation(
@@ -319,59 +364,32 @@ namespace TruckFlow.Application
             var empresaId = _currentUser.EmpresaId
                 ?? throw new BusinessException("Usuário não vinculado a empresa.");
 
-            var agendamento = await _repo.GetByIdWithFornecedor(agendamentoId, token)
+            var agendamento = await _repo.GetById(agendamentoId, token)
                     ?? throw new NotFoundException("Agendamento não encontrado.");
 
-            var agendamentoCompleto = await _repo.GetById(agendamentoId, token);
-            var produtoId = agendamentoCompleto?.Grade?.ProdutoId ?? agendamentoCompleto?.ProdutoId;
-
-            agendamento.FinalizarOperacao();
-
-            var eventoExistente = await _eventoRepo.GetByAgendamentoId(agendamentoId, token);
-
-            if (eventoExistente is not null)
+            await using var tx = await _repo.BeginTransactionAsync(token);
+            try
             {
-                var item = eventoExistente.ItemPlanejamento;
-                var delta = quantidadeRecebida - eventoExistente.Quantidade;
+                agendamento.FinalizarOperacao();
 
-                if (delta > 0)
-                {
-                    item.RegistrarRecebimento(delta);
-                }
-                else if (delta < 0)
-                {
-                    item.EstornarRecebimento(-delta);
-                }
+                await _lifecycle.AoFinalizarAsync(agendamento, quantidadeRecebida, token);
 
-                item.PlanejamentoRecebimento.RecalcularStatus();
-                await _eventoRepo.SaveChangeAsync(token);
+                await _repo.Update(agendamento, token);
+
+                await tx.CommitAsync(token);
             }
-            else if (produtoId.HasValue && agendamento.FornecedorId.HasValue)
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+                when (ex.InnerException is PostgresException pg && pg.SqlState == "23505")
             {
-                var planejamento = await _recebimentoRepo
-                    .GetPlanejamentoAtivoPorFornecedor(agendamento.FornecedorId.Value, token)
-                    ?? throw new BusinessException(
-                        "Não existe planejamento ativo para este fornecedor.");
-
-                var item = planejamento.ItemDoProduto(produtoId.Value)
-                    ?? throw new BusinessException(
-                        "Nenhum item do planejamento compatível com a carga.");
-
-                var novoEvento = new RecebimentoEvento(
-                    item,
-                    quantidadeRecebida,
-                    agendamento.Id,
-                    "Recebimento via agendamento (admin)",
-                    empresaId
-                );
-
-                await _eventoRepo.AddAsync(novoEvento, token);
-
-                item.RegistrarRecebimento(quantidadeRecebida);
-                planejamento.RecalcularStatus();
+                throw new BusinessException(
+                    "Este agendamento já foi finalizado. Atualize a tela.");
             }
-
-            await _repo.Update(agendamento, token);
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+            {
+                throw new BusinessException(
+                    "O agendamento ou o planejamento foi alterado em paralelo. " +
+                    "Atualize a tela e tente novamente.");
+            }
 
             _logger.LogInformation(
                 "Agendamento finalizado: {AgendamentoId} qtd {Quantidade} (empresa {EmpresaId})",
@@ -384,7 +402,7 @@ namespace TruckFlow.Application
         {
             var agendamento = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Agendamento não encontrado");
-           
+
 
             if (agendamento.StatusAgendamento == StatusAgendamento.EmAndamento)
             {
@@ -450,6 +468,7 @@ namespace TruckFlow.Application
                 Produto = agendamento.Grade?.Produto?.Nome ?? agendamento?.Produto?.Nome!,
                 PesoCarga = agendamento.VolumeCarga ?? agendamento.NotaFiscal?.PesoBruto ?? 0,
                 PlacaVeiculo = agendamento.PlacaVeiculo ?? agendamento.NotaFiscal?.PlacaVeiculo,
+                LocalDescarga = agendamento.LocalDescarga?.Nome,
                 TipoVeiculo = agendamento.TipoVeiculo.ToString(),
                 UnidadeEntrega = agendamento.UnidadeEntrega?.Nome,
                 CreatedAt = agendamento.CreatedAt,
@@ -460,4 +479,3 @@ namespace TruckFlow.Application
         }
     }
 }
-

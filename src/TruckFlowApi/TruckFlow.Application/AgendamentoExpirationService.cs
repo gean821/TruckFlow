@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
@@ -10,13 +11,16 @@ namespace TruckFlow.Application
         private const int BatchSize = 500;
 
         private readonly IAgendamentoRepositorio _repo;
+        private readonly IAgendamentoRecebimentoLifecycleService _lifecycle;
         private readonly ILogger<AgendamentoExpirationService> _logger;
 
         public AgendamentoExpirationService(
             IAgendamentoRepositorio repo,
+            IAgendamentoRecebimentoLifecycleService lifecycle,
             ILogger<AgendamentoExpirationService> logger)
         {
             _repo = repo;
+            _lifecycle = lifecycle;
             _logger = logger;
         }
 
@@ -45,8 +49,25 @@ namespace TruckFlow.Application
                         continue;
                     }
 
+                    var precisaEstornar =
+                        agendamento.StatusAgendamento == StatusAgendamento.Agendado;
+
                     agendamento.Expirar();
                     totalExpirados++;
+
+                    if (precisaEstornar)
+                    {
+                        try
+                        {
+                            await _lifecycle.AoCancelarOuExpirarAsync(agendamento, cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex,
+                                "Falha ao estornar reserva do agendamento expirado {AgendamentoId}.",
+                                agendamento.Id);
+                        }
+                    }
                 }
 
                 try

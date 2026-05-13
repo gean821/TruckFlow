@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TruckFlowApi.Infra.Database;
@@ -11,9 +12,11 @@ using TruckFlowApi.Infra.Database;
 namespace TruckFlowApi.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260513035346_atx")]
+    partial class atx
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -879,7 +882,8 @@ namespace TruckFlowApi.Infra.Migrations
 
                     b.HasIndex("EmpresaId");
 
-                    b.HasIndex("FornecedorId");
+                    b.HasIndex("FornecedorId")
+                        .IsUnique();
 
                     b.ToTable("NotaFiscal", (string)null);
                 });
@@ -1632,8 +1636,8 @@ namespace TruckFlowApi.Infra.Migrations
                         .IsRequired();
 
                     b.HasOne("TruckFlow.Domain.Entities.Fornecedor", "Fornecedor")
-                        .WithMany("NotasFiscais")
-                        .HasForeignKey("FornecedorId")
+                        .WithOne("NotaFiscal")
+                        .HasForeignKey("TruckFlow.Domain.Entities.NotaFiscal", "FornecedorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1839,7 +1843,7 @@ namespace TruckFlowApi.Infra.Migrations
                 {
                     b.Navigation("Agendamentos");
 
-                    b.Navigation("NotasFiscais");
+                    b.Navigation("NotaFiscal");
 
                     b.Navigation("ProdutoFornecedores");
 

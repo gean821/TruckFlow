@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +16,7 @@ namespace TruckFlow.Domain.Entities
         public required decimal QuantidadeTotalPlanejada { get; set; }
         public required decimal CadenciaDiariaPlanejada { get; set; }
         public decimal QuantidadeTotalRecebida { get; set; }
+        public decimal QuantidadeReservada { get; set; }
 
         public string DiasSemana { get; set; } = string.Empty;
         public decimal ToleranciaExtra { get; set; } = 30m;
@@ -24,6 +25,42 @@ namespace TruckFlow.Domain.Entities
 
         public Guid EmpresaId { get; set; }
         public Empresa? Empresa { get; set; }
+
+        public decimal SaldoDisponivel
+            => Math.Max(0m, QuantidadeTotalPlanejada + ToleranciaExtra
+                            - QuantidadeReservada - QuantidadeTotalRecebida);
+
+        public void Reservar(decimal quantidade)
+        {
+            if (quantidade <= 0)
+                throw new Exception("Quantidade inválida.");
+
+            QuantidadeReservada += quantidade;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void EstornarReserva(decimal quantidade)
+        {
+            if (quantidade <= 0)
+                throw new Exception("Quantidade inválida.");
+
+            QuantidadeReservada = Math.Max(0m, QuantidadeReservada - quantidade);
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void ConfirmarRecebimento(decimal quantidadeReal, decimal quantidadeReservadaOriginal)
+        {
+            if (quantidadeReal <= 0)
+                throw new Exception("Quantidade inválida.");
+
+            if (quantidadeReservadaOriginal > 0)
+            {
+                QuantidadeReservada = Math.Max(0m, QuantidadeReservada - quantidadeReservadaOriginal);
+            }
+
+            QuantidadeTotalRecebida += quantidadeReal;
+            UpdatedAt = DateTime.UtcNow;
+        }
 
         public void RegistrarRecebimento(decimal quantidade)
         {
@@ -44,7 +81,7 @@ namespace TruckFlow.Domain.Entities
         }
 
         public bool EstaConcluido()
-            => QuantidadeTotalRecebida >= QuantidadeTotalPlanejada;
+            => (QuantidadeTotalRecebida + QuantidadeReservada) >= QuantidadeTotalPlanejada;
 
         public IReadOnlyCollection<DayOfWeek> DiasSemanaEnum
         {

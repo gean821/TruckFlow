@@ -19,6 +19,7 @@ namespace TruckFlow.Extensions.Agendamento
             services.AddTransient<IAgendamentoMotoristaService, AgendamentoMotoristaService>();
             services.AddTransient<IValidator<AgendamentoAdminUpdateDto>, AgendamentoAdminUpdateDtoValidator>();
             services.AddTransient<IAgendamentoExpirationService, AgendamentoExpirationService>();
+            services.AddTransient<IAgendamentoRecebimentoLifecycleService, AgendamentoRecebimentoLifecycleService>();
 
             services.AddHostedService<AgendamentoExpirationWorker>();
 

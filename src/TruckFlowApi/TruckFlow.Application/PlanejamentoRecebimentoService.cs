@@ -234,7 +234,11 @@ namespace TruckFlow.Application
                     ToleranciaExtra = item.ToleranciaExtra,
                     QuantidadeTotalPlanejada = item.QuantidadeTotalPlanejada,
                     QuantidadeTotalRecebida = item.QuantidadeTotalRecebida,
-                    FaltaReceber = Math.Max(0m, item.QuantidadeTotalPlanejada - item.QuantidadeTotalRecebida),
+                    QuantidadeReservada = item.QuantidadeReservada,
+                    FaltaReceber = Math.Max(0m,
+                        item.QuantidadeTotalPlanejada
+                        - item.QuantidadeTotalRecebida
+                        - item.QuantidadeReservada),
                     RecebidoNoDia = recebidoNoDia,
                     FaltaNoDia = faltaNoDia,
                     OperaNoDia = operaNoDia,
@@ -257,6 +261,7 @@ namespace TruckFlow.Application
                 TotalDiarioRestante = itensDto.Sum(i => i.FaltaNoDia),
                 TotalPlanejado = itensDto.Sum(i => i.QuantidadeTotalPlanejada),
                 TotalRecebido = itensDto.Sum(i => i.QuantidadeTotalRecebida),
+                TotalReservado = itensDto.Sum(i => i.QuantidadeReservada),
                 TotalRestante = itensDto.Sum(i => i.FaltaReceber),
                 Itens = itensDto
             };
@@ -355,7 +360,11 @@ namespace TruckFlow.Application
                     Produto = x.Produto!.Nome,
                     QuantidadeTotalPlanejada = x.QuantidadeTotalPlanejada,
                     QuantidadeTotalRecebida = x.QuantidadeTotalRecebida,
-                    FaltaReceber = Math.Max(0m, x.QuantidadeTotalPlanejada - x.QuantidadeTotalRecebida),
+                    QuantidadeReservada = x.QuantidadeReservada,
+                    FaltaReceber = Math.Max(0m,
+                        x.QuantidadeTotalPlanejada
+                        - x.QuantidadeTotalRecebida
+                        - x.QuantidadeReservada),
                     DiasSemana = x.DiasSemana,
                     ToleranciaExtra = x.ToleranciaExtra,
                     Fornecedor = recebimento.Fornecedor?.Nome ?? string.Empty,

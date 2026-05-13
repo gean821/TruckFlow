@@ -29,7 +29,7 @@ namespace TruckFlowApi.Infra.Repositories
             return await _db.Fornecedor
                 .Include(x => x.Produtos)
                     .ThenInclude(x => x.LocalDescarga)
-                .Include(x => x.NotaFiscal)
+                .Include(x => x.NotasFiscais)
                 .Include(x => x.Agendamentos)
                 .ToListAsync(token);
         }

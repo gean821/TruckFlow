@@ -8,7 +8,7 @@ namespace TruckFlow.Domain.Entities
         public required string Cnpj { get; set; }
         public ICollection<Produto> Produtos { get; set; } = [];
         public ICollection<PlanejamentoRecebimento>? Recebimentos { get; set; } = [];
-        public NotaFiscal? NotaFiscal { get; set; }
+        public ICollection<NotaFiscal> NotasFiscais { get; set; } = [];
         public ICollection<Agendamento>? Agendamentos { get; set; } = [];
         public ICollection<ProdutoFornecedor> ProdutoFornecedores { get; set; } = [];
         public Guid EmpresaId { get; set; }

@@ -28,7 +28,7 @@ namespace TruckFlow.Domain.Entities
 
             if (ItemPlanejamentos.All(i => i.EstaConcluido()))
                 StatusRecebimento = StatusRecebimento.Concluido;
-            else if (ItemPlanejamentos.Any(i => i.QuantidadeTotalRecebida > 0))
+            else if (ItemPlanejamentos.Any(i => i.QuantidadeTotalRecebida > 0 || i.QuantidadeReservada > 0))
                 StatusRecebimento = StatusRecebimento.EmAndamento;
             else
                 StatusRecebimento = StatusRecebimento.Planejado;

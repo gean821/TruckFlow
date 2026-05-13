@@ -19,6 +19,7 @@ namespace TruckFlow.Domain.Dto.Recebimento
 
         public decimal TotalPlanejado { get; set; }
         public decimal TotalRecebido { get; set; }
+        public decimal TotalReservado { get; set; }
         public decimal TotalRestante { get; set; }
 
         public List<PlanejamentoDashboardItemDto> Itens { get; set; } = new();
@@ -35,6 +36,7 @@ namespace TruckFlow.Domain.Dto.Recebimento
 
         public decimal QuantidadeTotalPlanejada { get; set; }
         public decimal QuantidadeTotalRecebida { get; set; }
+        public decimal QuantidadeReservada { get; set; }
         public decimal FaltaReceber { get; set; }
 
         public decimal RecebidoNoDia { get; set; }

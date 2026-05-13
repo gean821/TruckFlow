@@ -22,7 +22,7 @@ namespace TruckFlow.Application
         private readonly IAgendamentoRepositorio _repo;
         private readonly INotaFiscalRepositorio _notaRepo;
         private readonly IPlanejamentoRecebimentoRepositorio _planejamentoRepo;
-        private readonly IRecebimentoEventoRepositorio _eventoRepo;
+        private readonly IAgendamentoRecebimentoLifecycleService _lifecycle;
         private readonly ILogger<AgendamentoMotoristaService> _logger;
         private readonly CurrentUserGuard _guard;
 
@@ -31,7 +31,7 @@ namespace TruckFlow.Application
             IAgendamentoRepositorio repo,
             INotaFiscalRepositorio notaRepo,
             IPlanejamentoRecebimentoRepositorio planejamentoRepo,
-            IRecebimentoEventoRepositorio eventoRepo,
+            IAgendamentoRecebimentoLifecycleService lifecycle,
             ILogger<AgendamentoMotoristaService> logger,
             CurrentUserGuard guard
             )
@@ -39,7 +39,7 @@ namespace TruckFlow.Application
             _repo = repo;
             _notaRepo = notaRepo;
             _planejamentoRepo = planejamentoRepo;
-            _eventoRepo = eventoRepo;
+            _lifecycle = lifecycle;
             _logger = logger;
             _guard = guard;
         }
@@ -73,15 +73,12 @@ namespace TruckFlow.Application
             var produtoId = vaga.Grade?.ProdutoId ?? vaga.ProdutoId;
             var fornecedorIdParaPlanejamento = vaga.FornecedorId ?? nota.FornecedorId;
 
-            PlanejamentoRecebimento? planejamento = null;
-            ItemPlanejamento? item = null;
-
             if (produtoId.HasValue)
             {
-                planejamento = await _planejamentoRepo.GetPlanejamentoAtivoPorFornecedor(
+                var planejamento = await _planejamentoRepo.GetPlanejamentoAtivoPorFornecedor(
                     fornecedorIdParaPlanejamento, token);
 
-                item = planejamento?.ItemDoProduto(produtoId.Value);
+                var item = planejamento?.ItemDoProduto(produtoId.Value);
 
                 if (planejamento is not null && item is not null &&
                     item.MetaDiariaAtingida(vaga.DataInicio))
@@ -120,26 +117,8 @@ namespace TruckFlow.Application
             {
                 await _repo.Update(vaga, token);
 
-                if (item is not null)
-                {
-                    var quantidade = nota.PesoBruto ?? 0m;
-                    if (quantidade > 0)
-                    {
-                        var evento = new RecebimentoEvento(
-                            item,
-                            quantidade,
-                            agendamentoId: vaga.Id,
-                            observacao: "Reserva via agendamento",
-                            empresaId: vaga.EmpresaId
-                        );
-
-                        await _eventoRepo.AddAsync(evento, token);
-
-                        item.RegistrarRecebimento(quantidade);
-                        planejamento!.RecalcularStatus();
-                        await _planejamentoRepo.SaveChangesAsync(token);
-                    }
-                }
+                var pesoEstimado = nota.PesoBruto ?? 0m;
+                await _lifecycle.AoReservarAsync(vaga, pesoEstimado, token);
 
                 await tx.CommitAsync(token);
             }
@@ -153,6 +132,13 @@ namespace TruckFlow.Application
             {
                 throw new BusinessException(
                     "Conflito de horário detectado: outro agendamento ativo sobrepõe esta vaga. " +
+                    "Atualize a lista e escolha outra.");
+            }
+            catch (DbUpdateException ex)
+                when (ex.InnerException is PostgresException pg && pg.SqlState == "23505")
+            {
+                throw new BusinessException(
+                    "Esta vaga já foi reservada por outro motorista neste instante. " +
                     "Atualize a lista e escolha outra.");
             }
 

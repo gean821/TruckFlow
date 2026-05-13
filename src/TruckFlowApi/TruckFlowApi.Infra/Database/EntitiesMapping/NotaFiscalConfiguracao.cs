@@ -78,8 +78,8 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .IsRequired();
 
             builder.HasOne<Fornecedor>(x => x.Fornecedor)
-                .WithOne(x => x.NotaFiscal)
-                .HasForeignKey<NotaFiscal>(x => x.FornecedorId)
+                .WithMany(x => x.NotasFiscais)
+                .HasForeignKey(x => x.FornecedorId)
                 .IsRequired();
 
             builder.HasOne<Agendamento>(x => x.Agendamento)

@@ -10,6 +10,7 @@ namespace TruckFlow.Domain.Dto.ItensPlanejamento
         public decimal QuantidadeTotalPlanejada { get; set; }
         public decimal CadenciaDiariaPlanejada { get; set; }
         public decimal QuantidadeTotalRecebida { get; set; }
+        public decimal QuantidadeReservada { get; set; }
 
         public decimal FaltaReceber { get; set; }
 
