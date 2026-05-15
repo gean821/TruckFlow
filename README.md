@@ -54,6 +54,90 @@ TruckFlow/
         │   └── services/       # Serviços e APIs
 
 
+🔐 Configuração de Secrets (Desenvolvimento)
+
+Credenciais (connection string do banco, chave de assinatura JWT) **não são versionadas** —
+ficam no `dotnet user-secrets` por máquina. Quando você clonar o repo pela primeira vez,
+o `appsettings.json` está com os campos vazios; rode os comandos abaixo para popular
+seus secrets locais.
+
+> `UserSecretsId` já está configurado no `TruckFlow.csproj` — não precisa rodar `init`.
+
+**1. Setar a connection string do Postgres local**
+
+```bash
+cd src/TruckFlowApi/TruckFlow
+
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=TruckFlow;Username=truckflow;Password=<SUA_SENHA_LOCAL>"
+```
+
+**2. Gerar uma chave JWT crypto-segura (512-bit, Base64)**
+
+Windows PowerShell 5.1:
+
+```powershell
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$bytes = New-Object byte[] 64
+$rng.GetBytes($bytes)
+[Convert]::ToBase64String($bytes)
+```
+
+PowerShell 7+ / pwsh:
+
+```powershell
+[Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(64))
+```
+
+Linux/macOS:
+
+```bash
+openssl rand -base64 64 | tr -d '\n'
+```
+
+Copie a saída e salve no user-secrets:
+
+```bash
+dotnet user-secrets set "JwtOptions:SecurityKey" "<chave_base64_gerada>"
+```
+
+**3. Conferir**
+
+```bash
+dotnet user-secrets list --project src/TruckFlowApi/TruckFlow/TruckFlow.csproj
+```
+
+Saída esperada:
+
+```
+ConnectionStrings:DefaultConnection = Host=localhost;...
+JwtOptions:SecurityKey = <chave_base64>
+```
+
+**Onde fica fisicamente o arquivo** (fora do repo, no perfil do usuário):
+
+- Windows: `%APPDATA%\Microsoft\UserSecrets\<UserSecretsId>\secrets.json`
+- Linux/macOS: `~/.microsoft/usersecrets/<UserSecretsId>/secrets.json`
+
+**Comandos úteis:**
+
+```bash
+# Remover uma chave específica
+dotnet user-secrets remove "JwtOptions:SecurityKey" --project src/TruckFlowApi/TruckFlow/TruckFlow.csproj
+
+# Limpar todos
+dotnet user-secrets clear --project src/TruckFlowApi/TruckFlow/TruckFlow.csproj
+```
+
+> ⚠️ **Atenção:** user-secrets só é carregado quando `ASPNETCORE_ENVIRONMENT=Development`.
+> O `launchSettings.json` do projeto já define isso automaticamente — só fique atento
+> se for rodar com `--no-launch-profile` ou em outro ambiente.
+
+> 🚀 **Produção:** em produção (Railway, AWS, Azure, etc.), os secrets viram **environment
+> variables** com `__` (dois underscores) substituindo o `:` — ex.: `ConnectionStrings__DefaultConnection`
+> e `JwtOptions__SecurityKey`. **Não** suba `secrets.json` para servidor.
+
+---
+
 ⚙️ Como Executar
 Backend
 
@@ -65,6 +149,8 @@ cd TruckFlow/Backend
 
 # Restaure as dependências
 dotnet restore
+
+# Configure os secrets locais (ver seção "🔐 Configuração de Secrets" acima)
 
 # Execute as migrações
 dotnet ef database update
