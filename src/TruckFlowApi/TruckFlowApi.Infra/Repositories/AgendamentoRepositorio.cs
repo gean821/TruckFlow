@@ -214,18 +214,21 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(token);
         }
 
-        public async Task<bool> ExisteAgendamentoBloqueantePorGrade(
+        public async Task<IReadOnlyList<Agendamento>> ExisteAgendamentoBloqueantePorGrade(
             Guid gradeId,
             CancellationToken cancellationToken = default
             )
         {
             return await _db.Agendamento
-                .AnyAsync(a =>
+                .AsNoTracking()
+                .Where(a =>
                     a.GradeId == gradeId &&
-                    a.StatusAgendamento != StatusAgendamento.Disponivel &&
-                    a.StatusAgendamento != StatusAgendamento.Cancelado,
-                    cancellationToken);
+                    (a.StatusAgendamento == StatusAgendamento.Pendente ||
+                     a.StatusAgendamento == StatusAgendamento.Agendado ||
+                     a.StatusAgendamento == StatusAgendamento.EmAndamento))
+                .ToListAsync(cancellationToken);
         }
+
         public async Task Delete(
             Agendamento agendamento,
             CancellationToken token = default
@@ -318,6 +321,26 @@ namespace TruckFlowApi.Infra.Repositories
             CancellationToken cancellationToken = default)
         {
             return _db.Database.BeginTransactionAsync(cancellationToken);
+        }
+
+        public async Task DeleteTodosPorGrade(
+            Guid gradeId,
+            CancellationToken cancellationToken = default
+            )
+        {
+            await _db.Agendamento
+                .Where(a => a.GradeId == gradeId)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+
+        public async Task DeleteDisponiveisPorGrade(
+            Guid gradeId,
+            CancellationToken cancellationToken = default
+            )
+        {
+            await _db.Agendamento
+                .Where(a => a.GradeId == gradeId && a.StatusAgendamento == StatusAgendamento.Disponivel)
+                .ExecuteDeleteAsync(cancellationToken);
         }
     }
 }
