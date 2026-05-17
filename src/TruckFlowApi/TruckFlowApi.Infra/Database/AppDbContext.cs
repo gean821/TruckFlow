@@ -90,9 +90,7 @@ namespace TruckFlowApi.Infra.Database
             where TEntity : class, IEmpresaScoped
         {
             modelBuilder.Entity<TEntity>()
-                .HasQueryFilter(e =>
-                _empresaContext.EmpresaId == Guid.Empty
-                || e.EmpresaId == _empresaContext.EmpresaId);
+                .HasQueryFilter(e => e.EmpresaId == _empresaContext.EmpresaId);
         }
     }
 }

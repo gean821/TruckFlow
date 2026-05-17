@@ -77,12 +77,15 @@ namespace TruckFlow
             });
 
             builder.Services.AddScoped<AuditSaveChangesInterceptor>();
+            builder.Services.AddScoped<EmpresaScopedSaveChangesInterceptor>();
 
             builder.Services.AddDbContext<AppDbContext>((sp, optionsBuilder) =>
             {
                 optionsBuilder
                     .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-                    .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>());
+                    .AddInterceptors(
+                        sp.GetRequiredService<AuditSaveChangesInterceptor>(),
+                        sp.GetRequiredService<EmpresaScopedSaveChangesInterceptor>());
             });
 
             builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>

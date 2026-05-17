@@ -17,9 +17,17 @@ namespace TruckFlow.Domain.Entities
                     .FindFirst("EmpresaId")?
                     .Value;
 
-                return Guid.TryParse(claim, out var empresaId)
-                    ? empresaId
-                    : Guid.Empty;
+                if (string.IsNullOrWhiteSpace(claim))
+                {
+                    throw new UnauthorizedAccessException("Tenant não identificado.");
+                }
+
+                if (!Guid.TryParse(claim, out var empresaId))
+                {
+                    throw new UnauthorizedAccessException("Tenant inválido.");
+                }
+
+                return empresaId;
             }
         }
     }
