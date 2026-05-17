@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -23,6 +23,7 @@ namespace TruckFlow.Application
         private readonly UserManager<Usuario> _userManager;
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly IAuthService _authService;
+        private readonly IRefreshTokenService _refreshTokenService;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly AppDbContext _db;
         private readonly ILogger<UsuarioService> _logger;
@@ -31,6 +32,7 @@ namespace TruckFlow.Application
             UserManager<Usuario> userManager,
             RoleManager<IdentityRole<Guid>> roleManager,
             IAuthService authService,
+            IRefreshTokenService refreshTokenService,
             IEmpresaRepositorio empresaRepo,
             AppDbContext db,
             ILogger<UsuarioService> logger
@@ -39,6 +41,7 @@ namespace TruckFlow.Application
             _userManager = userManager;
             _roleManager = roleManager;
             _authService = authService;
+            _refreshTokenService = refreshTokenService;
             _db = db;
             _empresaRepo = empresaRepo;
             _logger = logger;
@@ -105,6 +108,8 @@ namespace TruckFlow.Application
 
         public async Task<LoginAdminResponseDto> LoginAdminAsync(
             UserAdminLoginDto dto,
+            string? deviceInfo,
+            string? ipAddress,
             CancellationToken ct = default
             )
         {
@@ -135,7 +140,13 @@ namespace TruckFlow.Application
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
-            var token = await _authService.GenerateTokenAsync(usuario, ct);
+            var accessToken = await _authService.GenerateTokenAsync(usuario, ct);
+            var refresh = await _refreshTokenService.IssueAsync(
+                usuario.Id,
+                usuario.EmpresaId,
+                deviceInfo,
+                ipAddress,
+                ct: ct);
 
             _logger.LogInformation(
                 "Login admin realizado: {UsuarioId} (empresa {EmpresaId})",
@@ -143,7 +154,10 @@ namespace TruckFlow.Application
 
             return new LoginAdminResponseDto
             {
-                Token = token,
+                Token = accessToken.Token,
+                TokenExpiresAt = accessToken.ExpiresAt,
+                RefreshToken = refresh.RawToken,
+                RefreshTokenExpiresAt = refresh.ExpiresAt,
                 Usuario = await MapUsuarioAsync(usuario)
             };
         }
@@ -375,6 +389,8 @@ namespace TruckFlow.Application
         public async Task<LoginMotoristaResponseDto> LoginMotoristaAsync
             (
                 UserMotoristaLoginDto dto,
+                string? deviceInfo,
+                string? ipAddress,
                 CancellationToken ct = default
             )
         {
@@ -409,7 +425,9 @@ namespace TruckFlow.Application
                 .Include(u => u.Motorista)
                 .FirstOrDefaultAsync(u => u.Id == usuario.Id, ct);
 
-            var token = await _authService.GenerateTokenAsync(usuarioComMotorista!, ct);
+            var accessToken = await _authService.GenerateTokenAsync(usuarioComMotorista!, ct);
+            var refresh = await _refreshTokenService.IssueAsync(
+                usuarioComMotorista!.Id, usuarioComMotorista.EmpresaId, deviceInfo, ipAddress, ct: ct);
 
             _logger.LogInformation(
                 "Login motorista realizado: {UsuarioId}",
@@ -417,7 +435,10 @@ namespace TruckFlow.Application
 
             return new LoginMotoristaResponseDto
             {
-                Token = token,
+                Token = accessToken.Token,
+                TokenExpiresAt = accessToken.ExpiresAt,
+                RefreshToken = refresh.RawToken,
+                RefreshTokenExpiresAt = refresh.ExpiresAt,
                 Usuario = await MapMotoristaAsync(usuarioComMotorista!)
             };
         }
@@ -583,7 +604,7 @@ namespace TruckFlow.Application
                 NomeReal = usuario.Motorista?.NomeReal,
                 Telefone = usuario.PhoneNumber!,
                 CreatedAt = usuario.CreatedAt,
-                UpdatedAt = usuario.UpdatedAt,                
+                UpdatedAt = usuario.UpdatedAt,
             };
         }
     }

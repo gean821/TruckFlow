@@ -50,7 +50,7 @@ namespace TruckFlowApi.Infra.Database.Interceptors
             }
 
             var userId = _currentUser.UserIdOrNull;
-            var empresaId = _empresaContext.EmpresaId;
+            var empresaId = _empresaContext.EmpresaIdOrNull;
             var ipAddress = _http.HttpContext?.Connection?.RemoteIpAddress?.ToString();
             var userAgent = _http.HttpContext?.Request?.Headers["User-Agent"].ToString();
             var now = DateTime.UtcNow;
@@ -76,7 +76,7 @@ namespace TruckFlowApi.Infra.Database.Interceptors
                     entry.Entity.UpdatedBy = userId;
                 }
 
-                if (empresaId == Guid.Empty)
+                if (empresaId is null)
                 {
                     continue;
                 }
@@ -91,7 +91,7 @@ namespace TruckFlowApi.Infra.Database.Interceptors
 
                 auditLogs.Add(new AuditLog
                 {
-                    EmpresaId = empresaId,
+                    EmpresaId = empresaId.Value,
                     UserId = userId,
                     EntityName = entry.Entity.GetType().Name,
                     EntityId = entry.Entity.Id.ToString(),

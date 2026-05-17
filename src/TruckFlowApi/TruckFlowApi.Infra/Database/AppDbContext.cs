@@ -49,6 +49,7 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new ProdutoFornecedorConfiguracao());
             modelBuilder.ApplyConfiguration(new EmpresaConfiguracao());
             modelBuilder.ApplyConfiguration(new AuditLogConfiguracao());
+            modelBuilder.ApplyConfiguration(new RefreshTokenConfiguracao());
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -70,6 +71,7 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<RecebimentoEvento> RecebimentoEvento { get; set; }
         public DbSet<Empresa> Empresa { get; set; }
         public DbSet<AuditLog> AuditLog { get; set; }
+        public DbSet<RefreshToken> RefreshToken { get; set; }
 
         private void ApplyGlobalFilters(ModelBuilder modelBuilder)
         {

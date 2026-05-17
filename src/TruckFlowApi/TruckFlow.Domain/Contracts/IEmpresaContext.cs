@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace TruckFlow.Domain.Contracts
 {
     public interface IEmpresaContext
     {
-        Guid EmpresaId { get;}
+        Guid EmpresaId { get; }
+        Guid? EmpresaIdOrNull { get; }
+
+        IDisposable WithTenant(Guid empresaId);
     }
 }

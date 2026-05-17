@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.User.Motorista;
@@ -35,7 +35,11 @@ namespace TruckFlow.Controllers
                 CancellationToken token = default
             )
         {
-            var usuarioLogado = await _service.LoginMotoristaAsync(dto, token);
+            var usuarioLogado = await _service.LoginMotoristaAsync(
+                dto,
+                Request.Headers.UserAgent.ToString(),
+                HttpContext.Connection.RemoteIpAddress?.ToString(),
+                token);
             return Ok(usuarioLogado);
         }
 

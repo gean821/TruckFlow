@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using TruckFlow.Application;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
@@ -15,6 +15,9 @@ namespace TruckFlow.Extensions.Auth
         {
             services.AddTransient<IUsuarioService, UsuarioService>();
             services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<IUsuarioRepositorio, UsuarioRepositorio>();
+            services.AddTransient<IRefreshTokenRepositorio, RefreshTokenRepositorio>();
+            services.AddTransient<IRefreshTokenService, RefreshTokenService>();
 
             return services;
         }

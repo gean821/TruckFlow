@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application;
@@ -47,7 +48,15 @@ namespace TruckFlow
 
             // Add services to the container.
 
-            builder.Services.AddCorsDependency();
+            builder.Services.AddCorsDependency(builder.Configuration);
+
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
             builder.Services.AddProduto();
             builder.Services.AddLocalDescarga();
             builder.Services.AddFornecedor();
@@ -118,6 +127,7 @@ namespace TruckFlow
                 scope.ServiceProvider.SeedRolesAsync().GetAwaiter().GetResult();
             }
 
+            app.UseForwardedHeaders();
             app.UseRouting();
             app.UseCors("AllowFrontend");
             app.UseMiddleware<ExceptionHandlingMiddleware>();
