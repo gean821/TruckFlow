@@ -12,6 +12,7 @@ using TruckFlow.Extensions.Audit;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Conferencia;
 using TruckFlow.Extensions.Cors;
+using TruckFlow.Extensions.Geocoding;
 using TruckFlow.Extensions.Dashboard;
 using TruckFlow.Extensions.Empresa;
 using TruckFlow.Extensions.Fornecedor;
@@ -70,6 +71,7 @@ namespace TruckFlow
             builder.Services.AddAgendamento();
             builder.Services.AddUserAuth();
             builder.Services.AddConferencia();
+            builder.Services.AddGeocoding(builder.Configuration);
             builder.Services.AddDashboard();
             builder.Services.AddRecebimentoEvento();
             builder.Services.AddHttpContextAccessor();

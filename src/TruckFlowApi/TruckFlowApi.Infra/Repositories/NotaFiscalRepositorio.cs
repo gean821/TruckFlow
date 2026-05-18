@@ -43,6 +43,7 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Itens)
                     .ThenInclude(i => i.Produto)
                 .Include(x => x.Agendamento)
+                    .ThenInclude(x=> x.UnidadeEntrega)
                 .FirstOrDefaultAsync(x => x.ChaveAcesso == chaveAcesso, token);
 
         public async Task<Guid?> GetUltimoProdutoIdPorFornecedorECodigo(

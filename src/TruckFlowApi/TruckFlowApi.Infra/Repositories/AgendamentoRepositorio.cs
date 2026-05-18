@@ -236,7 +236,8 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.NotaFiscal)
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.LocalDescarga)
-                .Include(x => x.Grade).ThenInclude(g => g.Produto)
+                .Include(x => x.Grade)
+                    .ThenInclude(g => g.Produto)
                 .ToListAsync(token);
 
         public async Task<bool> ExisteAgendamentoBloqueantePorGrade(

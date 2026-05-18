@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using System;
@@ -22,6 +22,7 @@ namespace TruckFlow.Application
         private readonly IValidator<UnidadeEntregaCreateDto> _createValidator;
         private readonly IValidator<UnidadeEntregaUpdateDto> _updateValidator;
         private readonly CurrentUserGuard _currentUser;
+        private readonly IGeocodingService _geocoding;
         private readonly ILogger<UnidadeEntregaService> _logger;
 
         public UnidadeEntregaService(
@@ -29,12 +30,14 @@ namespace TruckFlow.Application
             IValidator<UnidadeEntregaCreateDto> createValidator,
             IValidator<UnidadeEntregaUpdateDto> updateValidator,
             CurrentUserGuard currentUser,
+            IGeocodingService geocoding,
             ILogger<UnidadeEntregaService> logger)
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _currentUser = currentUser;
+            _geocoding = geocoding;
             _logger = logger;
         }
 
@@ -71,6 +74,17 @@ namespace TruckFlow.Application
                 EmpresaId = empresaId,
                 CreatedAt = DateTime.UtcNow
             };
+
+            if (entity.Latitude is null && entity.Longitude is null)
+            {
+                var geo = await _geocoding.GeocodeAsync(entity, token);
+                
+                if (geo is not null)
+                {
+                    entity.Latitude = geo.Latitude;
+                    entity.Longitude = geo.Longitude;
+                }
+            }
 
             await _repo.CreateUnidadeEntrega(entity, token);
             await _repo.SaveChangesAsync(token);
@@ -139,6 +153,23 @@ namespace TruckFlow.Application
                 ?? throw new NotFoundException("Unidade de entrega não encontrada");
 
             ApplyPatch(unidade, dto);
+
+            var enderecoMudou = dto.Logradouro is not null
+                || dto.Numero is not null
+                || dto.Bairro is not null
+                || dto.Cidade is not null
+                || dto.Estado is not null
+                || dto.Cep is not null;
+
+            if (enderecoMudou && dto.Latitude is null && dto.Longitude is null)
+            {
+                var geo = await _geocoding.GeocodeAsync(unidade, token);
+                if (geo is not null)
+                {
+                    unidade.Latitude = geo.Latitude;
+                    unidade.Longitude = geo.Longitude;
+                }
+            }
 
             await _repo.Update(unidade, token);
 
