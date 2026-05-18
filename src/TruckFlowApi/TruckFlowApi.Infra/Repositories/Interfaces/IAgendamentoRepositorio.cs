@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,6 +25,14 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             CancellationToken token = default
             );
         public Task<Agendamento> GetById(Guid id, CancellationToken token = default);
+
+        /// <summary>
+        /// Lookup por ID ignorando filter de tenant. Uso restrito a rotas de motorista (cross-tenant
+        /// por design) que precisam resolver o EmpresaId do recurso antes de ativar WithTenant.
+        /// </summary>
+        Task<Agendamento?> GetByIdAcrossTenants(
+            Guid id,
+            CancellationToken token = default);
         public Task<List<Agendamento>> GetAll(CancellationToken token = default);
 
         Task<PagedResponse<AgendamentoAdminResponse>> GetAdminViewAsync(
@@ -33,6 +41,14 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             );
 
         public Task<List<Agendamento>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default);
+
+        /// <summary>
+        /// Lista agendamentos do motorista em qualquer empresa, ignorando filter de tenant.
+        /// Motorista é cross-tenant por design — vê todos os seus agendamentos.
+        /// </summary>
+        Task<List<Agendamento>> GetByMotoristaIdAcrossTenants(
+            Guid motoristaId,
+            CancellationToken token = default);
         public Task<Agendamento> Update(Agendamento Agendamento, CancellationToken token = default);
         public Task Delete(Agendamento agendamento, CancellationToken token = default);
 

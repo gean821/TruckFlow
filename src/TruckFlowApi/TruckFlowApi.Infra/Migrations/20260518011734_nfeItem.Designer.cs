@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TruckFlowApi.Infra.Database;
@@ -11,9 +12,11 @@ using TruckFlowApi.Infra.Database;
 namespace TruckFlowApi.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260518011734_nfeItem")]
+    partial class nfeItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1109,19 +1112,11 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<Guid>("FornecedorId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("CodigoFornecedor")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EanFornecedor")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
 
                     b.Property<Guid>("EmpresaId")
                         .HasColumnType("uuid");
@@ -1133,7 +1128,7 @@ namespace TruckFlowApi.Infra.Migrations
 
                     b.HasIndex("EmpresaId");
 
-                    b.HasIndex("FornecedorId", "CodigoFornecedor");
+                    b.HasIndex("FornecedorId");
 
                     b.ToTable("ProdutoFornecedor", (string)null);
                 });

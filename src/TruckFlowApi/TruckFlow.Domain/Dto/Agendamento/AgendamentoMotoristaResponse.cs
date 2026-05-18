@@ -12,7 +12,10 @@ namespace TruckFlow.Domain.Dto.Agendamento
     public sealed class AgendamentoMotoristaResponse
     {
         public required Guid Id { get; set; }
-        public required string UnidadeDescarga { get; set; }
+        public string? LocalDescarga { get; set; }
+        public required string UnidadeEntrega { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
         public required string Fornecedor { get; set; }
         public required string Produto { get; set; }
         public decimal? PesoCarga { get; set; }

@@ -23,6 +23,7 @@ namespace TruckFlow.Application
         private readonly INotaFiscalRepositorio _notaRepo;
         private readonly IPlanejamentoRecebimentoRepositorio _planejamentoRepo;
         private readonly IAgendamentoRecebimentoLifecycleService _lifecycle;
+        private readonly IEmpresaContext _empresaContext;
         private readonly ILogger<AgendamentoMotoristaService> _logger;
         private readonly CurrentUserGuard _guard;
 
@@ -32,6 +33,7 @@ namespace TruckFlow.Application
             INotaFiscalRepositorio notaRepo,
             IPlanejamentoRecebimentoRepositorio planejamentoRepo,
             IAgendamentoRecebimentoLifecycleService lifecycle,
+            IEmpresaContext empresaContext,
             ILogger<AgendamentoMotoristaService> logger,
             CurrentUserGuard guard
             )
@@ -40,6 +42,7 @@ namespace TruckFlow.Application
             _notaRepo = notaRepo;
             _planejamentoRepo = planejamentoRepo;
             _lifecycle = lifecycle;
+            _empresaContext = empresaContext;
             _logger = logger;
             _guard = guard;
         }
@@ -49,8 +52,12 @@ namespace TruckFlow.Application
         {
             var motoristaId = _guard.GetMotoristaId();
 
-            var meusAgendamentos = await _repo.GetByMotoristaId(motoristaId, token)
-                ?? throw new NotFoundException("Nenhum agendamento para o motorista.");
+            var meusAgendamentos = await _repo.GetByMotoristaIdAcrossTenants(motoristaId, token);
+
+            if (meusAgendamentos.Count == 0)
+            {
+                throw new NotFoundException("Nenhum agendamento para o motorista.");
+            }
 
             return meusAgendamentos.Select(MapToResponse).ToList();
         }
@@ -61,14 +68,21 @@ namespace TruckFlow.Application
                 CancellationToken token = default
             )
         {
-
             var usuarioId = _guard.GetUserId();
 
-            var vaga = await _repo.GetById(dto.AgendamentoId, token)
+            var vaga = await _repo.GetByIdAcrossTenants(dto.AgendamentoId, token)
                 ?? throw new NotFoundException("Horário não encontrado para o agendamento.");
 
-            var nota = await _notaRepo.ObterPorChaveAsync(dto.NotaFiscalChaveAcesso, token)
+            var nota = await _notaRepo.ObterPorChaveAcrossTenantsAsync(dto.NotaFiscalChaveAcesso, token)
                 ?? throw new NotFoundException("Nota Fiscal não encontrada.");
+
+            if (nota.EmpresaId != vaga.EmpresaId)
+            {
+                throw new BusinessException(
+                    "Nota fiscal não pertence à mesma empresa da vaga. Verifique a nota.");
+            }
+
+            using var tenantScope = _empresaContext.WithTenant(vaga.EmpresaId);
 
             var produtoId = vaga.Grade?.ProdutoId ?? vaga.ProdutoId;
             var fornecedorIdParaPlanejamento = vaga.FornecedorId ?? nota.FornecedorId;
@@ -156,8 +170,10 @@ namespace TruckFlow.Application
                 CancellationToken token = default
             )
         {
-            var nota = await _notaRepo.ObterPorChaveAsync(chaveAcesso, token)
+            var nota = await _notaRepo.ObterPorChaveAcrossTenantsAsync(chaveAcesso, token)
                 ?? throw new NotFoundException("Nota fiscal não encontrada. Faça o upload primeiro.");
+
+            using var tenantScope = _empresaContext.WithTenant(nota.EmpresaId);
 
             var produtoIds = nota.Itens
                 .Where(i => i.ProdutoId.HasValue)
@@ -203,8 +219,11 @@ namespace TruckFlow.Application
             PlanejamentoRecebimento? planejamento,
             DateTime? dataReferencia)
         {
-            string produtoNome = agendamento.Grade?.Produto?.Nome ?? "Carga Geral";
-            string unidadeNome = agendamento.UnidadeEntrega?.Nome ?? "A Definir";
+            string produtoNome = agendamento.Grade?.Produto?.Nome ??
+                agendamento?.Produto?.Nome ?? "Carga Geral";
+
+            string unidadeNome = agendamento!.UnidadeEntrega?.Nome ?? "A Definir";
+            string local = agendamento.LocalDescarga?.Nome ?? agendamento.Grade?.LocalDescarga?.Nome ?? "-";
 
             var produtoId = agendamento.Grade?.ProdutoId ?? agendamento.ProdutoId;
             var dia = dataReferencia ?? agendamento.DataInicio;
@@ -216,7 +235,10 @@ namespace TruckFlow.Application
             return new AgendamentoMotoristaResponse
             {
                 Id = agendamento.Id,
-                UnidadeDescarga = unidadeNome,
+                UnidadeEntrega = unidadeNome,
+                LocalDescarga = local,
+                Latitude = agendamento.UnidadeEntrega?.Latitude,
+                Longitude = agendamento.UnidadeEntrega?.Longitude,
                 Fornecedor = agendamento.Fornecedor?.Nome ?? "N/A",
                 HorarioInicio = agendamento.DataInicio,
                 Produto = produtoNome,

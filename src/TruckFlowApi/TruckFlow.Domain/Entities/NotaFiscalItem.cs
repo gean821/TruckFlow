@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TruckFlow.Domain.Contracts;
+using TruckFlow.Domain.Enums;
 
 namespace TruckFlow.Domain.Entities
 {
@@ -12,19 +8,20 @@ namespace TruckFlow.Domain.Entities
         public Guid NotaFiscalId { get; set; }
         public required NotaFiscal NotaFiscal { get; set; }
         public required string Codigo { get; set; }
+        public string? Ean { get; set; }
         public required string Descricao { get; set; }
         public decimal Quantidade { get; set; }
         public string? Unidade { get; set; }
         public required decimal ValorUnitario { get; set; }
         public required decimal ValorTotal { get; set; }
 
-        /// <summary>
-        /// Vínculo opcional ao produto cadastrado no sistema (preenchido durante o parse
-        /// quando EAN/código bate com produto da empresa). Usado para casar o item da nota
-        /// com vagas de agendamento abertas para esse produto.
-        /// </summary>
         public Guid? ProdutoId { get; set; }
         public Produto? Produto { get; set; }
+
+        public NotaFiscalItemStatus Status { get; set; } = NotaFiscalItemStatus.PendenteRevisao;
+        public OrigemMatchProduto? OrigemMatch { get; set; }
+        public DateTime? MatchadoEm { get; set; }
+        public Guid? MatchadoPor { get; set; }
 
         public Guid EmpresaId { get; set; }
         public Empresa? Empresa { get; set; }
