@@ -48,7 +48,7 @@ namespace TruckFlow.Application
                 UpdatedAt = x.UpdatedAt,
                 CreatedAt = x.CreatedAt
             }).ToList();
-           
+
         }
 
         private UserMotoristaResponseDto MapToResponse(Motorista motorista)
@@ -56,7 +56,8 @@ namespace TruckFlow.Application
             return new UserMotoristaResponseDto
             {
                 Id = motorista.Id,
-                Username = motorista.NomeReal,
+                Username = motorista.Username,     
+                NomeReal = motorista.NomeReal,     
                 Email = motorista.Usuario.Email!,
                 Telefone = motorista.Telefone,
                 DeletedAt = motorista.DeletedAt,

@@ -17,6 +17,7 @@ using TruckFlow.Extensions.Grade;
 using TruckFlow.Extensions.Guards;
 using TruckFlow.Extensions.ItemPlanejamento;
 using TruckFlow.Extensions.LocalDescarga;
+using TruckFlow.Extensions.Motorista;
 using TruckFlow.Extensions.NotaFiscal;
 using TruckFlow.Extensions.Produto;
 using TruckFlow.Extensions.Recebimento;
@@ -59,6 +60,7 @@ namespace TruckFlow
             builder.Services.AddSefaz(builder.Configuration);
             builder.Services.AddAgendamento();
             builder.Services.AddUserAuth();
+            builder.Services.AddMotorista();
             builder.Services.AddDashboard();
             builder.Services.AddRecebimentoEvento();
             builder.Services.AddHttpContextAccessor();

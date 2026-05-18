@@ -434,11 +434,10 @@ namespace TruckFlow.Application
             return await MapMotoristaAsync(usuario);
         }
 
-        public async Task<UserMotoristaResponseDto> UpdateMotoristaAsync
-            (
-                Guid id,
-                UserMotoristaUpdateDto dto,
-                CancellationToken token = default
+        public async Task<UserMotoristaResponseDto> UpdateMotoristaAsync(
+            Guid id,
+            UserMotoristaUpdateDto dto,
+            CancellationToken token = default
             )
         {
             var usuario = await _userManager.FindByIdAsync(id.ToString())
@@ -448,23 +447,17 @@ namespace TruckFlow.Application
                 .FirstOrDefaultAsync(m => m.UsuarioId == id, token)
                 ?? throw new NotFoundException("Motorista não encontrado");
 
-            usuario.UserName = dto.Username;
-            usuario.Email = dto.Email;
-            usuario.PhoneNumber = dto.Telefone;
-            usuario.UpdatedAt = DateTime.UtcNow;
+            await ApplyPatchMotorista(motorista, usuario, dto, token);
 
-            await _userManager.UpdateAsync(usuario);
-
-            motorista.Username = dto.Username;
-            motorista.NomeReal = dto.NomeReal;
-            motorista.Telefone = dto.Telefone;
-            motorista.UpdatedAt = DateTime.UtcNow;
-
+            var result = await _userManager.UpdateAsync(usuario);
+            if (!result.Succeeded)
+            {
+                var erros = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new BadRequestException($"Erro ao atualizar usuário: {erros}");
+            }
             await _db.SaveChangesAsync(token);
 
-            _logger.LogInformation(
-                "Motorista atualizado: {UsuarioId} (motorista {MotoristaId})",
-                id, motorista.Id);
+            _logger.LogInformation("Motorista atualizado: {UsuarioId}", id);
 
             return await MapMotoristaAsync(usuario);
         }
@@ -506,6 +499,50 @@ namespace TruckFlow.Application
 
             adm.UpdatedAt = DateTime.UtcNow;
             user.UpdatedAt = DateTime.UtcNow;
+        }
+
+        private async Task ApplyPatchMotorista(
+            Motorista motorista,
+            Usuario usuario,
+            UserMotoristaUpdateDto dto,
+            CancellationToken token
+            )
+        {
+            if (dto.Username is not null)
+            {
+                motorista.Username = dto.Username;
+                usuario.UserName = dto.Username;
+                usuario.NormalizedUserName = dto.Username.ToUpperInvariant();
+            }
+
+            if (dto.NomeReal is not null)
+                motorista.NomeReal = dto.NomeReal;
+
+            if (dto.Email is not null)
+            {
+                usuario.Email = dto.Email;
+                usuario.NormalizedEmail = dto.Email.ToUpperInvariant();
+            }
+
+            if (dto.Telefone is not null)
+            {
+                motorista.Telefone = dto.Telefone;
+                usuario.PhoneNumber = dto.Telefone;
+            }
+
+            if (dto.Password is not null)
+            {
+                var resetToken = await _userManager.GeneratePasswordResetTokenAsync(usuario);
+                var result = await _userManager.ResetPasswordAsync(usuario, resetToken, dto.Password);
+                if (!result.Succeeded)
+                {
+                    var erros = string.Join("; ", result.Errors.Select(e => e.Description));
+                        throw new BadRequestException($"Senha inválida: {erros}");
+                }
+            }
+
+            motorista.UpdatedAt = DateTime.UtcNow;
+            usuario.UpdatedAt = DateTime.UtcNow;
         }
 
         public async Task DeleteMotoristaAsync(
