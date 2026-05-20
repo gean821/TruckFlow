@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,7 @@ namespace TruckFlow.Application
         private readonly UserManager<Usuario> _userManager;
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly IAuthService _authService;
+        private readonly IRefreshTokenService _refreshTokenService;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly ILogger<SaaSRegistrationService> _logger;
 
@@ -30,6 +31,7 @@ namespace TruckFlow.Application
             UserManager<Usuario> userManager,
             RoleManager<IdentityRole<Guid>> roleManager,
             IAuthService authService,
+            IRefreshTokenService refreshTokenService,
             IEmpresaRepositorio empresaRepo,
             ILogger<SaaSRegistrationService> logger
             )
@@ -38,12 +40,15 @@ namespace TruckFlow.Application
             _userManager = userManager;
             _roleManager = roleManager;
             _authService = authService;
+            _refreshTokenService = refreshTokenService;
             _empresaRepo = empresaRepo;
             _logger = logger;
         }
 
         public async Task<LoginAdminResponseDto> RegisterAsync(
             RegisterEmpresaAdminDto dto,
+            string? deviceInfo,
+            string? ipAddress,
             CancellationToken token = default)
         {
             await using var transaction = await _db.Database.BeginTransactionAsync(token);
@@ -118,7 +123,9 @@ namespace TruckFlow.Application
                 await _db.SaveChangesAsync(token);
                 await transaction.CommitAsync(token);
 
-                var jwt = await _authService.GenerateTokenAsync(usuario, token);
+                var accessToken = await _authService.GenerateTokenAsync(usuario, token);
+                var refresh = await _refreshTokenService.IssueAsync(
+                    usuario.Id, empresa.Id, deviceInfo, ipAddress, ct: token);
 
                 _logger.LogInformation(
                     "Registro SaaS concluído: empresa {EmpresaId} ({NomeFantasia}), admin {UsuarioId}",
@@ -126,7 +133,10 @@ namespace TruckFlow.Application
 
                 return new LoginAdminResponseDto
                 {
-                    Token = jwt,
+                    Token = accessToken.Token,
+                    TokenExpiresAt = accessToken.ExpiresAt,
+                    RefreshToken = refresh.RawToken,
+                    RefreshTokenExpiresAt = refresh.ExpiresAt,
                     Usuario = new UserAdminResponseDto
                     {
                         Id = usuario.Id,

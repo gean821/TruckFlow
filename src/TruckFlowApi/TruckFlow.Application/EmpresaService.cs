@@ -134,7 +134,9 @@ namespace TruckFlow.Application
                 id);
         }
 
-        private static void ApplyPatch(Empresa empresa, EmpresaUpdateDto dto)
+        private static void ApplyPatch(
+            Empresa empresa,
+            EmpresaUpdateDto dto)
         {
             if (!string.IsNullOrWhiteSpace(dto.RazaoSocial))
                 empresa.RazaoSocial = dto.RazaoSocial.Trim();
@@ -157,7 +159,6 @@ namespace TruckFlow.Application
             if (!string.IsNullOrWhiteSpace(dto.Numero))
                 empresa.Numero = dto.Numero.Trim();
 
-            // Complemento é opcional — null = não alterar, string vazia = limpar
             if (dto.Complemento != null)
                 empresa.Complemento = string.IsNullOrWhiteSpace(dto.Complemento) ? null : dto.Complemento.Trim();
 

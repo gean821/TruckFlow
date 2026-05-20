@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application;
@@ -9,7 +10,9 @@ using TruckFlow.Domain.Entities;
 using TruckFlow.Extensions.Agendamento;
 using TruckFlow.Extensions.Audit;
 using TruckFlow.Extensions.Auth;
+using TruckFlow.Extensions.Conferencia;
 using TruckFlow.Extensions.Cors;
+using TruckFlow.Extensions.Geocoding;
 using TruckFlow.Extensions.Dashboard;
 using TruckFlow.Extensions.Empresa;
 using TruckFlow.Extensions.Fornecedor;
@@ -48,7 +51,15 @@ namespace TruckFlow
 
             // Add services to the container.
 
-            builder.Services.AddCorsDependency();
+            builder.Services.AddCorsDependency(builder.Configuration);
+
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
             builder.Services.AddProduto();
             builder.Services.AddLocalDescarga();
             builder.Services.AddFornecedor();
@@ -61,6 +72,8 @@ namespace TruckFlow
             builder.Services.AddAgendamento();
             builder.Services.AddUserAuth();
             builder.Services.AddMotorista();
+            builder.Services.AddConferencia();
+            builder.Services.AddGeocoding(builder.Configuration);
             builder.Services.AddDashboard();
             builder.Services.AddRecebimentoEvento();
             builder.Services.AddHttpContextAccessor();
@@ -79,12 +92,15 @@ namespace TruckFlow
             });
 
             builder.Services.AddScoped<AuditSaveChangesInterceptor>();
+            builder.Services.AddScoped<EmpresaScopedSaveChangesInterceptor>();
 
             builder.Services.AddDbContext<AppDbContext>((sp, optionsBuilder) =>
             {
                 optionsBuilder
                     .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-                    .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>());
+                    .AddInterceptors(
+                        sp.GetRequiredService<AuditSaveChangesInterceptor>(),
+                        sp.GetRequiredService<EmpresaScopedSaveChangesInterceptor>());
             });
 
             builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>
@@ -117,6 +133,7 @@ namespace TruckFlow
                 scope.ServiceProvider.SeedRolesAsync().GetAwaiter().GetResult();
             }
 
+            app.UseForwardedHeaders();
             app.UseRouting();
             app.UseCors("AllowFrontend");
             app.UseMiddleware<ExceptionHandlingMiddleware>();

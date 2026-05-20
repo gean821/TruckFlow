@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TruckFlow.Domain.Enums;
 
 namespace TruckFlow.Domain.Dto.NotaFiscal
 {
@@ -10,7 +6,7 @@ namespace TruckFlow.Domain.Dto.NotaFiscal
     {
         public required string Codigo { get; set; }
         public required string Descricao { get; set; }
-        public string? Ean { get; set; } 
+        public string? Ean { get; set; }
 
         public Guid? ProdutoSistemaId { get; set; }
         public string? ProdutoSistemaNome { get; set; }
@@ -18,5 +14,8 @@ namespace TruckFlow.Domain.Dto.NotaFiscal
         public string? Unidade { get; set; }
         public required decimal ValorUnitario { get; set; }
         public required decimal ValorTotal { get; set; }
+
+        public NotaFiscalItemStatus Status { get; set; } = NotaFiscalItemStatus.PendenteRevisao;
+        public OrigemMatchProduto? OrigemMatch { get; set; }
     }
 }

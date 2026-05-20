@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +33,34 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x=> x.Agendamento)
                 .FirstOrDefaultAsync(x => x.ChaveAcesso == chaveAcesso, token);
         }
-        
+
+        public async Task<NotaFiscal?> ObterPorChaveAcrossTenantsAsync(
+            string chaveAcesso,
+            CancellationToken token) =>
+            await _db.NotaFiscal
+                .IgnoreQueryFilters()
+                .Include(x => x.Fornecedor)
+                .Include(x => x.Itens)
+                    .ThenInclude(i => i.Produto)
+                .Include(x => x.Agendamento)
+                    .ThenInclude(x=> x.UnidadeEntrega)
+                .FirstOrDefaultAsync(x => x.ChaveAcesso == chaveAcesso, token);
+
+        public async Task<Guid?> GetUltimoProdutoIdPorFornecedorECodigo(
+            Guid fornecedorId,
+            string codigoFornecedor,
+            CancellationToken token)
+        {
+            return await _db.NotaFiscalItems
+                .Where(item =>
+                    item.NotaFiscal.FornecedorId == fornecedorId
+                    && item.Codigo == codigoFornecedor
+                    && item.ProdutoId != null)
+                .OrderByDescending(item => item.CreatedAt)
+                .Select(item => item.ProdutoId)
+                .FirstOrDefaultAsync(token);
+        }
+
         public async Task SaveChangesAsync(CancellationToken token)
         {
             await _db.SaveChangesAsync(token);

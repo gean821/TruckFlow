@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -9,8 +9,10 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.Auth;
 using TruckFlow.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
 {
@@ -18,31 +20,43 @@ namespace TruckFlow.Application
     {
         private readonly IConfiguration _configuration;
         private readonly UserManager<Usuario> _userManager;
+        private readonly IRefreshTokenService _refreshTokenService;
+        private readonly IUsuarioRepositorio _usuarioRepo;
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IConfiguration configuration,
             UserManager<Usuario> userManager,
+            IRefreshTokenService refreshTokenService,
+            IUsuarioRepositorio usuarioRepo,
             ILogger<AuthService> logger
             )
         {
             _configuration = configuration;
             _userManager = userManager;
+            _refreshTokenService = refreshTokenService;
+            _usuarioRepo = usuarioRepo;
             _logger = logger;
         }
 
-        public async Task<string> GenerateTokenAsync(Usuario usuario, CancellationToken ct = default)
+        private const int DefaultAccessLifetimeMinutes = 15;
+
+        public async Task<AccessTokenResult> GenerateTokenAsync(
+            Usuario usuario,
+            CancellationToken ct = default)
         {
             var handler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["JwtOptions:SecurityKey"]!);
             var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
             var claims = await GenerateClaims(usuario);
 
+            var expiresAt = DateTime.UtcNow.AddMinutes(GetAccessLifetimeMinutes());
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
                 SigningCredentials = credentials,
-                Expires = DateTime.UtcNow.AddHours(4),
+                Expires = expiresAt,
                 Issuer = _configuration["JwtOptions:Issuer"],
                 Audience = _configuration["JwtOptions:Audience"]
             };
@@ -50,10 +64,47 @@ namespace TruckFlow.Application
             var token = handler.CreateToken(tokenDescriptor);
 
             _logger.LogInformation(
-                "Token JWT gerado para o usuário {UsuarioId}",
-                usuario.Id);
+                "Access token JWT gerado para o usuário {UsuarioId} expira em {ExpiresAt}",
+                usuario.Id, expiresAt);
 
-            return handler.WriteToken(token);
+            return new AccessTokenResult(handler.WriteToken(token), expiresAt);
+        }
+
+        public async Task<RefreshAccessResult> RefreshAccessTokenAsync(
+            string rawRefreshToken,
+            string? deviceInfo,
+            string? ipAddress,
+            CancellationToken ct = default)
+        {
+            var rotate = await _refreshTokenService.RotateAsync(rawRefreshToken, deviceInfo, ipAddress, ct);
+            
+            if (!rotate.Success || rotate.UserId is null) {
+                return RefreshAccessResult.Fail();
+            }
+
+            var usuario = await _usuarioRepo.GetForTokenRefreshAsync(rotate.UserId.Value, ct);
+            
+            if (usuario is null)
+            {
+                _logger.LogWarning(
+                    "Refresh válido mas usuário não encontrado/inativo. UserId={UserId}",
+                    rotate.UserId.Value);
+                return RefreshAccessResult.Fail();
+            }
+
+            var access = await GenerateTokenAsync(usuario, ct);
+
+            return RefreshAccessResult.Ok(
+                access.Token,
+                access.ExpiresAt,
+                rotate.NewRawToken!,
+                rotate.NewExpiresAt!.Value);
+        }
+
+        private int GetAccessLifetimeMinutes()
+        {
+            var value = _configuration["JwtOptions:AccessLifetimeMinutes"];
+            return int.TryParse(value, out var minutes) && minutes > 0 ? minutes : DefaultAccessLifetimeMinutes;
         }
 
         public async Task<IEnumerable<Claim>> GenerateClaims(Usuario usuario)

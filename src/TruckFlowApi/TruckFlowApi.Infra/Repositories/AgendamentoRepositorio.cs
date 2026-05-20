@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,11 +41,6 @@ namespace TruckFlowApi.Infra.Repositories
             CancellationToken token = default
             )
         {
-            if (produtoIds.Count == 0)
-            {
-                return new List<Agendamento>();
-            }
-
             var agora = DateTime.UtcNow;
 
             return await _db.Agendamento
@@ -192,12 +187,27 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Usuario)
                 .Include(x => x.NotaFiscal)
                 .Include(x => x.UnidadeEntrega)
+                .Include(x => x.LocalDescarga)
                 .Include(x => x.Grade)
                     .ThenInclude(x => x!.Produto)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
 
             return agendamento!;
         }
+
+        public async Task<Agendamento?> GetByIdAcrossTenants(
+            Guid id,
+            CancellationToken token = default) =>
+            await _db.Agendamento
+                .IgnoreQueryFilters()
+                .Include(x => x.Fornecedor)
+                .Include(x => x.Usuario)
+                .Include(x => x.NotaFiscal)
+                .Include(x => x.UnidadeEntrega)
+                .Include(x => x.LocalDescarga)
+                .Include(x => x.Grade)
+                    .ThenInclude(x => x!.Produto)
+                .FirstOrDefaultAsync(x => x.Id == id, token);
 
         public async Task<List<Agendamento>> GetByMotoristaId(
             Guid motoristaId,
@@ -210,9 +220,25 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Fornecedor)
                 .Include(x => x.NotaFiscal)
                 .Include(x => x.UnidadeEntrega)
+                .Include(x => x.LocalDescarga)
                 .Include(x => x.Grade).ThenInclude(g => g.Produto)
                 .ToListAsync(token);
         }
+
+        public async Task<List<Agendamento>> GetByMotoristaIdAcrossTenants(
+            Guid motoristaId,
+            CancellationToken token = default) =>
+            await _db.Agendamento
+                .IgnoreQueryFilters()
+                .Where(x => x.Usuario.Motorista.Id == motoristaId)
+                .OrderByDescending(x => x.DataInicio)
+                .Include(x => x.Fornecedor)
+                .Include(x => x.NotaFiscal)
+                .Include(x => x.UnidadeEntrega)
+                .Include(x => x.LocalDescarga)
+                .Include(x => x.Grade)
+                    .ThenInclude(g => g.Produto)
+                .ToListAsync(token);
 
         public async Task<IReadOnlyList<Agendamento>> ExisteAgendamentoBloqueantePorGrade(
             Guid gradeId,

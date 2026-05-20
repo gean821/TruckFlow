@@ -909,11 +909,25 @@ namespace TruckFlowApi.Infra.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
+                    b.Property<string>("Ean")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("MatchadoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("MatchadoPor")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("NotaFiscalId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("OrigemMatch")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<Guid?>("ProdutoId")
                         .HasColumnType("uuid");
@@ -921,6 +935,11 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<decimal>("Quantidade")
                         .HasPrecision(18, 3)
                         .HasColumnType("numeric(18,3)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<string>("Unidade")
                         .HasColumnType("text");
@@ -946,6 +965,8 @@ namespace TruckFlowApi.Infra.Migrations
                     b.HasIndex("NotaFiscalId");
 
                     b.HasIndex("ProdutoId");
+
+                    b.HasIndex("EmpresaId", "Status");
 
                     b.ToTable("NotaFiscalItem", (string)null);
                 });
@@ -1088,11 +1109,19 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<Guid>("FornecedorId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CodigoFornecedor")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EanFornecedor")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<Guid>("EmpresaId")
                         .HasColumnType("uuid");
@@ -1104,7 +1133,7 @@ namespace TruckFlowApi.Infra.Migrations
 
                     b.HasIndex("EmpresaId");
 
-                    b.HasIndex("FornecedorId");
+                    b.HasIndex("FornecedorId", "CodigoFornecedor");
 
                     b.ToTable("ProdutoFornecedor", (string)null);
                 });
@@ -1177,6 +1206,64 @@ namespace TruckFlowApi.Infra.Migrations
                         .HasFilter("\"ItemPlanejamentoId\" IS NULL");
 
                     b.ToTable("RecebimentoEvento", (string)null);
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeviceInfo")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<Guid?>("EmpresaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid?>("ReplacedByTokenId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RevokedReason")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("FamilyId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshToken", (string)null);
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.UnidadeEntrega", b =>
@@ -1783,6 +1870,17 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Navigation("ItemPlanejamento");
 
                     b.Navigation("Produto");
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("TruckFlow.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.UnidadeEntrega", b =>

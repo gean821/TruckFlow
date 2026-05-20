@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application;
 using TruckFlow.Application.Factories;
@@ -13,10 +13,11 @@ namespace TruckFlow.Extensions.Fornecedor
     {
         public static IServiceCollection AddFornecedor(this IServiceCollection services)
         {
-            services.AddTransient<IFornecedorService, FornecedorService>();       
-            services.AddTransient<IFornecedorRepositorio, FornecedorRepositorio>();       
-            services.AddTransient<IProdutoRepositorio, ProdutoRepositorio>();       
-            services.AddTransient<FornecedorFactory>();       
+            services.AddTransient<IFornecedorService, FornecedorService>();
+            services.AddTransient<IFornecedorRepositorio, FornecedorRepositorio>();
+            services.AddTransient<IProdutoRepositorio, ProdutoRepositorio>();
+            services.AddTransient<IProdutoFornecedorRepositorio, ProdutoFornecedorRepositorio>();
+            services.AddTransient<FornecedorFactory>();
             services.AddTransient<IValidator<FornecedorCreateDto>, FornecedorCreateValidator>();       
             services.AddTransient<IValidator<FornecedorUpdateDto>, FornecedorUpdateValidator>();     
             

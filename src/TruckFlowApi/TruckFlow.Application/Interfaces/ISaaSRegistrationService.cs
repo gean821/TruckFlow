@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.Empresa;
 using TruckFlow.Domain.Dto.User.Administrador;
 
@@ -12,6 +7,8 @@ namespace TruckFlow.Application.Interfaces
     {
         Task<LoginAdminResponseDto> RegisterAsync(
             RegisterEmpresaAdminDto dto,
+            string? deviceInfo,
+            string? ipAddress,
             CancellationToken token = default);
     }
 }

@@ -49,6 +49,7 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new ProdutoFornecedorConfiguracao());
             modelBuilder.ApplyConfiguration(new EmpresaConfiguracao());
             modelBuilder.ApplyConfiguration(new AuditLogConfiguracao());
+            modelBuilder.ApplyConfiguration(new RefreshTokenConfiguracao());
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -70,6 +71,7 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<RecebimentoEvento> RecebimentoEvento { get; set; }
         public DbSet<Empresa> Empresa { get; set; }
         public DbSet<AuditLog> AuditLog { get; set; }
+        public DbSet<RefreshToken> RefreshToken { get; set; }
 
         private void ApplyGlobalFilters(ModelBuilder modelBuilder)
         {
@@ -90,9 +92,7 @@ namespace TruckFlowApi.Infra.Database
             where TEntity : class, IEmpresaScoped
         {
             modelBuilder.Entity<TEntity>()
-                .HasQueryFilter(e =>
-                _empresaContext.EmpresaId == Guid.Empty
-                || e.EmpresaId == _empresaContext.EmpresaId);
+                .HasQueryFilter(e => e.EmpresaId == _empresaContext.EmpresaId);
         }
     }
 }

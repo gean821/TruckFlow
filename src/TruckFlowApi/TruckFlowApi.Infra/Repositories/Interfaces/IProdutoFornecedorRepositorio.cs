@@ -1,30 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Repositories.Interfaces
 {
-    public interface IProdutoFornecedorRepositorio //vai ser usada apenas futuramente, caso aqui tenha uma regra de negócio especifica a ser usada.
+    public interface IProdutoFornecedorRepositorio
     {
-        public Task<ProdutoFornecedor> AddProdutoToFornecedor(Guid fornecedorId, Guid produtoId, CancellationToken token = default);
-        public Task<List<ProdutoFornecedor>> GetAll(CancellationToken token = default);
-        public Task<List<ProdutoFornecedor>> GetById(Guid produtoId, Guid fornecedorId, CancellationToken token);
-        public Task<List<ProdutoFornecedor>> Update
-            (
-                Guid produtoId,
-                Produto produto,
-                Guid fornecedorId,
-                Fornecedor fornecedor,
-                CancellationToken token
-            );
-        public Task<List<ProdutoFornecedor>> Delete
-            (
-                Guid produtoId,
-                Guid fornecedorId,
-                CancellationToken token = default
-            );
+        Task<ProdutoFornecedor?> GetByFornecedorAndCodigo(
+            Guid fornecedorId,
+            string codigoFornecedor,
+            CancellationToken token = default);
+
+        Task<ProdutoFornecedor?> GetByProdutoAndFornecedor(
+            Guid produtoId,
+            Guid fornecedorId,
+            CancellationToken token = default);
+
+        /// <summary>
+        /// Auto-learning: cria/atualiza mapping fornecedor→produto com código (e EAN se disponível).
+        /// Chamado quando admin confirma manualmente um item PendenteRevisao.
+        /// </summary>
+        Task UpsertMapping(
+            Guid empresaId,
+            Guid fornecedorId,
+            Guid produtoId,
+            string? codigoFornecedor,
+            string? eanFornecedor,
+            CancellationToken token = default);
+
+        Task SaveChangesAsync(CancellationToken token = default);
     }
 }
