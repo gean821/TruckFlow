@@ -190,7 +190,7 @@ namespace TruckFlow.Application
             Guid id,
             GradeUpdateDto dto,
             CancellationToken token = default
-        )
+            )
         {
             var validation = await _updateValidator.ValidateAsync(dto, token);
 
@@ -205,16 +205,127 @@ namespace TruckFlow.Application
             var grade = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Grade não encontrada");
 
-            var existeBloqueante =
-                await _agendamentoRepo.ExisteAgendamentoBloqueantePorGrade(id, token);
+            var conflitos = await _agendamentoRepo.ExisteAgendamentoBloqueantePorGrade(id, token);
 
-            if (existeBloqueante)
+            if (conflitos.Count > 0)
             {
-                throw new BusinessException(
-                    "Não é possível alterar a grade pois existem agendamentos ativos.");
+                // DataInicio avançada → agendamentos antes da nova data ficariam fora da vigência
+                if (dto.DataInicio.HasValue && dto.DataInicio.Value > grade.DataInicio)
+                {
+                    var count = conflitos.Count(a =>
+                        DateOnly.FromDateTime(
+                            TimeZoneInfo.ConvertTimeFromUtc(a.DataInicio, Grade.OperationalTimeZone))
+                        < dto.DataInicio.Value);
+
+                    if (count > 0)
+                        throw new BusinessException(
+                            $"Não é possível avançar a data de início: {count} agendamento(s) ativo(s) ficariam fora da vigência.");
+                }
+
+                // DataFim recuada → agendamentos após a nova data ficariam fora da vigência
+                if (dto.DataFim.HasValue && dto.DataFim.Value < grade.DataFim)
+                {
+                    var count = conflitos.Count(a =>
+                        DateOnly.FromDateTime(
+                            TimeZoneInfo.ConvertTimeFromUtc(a.DataInicio, Grade.OperationalTimeZone))
+                        > dto.DataFim.Value);
+
+                    if (count > 0)
+                        throw new BusinessException(
+                            $"Não é possível recuar a data de fim: {count} agendamento(s) ativo(s) ficariam fora da vigência.");
+                }
+
+                // Dias removidos → agendamentos nesses dias ficariam sem grade
+                if(!string.IsNullOrEmpty(dto.DiasSemana))
+                {
+                    var novosDias = dto.DiasSemana
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(x => (DayOfWeek)int.Parse(x.Trim()))
+                        .ToHashSet();
+
+                    var diasRemovidos = grade.DiasSemanaEnum.Except(novosDias).ToList();
+
+                    if (diasRemovidos.Count > 0)
+                    {
+                        var count = conflitos.Count(a =>
+                            diasRemovidos.Contains(
+                                TimeZoneInfo.ConvertTimeFromUtc(a.DataInicio, Grade.OperationalTimeZone).DayOfWeek));
+
+                        if (count > 0)
+                            throw new BusinessException(
+                                $"Não é possível remover dia(s) da semana: {count} agendamento(s) ativo(s) estariam em dias removidos.");
+                    }
+                }
+
+                // HoraInicial avançada → agendamentos que começam antes do novo horário
+                if (dto.HoraInicial.HasValue && dto.HoraInicial.Value > grade.HoraInicial)
+                {
+                    var count = conflitos.Count(a =>
+                    {
+                        var localInicio = TimeZoneInfo.ConvertTimeFromUtc(a.DataInicio, Grade.OperationalTimeZone);
+                        return TimeOnly.FromDateTime(localInicio) < dto.HoraInicial.Value;
+                    });
+
+                    if (count > 0)
+                        throw new BusinessException(
+                            $"Não é possível avançar o horário de abertura: {count} agendamento(s) ativo(s) começam antes das {dto.HoraInicial.Value:HH\\:mm}.");
+                }
+
+                // HoraFinal recuada → agendamentos que terminam após o novo fechamento
+                if (dto.HoraFinal.HasValue && dto.HoraFinal.Value < grade.HoraFinal)
+                {
+                    var count = conflitos.Count(a =>
+                    {
+                        var localFim = TimeZoneInfo.ConvertTimeFromUtc(a.DataFim, Grade.OperationalTimeZone);
+                        return TimeOnly.FromDateTime(localFim) > dto.HoraFinal.Value;
+                    });
+
+                    if (count > 0)
+                        throw new BusinessException(
+                            $"Não é possível recuar o horário de fechamento: {count} agendamento(s) ativo(s) terminam após as {dto.HoraFinal.Value:HH\\:mm}.");
+                }
+
+                // Intervalo alterado → reestrutura todos os slots, bloqueia sempre
+                if (dto.IntervaloMinutos.HasValue && dto.IntervaloMinutos.Value != grade.IntervaloMinutos)
+                {
+                    throw new BusinessException(
+                        $"Não é possível alterar o intervalo: existem {conflitos.Count} agendamento(s) ativo(s) nesta grade.");
+                }
+
+                // LocalDescarga alterada → agendamentos ficariam vinculados à doca errada
+                if (dto.LocalDescargaId.HasValue && dto.LocalDescargaId.Value != grade.LocalDescargaId)
+                {
+                    throw new BusinessException(
+                        $"Não é possível alterar a doca: existem {conflitos.Count} agendamento(s) ativo(s) nesta grade.");
+                }
             }
 
             await ApplyPatch(grade, dto, token);
+
+            // Apaga os slots disponíveis e regenera do zero com a config atualizada
+            await _agendamentoRepo.DeleteDisponiveisPorGrade(id, token);
+
+            var novosSlots = grade.GerarSlots();
+
+            if (novosSlots.Count > 0 && grade.LocalDescargaId.HasValue)
+            {
+                var minInicio = novosSlots.Min(s => s.DataInicio);
+                var maxFim = novosSlots.Max(s => s.DataFim);
+
+                var conflitosNovos = await _agendamentoRepo.GetConflitosAsync(
+                    grade.LocalDescargaId.Value,
+                    minInicio,
+                    maxFim,
+                    excludeAgendamentoId: null,
+                    token);
+
+                var slotsValidos = novosSlots
+                    .Where(slot => !conflitosNovos.Any(c => c.DataInicio < slot.DataFim && slot.DataInicio < c.DataFim))
+                    .ToList();
+
+                if (slotsValidos.Count > 0)
+                    await _agendamentoRepo.AddRangeAsync(slotsValidos, token);
+            }
 
             await _repo.Update(grade, token);
 
@@ -225,28 +336,29 @@ namespace TruckFlow.Application
             return MapToResponse(grade);
         }
         public async Task DeleteGrade(
-            Guid id,
+            Guid id, 
             CancellationToken cancellationToken = default
             )
         {
             var gradeEncontrada = await _repo.GetById(id, cancellationToken)
                 ?? throw new NotFoundException("Grade não encontrado");
 
-            var existeAgendamentoBloqueante = 
-                await _agendamentoRepo.ExisteAgendamentoBloqueantePorGrade(id, cancellationToken);
+            var agendamentosAtivos = await _agendamentoRepo.ExisteAgendamentoBloqueantePorGrade(id, cancellationToken);
 
-            if (existeAgendamentoBloqueante)
+            if (agendamentosAtivos.Any())
             {
                 throw new BusinessException(
-                    "Não é possível remover a grade pois existem agendamentos ativos, em andamento ou finalizados.");
+                    "Não é possível remover a grade pois existem agendamentos pendentes, agendados ou em andamento.");
             }
+
+            // Remove todos os slots da grade (disponíveis, cancelados, expirados, finalizados)
+            await _agendamentoRepo.DeleteTodosPorGrade(id, cancellationToken);
 
             await _repo.Delete(gradeEncontrada, cancellationToken);
 
-            _logger.LogInformation(
-                "Grade excluída: {GradeId} (empresa {EmpresaId})",
-                id, gradeEncontrada.EmpresaId);
+            _logger.LogInformation("Grade excluída: {GradeId} (empresa {EmpresaId})", id, gradeEncontrada.EmpresaId);
         }
+
         private async Task ApplyPatch(
             Grade grade,
             GradeUpdateDto dto,
@@ -294,7 +406,7 @@ namespace TruckFlow.Application
             if (dto.IntervaloMinutos is not null)
                 grade.IntervaloMinutos = dto.IntervaloMinutos.Value;
 
-            if (dto.DiasSemana is not null)
+            if (!string.IsNullOrEmpty(dto.DiasSemana))
                 grade.DiasSemana = dto.DiasSemana;
 
             grade.UpdatedAt = DateTime.UtcNow;

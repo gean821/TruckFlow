@@ -52,7 +52,11 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         public Task<Agendamento> Update(Agendamento Agendamento, CancellationToken token = default);
         public Task Delete(Agendamento agendamento, CancellationToken token = default);
 
-        Task<bool> ExisteAgendamentoBloqueantePorGrade(
+        /// <summary>
+        /// Retorna todos os agendamentos não-cancelados e não-disponíveis vinculados à grade.
+        /// Usado para validar se uma edição de grade quebraria agendamentos ativos.
+        /// </summary>
+        Task<IReadOnlyList<Agendamento>> ExisteAgendamentoBloqueantePorGrade(
             Guid gradeId,
             CancellationToken cancellationToken = default);
         public Task SaveChangesAsync(CancellationToken token = default);
@@ -78,5 +82,7 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             CancellationToken cancellationToken = default);
 
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+        Task DeleteTodosPorGrade(Guid gradeId, CancellationToken cancellationToken = default);
+        Task DeleteDisponiveisPorGrade(Guid gradeId, CancellationToken cancellationToken = default);
     }
 }

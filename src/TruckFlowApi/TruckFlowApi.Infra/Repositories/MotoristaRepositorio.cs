@@ -20,6 +20,7 @@ namespace TruckFlowApi.Infra.Repositories
         {
             return await _db.Motorista
                 .Include(x => x.Veiculos)
+                 .Include(x => x.Usuario)
                 .FirstOrDefaultAsync(x => x.UsuarioId == usuarioId);
         }
 

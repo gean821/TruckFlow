@@ -12,34 +12,26 @@ namespace TruckFlow.Application.Validators.Grade
     {
         public GradeUpdateValidator()
         {
-
+            // Validator de update só é acionado quando o campo é enviado pelo front
             RuleFor(x => x.ProdutoId)
                 .NotEmpty()
-                .WithMessage("O produto deve ser informado.");
-
-            RuleFor(x => x.DataInicio)
-                .NotNull()
-                .WithMessage("A data de início deve ser informada.");
+                .WithMessage("O produto deve ser informado.")
+                .When(x => x.ProdutoId.HasValue);
 
             RuleFor(x => x.DataFim)
-                .NotNull()
-                .WithMessage("A data de fim deve ser informada.")
                 .GreaterThanOrEqualTo(x => x.DataInicio)
-                .WithMessage("A data de fim não pode ser menor que a data de início.");
-
-            RuleFor(x => x.HoraInicial)
-                .NotNull()
-                .WithMessage("A hora inicial deve ser informada.");
+                .WithMessage("A data de fim não pode ser menor que a data de início.")
+                .When(x => x.DataFim.HasValue && x.DataInicio.HasValue);
 
             RuleFor(x => x.HoraFinal)
-                .NotNull()
-                .WithMessage("A hora final deve ser informada.")
                 .GreaterThan(x => x.HoraInicial)
-                .WithMessage("A hora final deve ser maior que a hora inicial.");
+                .WithMessage("A hora final deve ser maior que a hora inicial.")
+                .When(x => x.HoraFinal.HasValue && x.HoraInicial.HasValue);
 
             RuleFor(x => x.IntervaloMinutos)
                 .GreaterThan(0)
-                .WithMessage("O intervalo em minutos deve ser maior que 0.");
+                .WithMessage("O intervalo em minutos deve ser maior que 0.")
+                .When(x => x.IntervaloMinutos.HasValue);
         }
     }
 }
