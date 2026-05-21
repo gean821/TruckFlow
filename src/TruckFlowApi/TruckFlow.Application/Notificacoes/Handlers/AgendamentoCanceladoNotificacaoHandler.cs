@@ -17,7 +17,10 @@ namespace TruckFlow.Application.Notificacoes.Handlers
             _db = db;
         }
 
-        public Task HandleAsync(AgendamentoCanceladoEvent domainEvent, CancellationToken cancellationToken)
+        public Task HandleAsync(
+            AgendamentoCanceladoEvent domainEvent,
+            CancellationToken cancellationToken
+            )
         {
             if (domainEvent.MotoristaUsuarioId is null)
             {
@@ -52,7 +55,8 @@ namespace TruckFlow.Application.Notificacoes.Handlers
             {
                 EmpresaId = domainEvent.EmpresaId,
                 Canal = CanalNotificacao.InApp,
-                Status = StatusEntregaNotificacao.Pendente,
+                Status = StatusEntregaNotificacao.Enviado,
+                UltimaTentativaEm = now,
                 CreatedAt = now,
             });
 

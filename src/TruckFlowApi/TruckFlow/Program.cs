@@ -103,8 +103,8 @@ namespace TruckFlow
                     .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
                     .AddInterceptors(
                         sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                        sp.GetRequiredService<EmpresaScopedSaveChangesInterceptor>(),
-                        sp.GetRequiredService<OutboxSaveChangesInterceptor>());
+                        sp.GetRequiredService<EmpresaScopedSaveChangesInterceptor>(),                        sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                        sp.GetRequiredService<RealtimeNotificationInterceptor>());
             });
 
             builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>

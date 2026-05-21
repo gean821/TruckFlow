@@ -1,6 +1,7 @@
 using TruckFlow.Application.Notificacoes;
 using TruckFlow.Application.Notificacoes.Handlers;
 using TruckFlow.Domain.Events;
+using TruckFlowApi.Infra.Database.Interceptors;
 using TruckFlowApi.Infra.Outbox;
 
 namespace TruckFlow.Extensions.Notificacao
@@ -10,12 +11,16 @@ namespace TruckFlow.Extensions.Notificacao
         public static IServiceCollection AddNotificacao(this IServiceCollection services)
         {
             services.AddSingleton<IOutboxEventTypeResolver, OutboxEventTypeResolver>();
+            services.AddSingleton<INotificationConnectionManager, NotificationConnectionManager>();
+            services.AddSingleton<SseNotificationStreamer>();
+            services.AddScoped<RealtimeNotificationInterceptor>();
 
             services.AddScoped<
                 IDomainEventHandler<AgendamentoCanceladoEvent>,
                 AgendamentoCanceladoNotificacaoHandler>();
 
             services.AddHostedService<OutboxProcessorWorker>();
+            services.AddHostedService<RealtimeNotificationListener>();
 
             return services;
         }
