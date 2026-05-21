@@ -1,6 +1,6 @@
 # ADR-0002 — Sistema de notificações: push + SSE in-app; WhatsApp via deep-link
 
-- **Status**: Aceito
+- **Status**: Aceito (revisado em 2026-05-21 — ver seção "Revisão 2026-05-21")
 - **Data**: 2026-05-14
 - **Pendência aberta**: ver seção "Decisão pendente com cliente"
 
@@ -178,6 +178,98 @@ Rejeitada por ora. Sem WhatsApp API como ponte robusta, SMS como fallback isolad
 
 **A6. Não persistir notificação (só pub/sub volátil).**
 Rejeitada. Auditoria fiscal Aurora vai pedir "esse motorista foi avisado quando do cancelamento?" — sem tabela não tem resposta. Tabela é fonte da verdade; canais são fan-out em cima.
+
+## Revisão 2026-05-21 — Outbox transacional separada
+
+Esta revisão **adiciona** uma camada de Outbox transacional entre os domain events e a criação da `Notificacao`. O desenho de canais (Expo Push + SSE + WhatsApp deep-link), o modelo de `Notificacao`/`NotificacaoEntrega`/`DispositivoUsuario`/`UsuarioPreferenciaNotificacao` e as decisões de retry por canal **permanecem válidos**.
+
+### O que muda
+
+Fluxo original (seção "Disparo via eventos de domínio"):
+
+```
+SaveChangesAsync
+  └─ IDomainEventDispatcher percorre ChangeTracker
+        └─ NotificacaoEventHandler cria Notificacao + NotificacaoEntrega(Pendente)
+```
+
+Fluxo revisado:
+
+```
+SaveChangesAsync (mesma TX que muda o domínio)
+  └─ IDomainEventDispatcher percorre ChangeTracker
+        └─ Para cada evento, INSERT em OutboxEvent (payload jsonb + idempotency_key)
+
+(commit fecha)
+
+OutboxProcessor (IHostedService, separado)
+  ├─ LISTEN outbox_new (baixa latência) + polling 10s (fallback)
+  ├─ SELECT ... FROM OutboxEvent WHERE ProcessedAt IS NULL FOR UPDATE SKIP LOCKED
+  └─ Para cada evento: resolve NotificacaoEventHandler<T>
+        └─ Cria Notificacao + NotificacaoEntrega(Pendente)
+        └─ UPDATE OutboxEvent SET ProcessedAt = NOW()
+```
+
+### Por quê separar Outbox de `NotificacaoEntrega`
+
+O ADR original tratava `NotificacaoEntrega` como a outbox (cada linha pendente = item a despachar). Funciona, mas tem uma fraqueza: se o handler que **decide destinatários** (regra de negócio: quem recebe, quantos canais, qual prioridade) crashar entre o commit do agendamento e a criação da `Notificacao`, a notificação nunca é criada. Não há retry.
+
+Com a Outbox separada:
+
+1. O domínio só publica fato (`AgendamentoCanceladoEvent`) na mesma TX → durabilidade garantida.
+2. A regra de fan-out (quem recebe) roda no `OutboxProcessor`, com retry/backoff e idempotência. Se a regra mudar/quebrar, reprocessar é seguro.
+3. A `NotificacaoEntrega` continua sendo a outbox **de canais** (push, in-app). Ou seja: Outbox de eventos de domínio é separada da Outbox de canais.
+
+### Tabela `OutboxEvent`
+
+```
+OutboxEvent
+  Id (uuid, pk)
+  EventType (varchar 200 — FQN do evento, ex: "AgendamentoCanceladoEvent")
+  Payload (jsonb — serialização do evento de domínio)
+  IdempotencyKey (varchar 200, unique — derivado do evento, ex: "agendamento-cancelado:{agendamentoId}")
+  EmpresaId (uuid — propagado pra handler reaplicar tenant scope; NÃO usa global filter)
+  OcorridoEm (timestamptz — quando o evento aconteceu no domínio)
+  CriadoEm (timestamptz — quando entrou na outbox)
+  ProcessedAt (timestamptz, nullable — null = pendente)
+  Tentativas (int, default 0)
+  ProximaTentativaEm (timestamptz, nullable — backoff)
+  UltimoErro (text, nullable)
+  CorrelationId (uuid — atravessa logs do comando até o dispatch final)
+```
+
+**Índices**:
+- `(ProcessedAt, ProximaTentativaEm)` parcial onde `ProcessedAt IS NULL` — usado pelo claim do worker.
+- `IdempotencyKey` unique — protege contra dupla publicação do mesmo evento.
+
+### Decisões adicionais
+
+**1. `OutboxEvent` NÃO implementa `IEmpresaScoped`.**
+O worker roda fora de contexto de request HTTP — não tem `IEmpresaContext` resolvido. Aplicar global filter quebraria o claim. `EmpresaId` é propriedade comum; o handler usa esse valor pra criar `Notificacao` no tenant correto. `Notificacao` e `NotificacaoEntrega` continuam implementando `IEmpresaScoped`.
+
+**2. `LISTEN/NOTIFY` híbrido com polling fallback.**
+`pg_notify('outbox_new', event_id)` no commit (interceptor após `SaveChanges`) + polling de segurança a cada 10s pegando órfãos. NOTIFY perde mensagens em restart; polling cobre.
+
+**3. `IdempotencyKey` derivada do evento.**
+Padrão sugerido: `"{tipo-evento}:{id-agregado}:{discriminante}"`. Ex: `"agendamento-cancelado:8f...3a"`. Permite dois retries do mesmo comando sem criar dois OutboxEvents.
+
+**4. Pipeline de evolução para RabbitMQ.**
+O design atual é "Outbox + Postgres handler direto". Quando o volume justificar (>100k eventos/dia, múltiplos consumers independentes, ou integração ERP externa), só o `OutboxProcessor` muda: passa a publicar pra Rabbit em vez de chamar handler in-process. Domínio, controllers, schema e demais camadas permanecem.
+
+### O que isso muda no que JÁ existe
+
+A classe `TruckFlow.Domain.Entities.Notificacao` hoje é um stub (`Descricao`, `AgendamentoId`, `EmpresaId`). Será substituída pelo schema completo desta seção do ADR (`Tipo`, `Titulo`, `Corpo`, `Payload jsonb`, `Prioridade`, `DestinatarioUsuarioId`, `LidaEm`). A FK direta `Notificacao → Agendamento` é **removida** — o vínculo com agregados de domínio passa pelo `Payload jsonb`, que é genérico por tipo de evento.
+
+### Ordem de implementação (núcleo primeiro)
+
+1. **Núcleo**: `OutboxEvent`, `Notificacao` (revista), `NotificacaoEntrega` + migration única.
+2. `IDomainEventDispatcher` + interceptor de `SaveChangesAsync` (eventos do `ChangeTracker` viram `OutboxEvent` na mesma TX).
+3. `OutboxProcessor` (`IHostedService`) com `FOR UPDATE SKIP LOCKED` + LISTEN/NOTIFY.
+4. `NotificacaoEventHandler` por tipo de evento (fan-out).
+5. SSE endpoint + connection manager.
+6. `DispositivoUsuario` + integração Expo Push.
+7. `UsuarioPreferenciaNotificacao` (opt-in/opt-out granular).
+8. Observabilidade + métricas.
 
 ## Referências
 

@@ -22,6 +22,7 @@ using TruckFlow.Extensions.ItemPlanejamento;
 using TruckFlow.Extensions.LocalDescarga;
 using TruckFlow.Extensions.Motorista;
 using TruckFlow.Extensions.NotaFiscal;
+using TruckFlow.Extensions.Notificacao;
 using TruckFlow.Extensions.Produto;
 using TruckFlow.Extensions.Recebimento;
 using TruckFlow.Extensions.RecebimentoEvento;
@@ -70,6 +71,7 @@ namespace TruckFlow
             builder.Services.AddNotaFiscal();
             builder.Services.AddSefaz(builder.Configuration);
             builder.Services.AddAgendamento();
+            builder.Services.AddNotificacao();
             builder.Services.AddUserAuth();
             builder.Services.AddMotorista();
             builder.Services.AddConferencia();
@@ -93,6 +95,7 @@ namespace TruckFlow
 
             builder.Services.AddScoped<AuditSaveChangesInterceptor>();
             builder.Services.AddScoped<EmpresaScopedSaveChangesInterceptor>();
+            builder.Services.AddScoped<OutboxSaveChangesInterceptor>();
 
             builder.Services.AddDbContext<AppDbContext>((sp, optionsBuilder) =>
             {
@@ -100,7 +103,8 @@ namespace TruckFlow
                     .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
                     .AddInterceptors(
                         sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                        sp.GetRequiredService<EmpresaScopedSaveChangesInterceptor>());
+                        sp.GetRequiredService<EmpresaScopedSaveChangesInterceptor>(),
+                        sp.GetRequiredService<OutboxSaveChangesInterceptor>());
             });
 
             builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>

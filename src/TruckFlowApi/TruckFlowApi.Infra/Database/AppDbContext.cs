@@ -50,6 +50,8 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new EmpresaConfiguracao());
             modelBuilder.ApplyConfiguration(new AuditLogConfiguracao());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguracao());
+            modelBuilder.ApplyConfiguration(new OutboxEventConfiguracao());
+            modelBuilder.ApplyConfiguration(new NotificacaoEntregaConfiguracao());
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -72,6 +74,8 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<Empresa> Empresa { get; set; }
         public DbSet<AuditLog> AuditLog { get; set; }
         public DbSet<RefreshToken> RefreshToken { get; set; }
+        public DbSet<OutboxEvent> OutboxEvent { get; set; }
+        public DbSet<NotificacaoEntrega> NotificacaoEntrega { get; set; }
 
         private void ApplyGlobalFilters(ModelBuilder modelBuilder)
         {
