@@ -8,5 +8,8 @@ namespace TruckFlow.Application.Notificacoes
         Channel<NotificacaoEventDto> Register(Guid usuarioId);
         void Unregister(Guid usuarioId, Channel<NotificacaoEventDto> channel);
         void PublishToUser(Guid usuarioId, NotificacaoEventDto evt);
+
+        int ActiveConnectionCount();
+        int ActiveUserCount();
     }
 }

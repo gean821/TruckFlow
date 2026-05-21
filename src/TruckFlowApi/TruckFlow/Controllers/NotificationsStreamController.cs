@@ -20,9 +20,7 @@ namespace TruckFlow.Controllers
             _user = user;
         }
 
-        // TODO auth-SSE: EventSource (browser) não suporta Authorization header.
-        // Atual: [Authorize] padrão atende Postman/curl com Bearer.
-        // Integração browser: fetch-event-source (lib polyfill) ou cookie httpOnly dedicado pro access token.
+
         [Authorize]
         [HttpGet("stream")]
         public Task Stream(CancellationToken cancellationToken)

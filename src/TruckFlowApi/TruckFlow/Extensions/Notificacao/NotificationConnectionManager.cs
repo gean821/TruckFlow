@@ -64,5 +64,17 @@ namespace TruckFlow.Extensions.Notificacao
                 channel.Writer.TryWrite(evt);
             }
         }
+
+        public int ActiveConnectionCount()
+        {
+            var total = 0;
+            foreach (var pair in _connections)
+            {
+                total += pair.Value.Count;
+            }
+            return total;
+        }
+
+        public int ActiveUserCount() => _connections.Count;
     }
 }

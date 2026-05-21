@@ -260,6 +260,60 @@ O design atual é "Outbox + Postgres handler direto". Quando o volume justificar
 
 A classe `TruckFlow.Domain.Entities.Notificacao` hoje é um stub (`Descricao`, `AgendamentoId`, `EmpresaId`). Será substituída pelo schema completo desta seção do ADR (`Tipo`, `Titulo`, `Corpo`, `Payload jsonb`, `Prioridade`, `DestinatarioUsuarioId`, `LidaEm`). A FK direta `Notificacao → Agendamento` é **removida** — o vínculo com agregados de domínio passa pelo `Payload jsonb`, que é genérico por tipo de evento.
 
+### Decisão auth-SSE no browser (2026-05-21)
+
+`EventSource` nativo do browser não suporta header `Authorization`. Avaliadas três opções:
+
+1. **Cookie httpOnly dedicado pro access token** — quebra o padrão atual (access em memória, refresh em cookie). Introduz CSRF surface adicional. Rejeitado.
+2. **Token via query string** — vaza em logs de proxy/CDN. Rejeitado em qualquer ambiente.
+3. **`@microsoft/fetch-event-source` no front** — lib oficial Microsoft, ~3KB gzip, aceita Bearer header. Mantém access em memória. **Aceito.**
+
+Backend não precisa de mudança: `[Authorize]` continua funcionando com Bearer no header. CORS já libera origens explícitas do front sem necessidade de `AllowCredentials`.
+
+### Reconexão e perda de eventos (2026-05-21)
+
+`Last-Event-ID` server-side foi avaliado e **descartado**. Implementação exigiria ou coluna sequence em `Notificacao` (migration nova) ou ordenação por timestamp (colisões raras mas possíveis). Solução escolhida:
+
+- Tabela `Notificacao` é fonte da verdade.
+- Front mantém query TanStack `useNotificacoes()` com cache.
+- Ao reconectar SSE (handler `onopen` do `fetch-event-source`), front executa `queryClient.invalidateQueries(['notificacoes'])` — refetch do feed completo do servidor.
+- SSE é canal de **notificação push em tempo real**, não fila durável. Durabilidade é responsabilidade do banco.
+
+Trade-off aceito: depois de uma desconexão longa, o front faz 1 query a mais. Pra Aurora (80 admins × poucos reconnects/dia), custo desprezível.
+
+### Pendências pós-pipeline (2026-05-21)
+
+Pipeline backend end-to-end funcionando (Domain Event → Outbox → Worker → Handler → Notificacao → pg_notify → SSE → Browser). Ficam abertos:
+
+**UI Admin (front Vue)** — composables/queries/hooks prontos (`useNotificacoesQuery`, `useNotificacoesUnreadCountQuery`, `useNotificacao().markAsRead`, `useRealtimeNotifications`). Falta o componente visual:
+
+- `NotificationBell.vue` na `Navbar.vue` — `v-badge` com `unreadCount` + `v-menu` listando últimas 10. Cada item clicável: marca como lida + navega pra contexto (ex: `payload.agendamentoId` → `/agendamentos/{id}`).
+- Página `/notifications` (opcional) com lista paginada completa + filtros (lidas/não lidas, tipo, período).
+- Tradução de `TipoNotificacao` → ícone Material por tipo (cancelado → warning-circle, criado → check, atraso → clock).
+
+**UI Mobile (Expo / React Native)** — integração inteira pendente:
+
+- `expo-notifications` + `expo-device` instalados; pedido de permissão no primeiro launch.
+- Backend `DispositivoUsuario` (já modelado no ADR original, mas tabela ainda não criada) + endpoint `POST /v1/dispositivos/registrar` que aceita `expoPushToken`, `plataforma`, `appVersion` (idempotente por token).
+- Mobile registra token no login + cold start; backend desativa registro ao receber `DeviceNotRegistered` no receipt da Expo.
+- Worker secundário (ou extensão do `OutboxProcessorWorker`) que pega `NotificacaoEntrega(Canal=Push, Status=Pendente)` e chama Expo Push API. Backoff 30s/2min/10min.
+- Receipt poller: 2-15min depois do envio, consulta receipt na Expo e atualiza `NotificacaoEntrega.Status` para `Enviado` ou `Falhou`.
+- Notification handler no app: tap → deep-link pra tela relevante baseado em `payload.agendamentoId`.
+
+**Suite de testes** — ver [ADR-0004 item 14](./0004-prerequisitos-rollout-aurora.md). Gate multi-tenant é **não-negociável** antes do rollout Aurora.
+
+**Eventos de domínio adicionais** — só `AgendamentoCanceladoEvent` está publicando hoje. Pra cobrir o escopo do ADR (admin → motorista e motorista → admin), implementar conforme prioridade Aurora:
+- `AgendamentoConfirmadoEvent` (admin confirma reserva)
+- `AgendamentoReagendadoEvent` (mudança de janela)
+- `AgendamentoExpiradoEvent` (não-show)
+- `MotoristaAtrasoInformadoEvent` (motorista declara atraso via app)
+- `MotoristaChegouEvent` / `MotoristaSaiuEvent` (check-in/out)
+- `JanelaProximaEvent` (worker que dispara aviso 30min antes do `DataFim`)
+
+Cada um precisa de evento + handler. Reusa toda a infra existente (Outbox, Worker, Listener, SSE) — só adiciona `IDomainEventHandler<T>` correspondente.
+
+**LISTEN/NOTIFY no OutboxProcessor** (otimização) — hoje o worker usa polling 2s. Adicionar `LISTEN outbox_new` + `pg_notify('outbox_new', id)` no `OutboxSaveChangesInterceptor` reduz latência percebida pra <100ms sem mudar arquitetura. Polling fica como fallback de segurança contra mensagens perdidas em restart. Não bloqueia rollout.
+
 ### Ordem de implementação (núcleo primeiro)
 
 1. **Núcleo**: `OutboxEvent`, `Notificacao` (revista), `NotificacaoEntrega` + migration única.

@@ -47,6 +47,26 @@ Lista canônica de itens **não-feature** que precisam estar prontos antes do ro
 
 **Item 4 — Distributed lock**: o `AgendamentoExpirationService` hoje roda como `IHostedService`. Com 2 instâncias, ambas tentam expirar o mesmo agendamento. Solução: claim com `FOR UPDATE SKIP LOCKED` no `SELECT` da query de expiração — mesmo padrão do `NotificacaoDispatcherService` em [ADR-0002](./0002-design-notificacoes.md).
 
+**Item 14 — Escopo mínimo do suite de testes (revisão 2026-05-21)**:
+
+O projeto `TruckFlow.Test` está vazio hoje (sem `ProjectReference` pros outros projetos, sem `Npgsql.EntityFrameworkCore.PostgreSQL`, sem fixture de Postgres). Setup necessário antes de escrever qualquer teste de integração:
+
+1. Adicionar `ProjectReference` pra `TruckFlow.Domain`, `TruckFlow.Application`, `TruckFlowApi.Infra`, `TruckFlow` (API).
+2. Substituir `Microsoft.EntityFrameworkCore.SqlServer` por `Npgsql.EntityFrameworkCore.PostgreSQL` no `.csproj`.
+3. Criar `DatabaseFixture` (xUnit `IAsyncLifetime`) que:
+   - Provisiona um Postgres de teste (Testcontainers OU database isolada `TruckFlow_test` no Postgres local).
+   - Roda `db.Database.MigrateAsync()` no boot.
+   - Trunca tabelas entre testes (fast reset, sem recriar schema).
+4. Criar `TenantFixture` que registra um fake de `IEmpresaContext` por teste, permitindo trocar tenant ativo.
+
+**Casos cobertos pelo Item 14**:
+- Reservar concorrente (otimistic concurrency em `Agendamento.xmin`).
+- Transições de status válidas/inválidas em `Agendamento.AlterarStatus`.
+- **Gate multi-tenant — notificações**: criar empresa A e B, cancelar agendamento em A → `NotificacaoEntrega(InApp)` deve ser criada com `EmpresaId = A`. Logar como usuário de B e chamar `INotificacaoService.ListarMinhasAsync()` → deve retornar lista vazia (global filter `IEmpresaScoped` honra tenant). Tentar `MarcarComoLidaAsync` em notificação de A logado como B → deve retornar `false`/404. Também validar que `RealtimeNotificationInterceptor` dispara `pg_notify` com `empresaId` correto no payload.
+- Dispatcher `FOR UPDATE SKIP LOCKED` (2 workers concorrentes não processam mesmo evento).
+
+Estimativa atualizada: setup do projeto (~1d) + casos acima (~2d) = **3d** mantida. Sem isso o blueprint multi-tenant fica sem rede de proteção — qualquer refactor pode reintroduzir vazamento entre empresas, e isso queima contrato Aurora.
+
 **Item 5 — Secrets em vault**: JWT signing key está em `appsettings.json:12` versionado. Senha do DB em `appsettings.json:3` e `docker-compose.yml:9`. Mover para `dotnet user-secrets` em dev e variáveis de ambiente (provisionadas via Key Vault / SOPS) em prod. **A rotação da JWT signing key em produção está pendente** — alerta já registrado em memória do agente.
 
 **Item 6 — Multi-tenant filter bug**: `AppDbContext.cs:94` (referência conforme estado do código em maio/2026) tem fallback do filtro global que retorna `true` quando `EmpresaId == Guid.Empty` (ou seja, sem contexto de usuário setado). Em 21 tenants, qualquer endpoint que esqueça de popular `ICurrentUserService` vaza dados de outras empresas. **Trocar fallback para retornar zero linhas** + cobrir com teste de integração.
