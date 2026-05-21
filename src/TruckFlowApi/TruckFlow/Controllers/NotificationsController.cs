@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.Notificacao;
 
 namespace TruckFlow.Controllers
 {
@@ -18,12 +19,11 @@ namespace TruckFlow.Controllers
 
         [HttpGet]
         public async Task<IActionResult> List(
-            [FromQuery] int skip = 0,
-            [FromQuery] int take = 20,
+            [FromQuery] NotificacaoListQueryDto query,
             CancellationToken token = default)
         {
-            var items = await _service.ListarMinhasAsync(skip, take, token);
-            return Ok(items);
+            var result = await _service.ListarMinhasAsync(query, token);
+            return Ok(result);
         }
 
         [HttpGet("unread-count")]

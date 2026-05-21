@@ -1,13 +1,13 @@
+using TruckFlow.Domain.Dto.Notificacao;
 using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Repositories.Interfaces
 {
     public interface INotificacaoRepositorio
     {
-        Task<List<Notificacao>> ListByUserAsync(
+        Task<(List<Notificacao> Items, int TotalCount)> ListByUserPagedAsync(
             Guid userId,
-            int skip,
-            int take,
+            NotificacaoListQueryDto query,
             CancellationToken token = default);
 
         Task<int> CountUnreadByUserAsync(

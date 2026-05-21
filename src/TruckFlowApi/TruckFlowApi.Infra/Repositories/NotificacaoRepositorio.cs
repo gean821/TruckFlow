@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using TruckFlow.Domain.Dto.Notificacao;
 using TruckFlow.Domain.Entities;
+using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
@@ -14,19 +16,41 @@ namespace TruckFlowApi.Infra.Repositories
             _db = db;
         }
 
-        public async Task<List<Notificacao>> ListByUserAsync(
+        public async Task<(List<Notificacao> Items, int TotalCount)> ListByUserPagedAsync(
             Guid userId,
-            int skip,
-            int take,
+            NotificacaoListQueryDto query,
             CancellationToken token = default)
         {
-            return await _db.Notificacao
+            var baseQuery = _db.Notificacao
                 .AsNoTracking()
-                .Where(n => n.DestinatarioUsuarioId == userId)
+                .Where(n => n.DestinatarioUsuarioId == userId);
+
+            if (query.UnreadOnly == true)
+            {
+                baseQuery = baseQuery.Where(n => n.LidaEm == null);
+            }
+
+            if (query.Tipo.HasValue)
+            {
+                var tipo = (TipoNotificacao)query.Tipo.Value;
+                baseQuery = baseQuery.Where(n => n.Tipo == tipo);
+            }
+
+            if (query.Prioridade.HasValue)
+            {
+                var prio = (PrioridadeNotificacao)query.Prioridade.Value;
+                baseQuery = baseQuery.Where(n => n.Prioridade == prio);
+            }
+
+            var totalCount = await baseQuery.CountAsync(token);
+
+            var items = await baseQuery
                 .OrderByDescending(n => n.CreatedAt)
-                .Skip(skip)
-                .Take(take)
+                .Skip((query.PageNumber - 1) * query.PageSize)
+                .Take(query.PageSize)
                 .ToListAsync(token);
+
+            return (items, totalCount);
         }
 
         public async Task<int> CountUnreadByUserAsync(
