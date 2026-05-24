@@ -463,6 +463,7 @@ namespace TruckFlow.Application
                 Id = agendamento.Id,
                 FornecedorNome = agendamento.Fornecedor?.Nome,
                 MotoristaNome = agendamento.Usuario?.Motorista?.NomeReal,
+                MotoristaTelefone = agendamento.Usuario?.Motorista?.Telefone,
                 DataInicio = agendamento.DataInicio,
                 DataFim = agendamento.DataFim,
                 Produto = agendamento.Grade?.Produto?.Nome ?? agendamento?.Produto?.Nome!,

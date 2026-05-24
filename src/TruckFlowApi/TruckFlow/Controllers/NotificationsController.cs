@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Notificacao;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Controllers
 {
@@ -11,10 +12,14 @@ namespace TruckFlow.Controllers
     public sealed class NotificationsController : ControllerBase
     {
         private readonly INotificacaoService _service;
+        private readonly INotificacaoSendService _sendService;
 
-        public NotificationsController(INotificacaoService service)
+        public NotificationsController(
+            INotificacaoService service,
+            INotificacaoSendService sendService)
         {
             _service = service;
+            _sendService = sendService;
         }
 
         [HttpGet]
@@ -40,6 +45,35 @@ namespace TruckFlow.Controllers
         {
             var found = await _service.MarcarComoLidaAsync(id, token);
             return found ? NoContent() : NotFound();
+        }
+
+        [HttpGet("agendamento/{agendamentoId:guid}")]
+        public async Task<IActionResult> ListByAgendamento(
+            [FromRoute] Guid agendamentoId,
+            CancellationToken token = default)
+        {
+            var items = await _service.ListarPorAgendamentoAsync(agendamentoId, token);
+            return Ok(items);
+        }
+
+        [HttpPost("send-motorista")]
+        [Authorize(Roles = Roles.Admin)]
+        public async Task<IActionResult> SendParaMotorista(
+            [FromBody] EnviarParaMotoristaDto dto,
+            CancellationToken token = default)
+        {
+            await _sendService.EnviarParaMotoristaAsync(dto, token);
+            return NoContent();
+        }
+
+        [HttpPost("send-empresa")]
+        [Authorize(Roles = Roles.Motorista)]
+        public async Task<IActionResult> SendParaEmpresa(
+            [FromBody] EnviarParaEmpresaDto dto,
+            CancellationToken token = default)
+        {
+            await _sendService.EnviarParaEmpresaAsync(dto, token);
+            return NoContent();
         }
     }
 }

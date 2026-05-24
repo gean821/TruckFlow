@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,6 +28,8 @@ namespace TruckFlow.Domain.Entities
         public string? ProviderMessageId { get; set; }
 
         public string? Erro { get; set; }
+
+        public DateTime? ReceiptCheckedAt { get; set; }
 
         public void MarcarEnviado(string? providerMessageId = null)
         {

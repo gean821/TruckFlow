@@ -48,6 +48,9 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.Erro)
                 .IsRequired(false);
 
+            builder.Property(x => x.ReceiptCheckedAt)
+                .IsRequired(false);
+
             builder.Property(x => x.CreatedAt)
                 .IsRequired();
 
@@ -57,6 +60,10 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
 
             builder.HasIndex(x => x.NotificacaoId)
                 .HasDatabaseName("IX_NotificacaoEntrega_Notificacao");
+
+            builder.HasIndex(x => x.UltimaTentativaEm)
+                .HasDatabaseName("IX_NotificacaoEntrega_Receipt_Pending")
+                .HasFilter("\"Status\" = 1 AND \"Canal\" = 2 AND \"ReceiptCheckedAt\" IS NULL");
         }
     }
 }

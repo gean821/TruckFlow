@@ -140,17 +140,21 @@ namespace TruckFlow.Application
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
-            var accessToken = await _authService.GenerateTokenAsync(usuario, ct);
+            var usuarioComAdmin = await _db.Users
+                .Include(u => u.Administrador)
+                .FirstOrDefaultAsync(u => u.Id == usuario.Id, ct);
+
+            var accessToken = await _authService.GenerateTokenAsync(usuarioComAdmin!, ct);
             var refresh = await _refreshTokenService.IssueAsync(
-                usuario.Id,
-                usuario.EmpresaId,
+                usuarioComAdmin!.Id,
+                usuarioComAdmin.EmpresaId,
                 deviceInfo,
                 ipAddress,
                 ct: ct);
 
             _logger.LogInformation(
                 "Login admin realizado: {UsuarioId} (empresa {EmpresaId})",
-                usuario.Id, usuario.EmpresaId);
+                usuarioComAdmin.Id, usuarioComAdmin.EmpresaId);
 
             return new LoginAdminResponseDto
             {
@@ -158,7 +162,7 @@ namespace TruckFlow.Application
                 TokenExpiresAt = accessToken.ExpiresAt,
                 RefreshToken = refresh.RawToken,
                 RefreshTokenExpiresAt = refresh.ExpiresAt,
-                Usuario = await MapUsuarioAsync(usuario)
+                Usuario = await MapUsuarioAsync(usuarioComAdmin)
             };
         }
 
@@ -383,7 +387,7 @@ namespace TruckFlow.Application
                 "Motorista registrado: {UsuarioId} (motorista {MotoristaId})",
                 usuario.Id, motorista.Id);
 
-            return await MapMotoristaAsync(usuario);
+            return MapMotoristaAsync(usuario);
         }
 
         public async Task<LoginMotoristaResponseDto> LoginMotoristaAsync
@@ -439,7 +443,7 @@ namespace TruckFlow.Application
                 TokenExpiresAt = accessToken.ExpiresAt,
                 RefreshToken = refresh.RawToken,
                 RefreshTokenExpiresAt = refresh.ExpiresAt,
-                Usuario = await MapMotoristaAsync(usuarioComMotorista!)
+                Usuario = MapMotoristaAsync(usuarioComMotorista)
             };
         }
 
@@ -452,7 +456,7 @@ namespace TruckFlow.Application
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuario não encontrado.");
 
-            return await MapMotoristaAsync(usuario);
+            return MapMotoristaAsync(usuario);
         }
 
         public async Task<UserMotoristaResponseDto> UpdateMotoristaAsync(
@@ -480,14 +484,14 @@ namespace TruckFlow.Application
 
             _logger.LogInformation("Motorista atualizado: {UsuarioId}", id);
 
-            return await MapMotoristaAsync(usuario);
+            return MapMotoristaAsync(usuario);
         }
 
         private async Task ApplyPatch(
                 Administrador adm,
                 Usuario user,
                 UserAdminEditDto dto,
-                CancellationToken token
+                CancellationToken? token
             )
         {
             if (dto.Username is not null)
@@ -628,9 +632,8 @@ namespace TruckFlow.Application
             };
         }
 
-            private async Task<UserMotoristaResponseDto> MapMotoristaAsync(Usuario usuario)
+            private static UserMotoristaResponseDto MapMotoristaAsync(Usuario usuario)
             {
-            var roles = await _userManager.GetRolesAsync(usuario);
 
             return new UserMotoristaResponseDto
             {

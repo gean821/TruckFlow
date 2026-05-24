@@ -72,6 +72,27 @@ Componentes mobile:
 - Badge no ícone do app (via `Notifications.setBadgeCountAsync(count)`).
 - `markAsRead` ao abrir o detalhe.
 
+### 7. Mobile — "Avisar empresa" (motorista → admins)
+
+Endpoint backend já existe: `POST /v1/notifications/send-empresa` `[Authorize(Roles=Motorista)]`. Body:
+
+```json
+{ "agendamentoId": "uuid", "titulo": "string", "corpo": "string" }
+```
+
+Backend resolve a empresa via agendamentoId, valida que motorista é o dono do agendamento, busca todos os admins (Role=Admin com EmpresaId = empresa do agendamento) e cria 1 Notificacao por admin. Real-time funciona automaticamente — admins online recebem via SSE.
+
+Componentes mobile a implementar:
+- Botão "Avisar fábrica" no detalhe do agendamento (visível enquanto status ∈ {Agendado, EmAndamento}).
+- Modal com `titulo` (TextInput) + `corpo` (TextArea, multiline).
+- POST pro endpoint com Bearer JWT do motorista.
+- Tratamento de erro 401/403 (token expirado, agendamento alheio).
+
+Casos de uso típicos pra Aurora:
+- "Vou atrasar 30 min" → admin reagenda.
+- "Cheguei mas não consegui contato" → admin checa porteiro.
+- "Carga divergente da nota" → admin manda equipe de conferência.
+
 ## Ordem de implementação sugerida
 
 1. Migration `DispositivoUsuario` + endpoint de registro (~0.5d).

@@ -13,13 +13,16 @@ namespace TruckFlow.Application.Notificacoes
 
         private readonly INotificacaoRepositorio _repo;
         private readonly ICurrentUserService _user;
+        private readonly IEmpresaContext _empresaContext;
 
         public NotificacaoService(
             INotificacaoRepositorio repo,
-            ICurrentUserService user)
+            ICurrentUserService user,
+            IEmpresaContext empresaContext)
         {
             _repo = repo;
             _user = user;
+            _empresaContext = empresaContext;
         }
 
         public async Task<PagedResponse<NotificacaoListItemDto>> ListarMinhasAsync(
@@ -35,7 +38,9 @@ namespace TruckFlow.Application.Notificacoes
                 Prioridade = query.Prioridade,
             };
 
-            var (items, totalCount) = await _repo.ListByUserPagedAsync(_user.UserId, sanitized, ct);
+            var (items, totalCount) = _user.IsMotorista
+                ? await _repo.ListByUserPagedAcrossTenantsAsync(_user.UserId, sanitized, ct)
+                : await _repo.ListByUserPagedAsync(_user.UserId, sanitized, ct);
 
             var totalPages = sanitized.PageSize == 0
                 ? 0
@@ -61,15 +66,19 @@ namespace TruckFlow.Application.Notificacoes
             };
         }
 
-        public Task<int> ContarNaoLidasMinhasAsync(CancellationToken ct)
-        {
-            return _repo.CountUnreadByUserAsync(_user.UserId, ct);
-        }
+        public Task<int> ContarNaoLidasMinhasAsync(CancellationToken ct) =>
+            _user.IsMotorista
+                ? _repo.CountUnreadByUserAcrossTenantsAsync(_user.UserId, ct)
+                : _repo.CountUnreadByUserAsync(_user.UserId, ct);
 
         public async Task<bool> MarcarComoLidaAsync(Guid notificacaoId, CancellationToken ct)
         {
             var userId = _user.UserId;
-            var notificacao = await _repo.GetByIdForUserAsync(notificacaoId, userId, ct);
+            var isMotorista = _user.IsMotorista;
+
+            var notificacao = isMotorista
+                ? await _repo.GetByIdForUserAcrossTenantsAsync(notificacaoId, userId, ct)
+                : await _repo.GetByIdForUserAsync(notificacaoId, userId, ct);
 
             if (notificacao is null)
             {
@@ -82,8 +91,40 @@ namespace TruckFlow.Application.Notificacoes
             }
 
             notificacao.MarcarComoLida();
-            await _repo.UpdateAsync(notificacao, ct);
+
+            if (isMotorista)
+            {
+                using var tenantScope = _empresaContext.WithTenant(notificacao.EmpresaId);
+                await _repo.UpdateAsync(notificacao, ct);
+            }
+            else
+            {
+                await _repo.UpdateAsync(notificacao, ct);
+            }
+
             return true;
+        }
+
+        public async Task<IReadOnlyList<NotificacaoListItemDto>> ListarPorAgendamentoAsync(
+            Guid agendamentoId,
+            CancellationToken ct)
+        {
+            var userId = _user.UserId;
+            var notificacoes = _user.IsMotorista
+                ? await _repo.ListByUserAndAgendamentoAcrossTenantsAsync(userId, agendamentoId, ct)
+                : await _repo.ListByUserAndAgendamentoAsync(userId, agendamentoId, ct);
+
+            return notificacoes
+                .Select(n => new NotificacaoListItemDto(
+                    n.Id,
+                    (int)n.Tipo,
+                    (int)n.Prioridade,
+                    n.Titulo,
+                    n.Corpo,
+                    n.CreatedAt,
+                    n.LidaEm,
+                    n.Payload))
+                .ToList();
         }
     }
 }

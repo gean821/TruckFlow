@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,5 +17,7 @@ namespace TruckFlow.Domain.Enums
         MotoristaChegou = 11,
         MotoristaSaiu = 12,
         JanelaPropxima = 20,
+        MensagemManualAdmin = 30,
+        MensagemManualMotorista = 31,
     }
 }

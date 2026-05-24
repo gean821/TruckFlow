@@ -43,5 +43,9 @@ namespace TruckFlow.Application
           _http.HttpContext!.User.FindFirst("MotoristaId") != null
         ? Guid.Parse(_http.HttpContext!.User.FindFirst("MotoristaId")!.Value)
             : null;
+
+        public string? NomeAutor =>
+            _http.HttpContext!.User.FindFirst(ClaimTypes.Name)?
+            .Value;
     }
 }

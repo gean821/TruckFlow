@@ -16,7 +16,8 @@ namespace TruckFlowApi.Infra.Repositories
             CancellationToken token = default) =>
             await _db.Users
                 .Include(u => u.Motorista)
-                .FirstOrDefaultAsync(u => u.Id == userId 
+                .Include(u => u.Administrador)
+                .FirstOrDefaultAsync(u => u.Id == userId
                     && u.DeletedAt == null, token);
     }
 }
