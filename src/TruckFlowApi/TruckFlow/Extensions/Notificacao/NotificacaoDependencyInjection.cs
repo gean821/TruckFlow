@@ -40,6 +40,14 @@ namespace TruckFlow.Extensions.Notificacao
                 IDomainEventHandler<AgendamentoCanceladoEvent>,
                 AgendamentoCanceladoNotificacaoHandler>();
 
+            services.AddScoped<
+                IDomainEventHandler<AgendamentoEvent.MotoristaChegouEvent>,
+                MotoristaChegouNotificacaoHandler>();
+
+            services.AddScoped<
+                IDomainEventHandler<AgendamentoEvent.AgendamentoReagendadoEvent>,
+                AgendamentoReagendadoNotificacaoHandler>();
+
             services.AddHostedService<OutboxProcessorWorker>();
             services.AddHostedService<RealtimeNotificationListener>();
             services.AddHostedService<PushDispatcherWorker>();

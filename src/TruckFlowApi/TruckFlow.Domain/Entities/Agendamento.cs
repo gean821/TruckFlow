@@ -1,4 +1,4 @@
-﻿using TruckFlow.Domain.Contracts;
+using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Enums;
 using TruckFlow.Domain.Events;
 using TruckFlow.Domain.Rules;
@@ -96,7 +96,18 @@ namespace TruckFlow.Domain.Entities
         }
 
         public void RegistrarChegada()
-        => AlterarStatus(StatusAgendamento.EmAndamento);
+        {
+            AlterarStatus(StatusAgendamento.EmAndamento);
+
+            if (UsuarioId.HasValue)
+            {
+                AddDomainEvent(new AgendamentoEvent.MotoristaChegouEvent(
+                    AgendamentoId: Id,
+                    EmpresaId: EmpresaId,
+                    MotoristaUsuarioId: UsuarioId.Value,
+                    OcorridoEm: DateTime.UtcNow));
+            }
+        }
 
         public void FinalizarOperacao()
          => AlterarStatus(StatusAgendamento.Finalizado);
@@ -110,6 +121,42 @@ namespace TruckFlow.Domain.Entities
                 EmpresaId: EmpresaId,
                 MotoristaUsuarioId: UsuarioId,
                 MotivoCancelamento: motivo,
+                OcorridoEm: DateTime.UtcNow));
+        }
+
+        public void Reagendar(
+            DateTime novaDataInicio,
+            DateTime novaDataFim)
+        {
+            var inicioAnterior = DataInicio;
+            var fimAnterior = DataFim;
+
+            if (inicioAnterior == novaDataInicio && fimAnterior == novaDataFim)
+            {
+                return;
+            }
+
+            DataInicio = novaDataInicio;
+            DataFim = novaDataFim;
+            UpdatedAt = DateTime.UtcNow;
+
+            var motoristaReservou = UsuarioId.HasValue
+                && (StatusAgendamento == StatusAgendamento.Agendado
+                    || StatusAgendamento == StatusAgendamento.EmAndamento);
+
+            if (!motoristaReservou)
+            {
+                return;
+            }
+
+            AddDomainEvent(new AgendamentoEvent.AgendamentoReagendadoEvent(
+                AgendamentoId: Id,
+                EmpresaId: EmpresaId,
+                MotoristaUsuarioId: UsuarioId,
+                DataInicioAnterior: inicioAnterior,
+                DataFimAnterior: fimAnterior,
+                DataInicioNova: novaDataInicio,
+                DataFimNova: novaDataFim,
                 OcorridoEm: DateTime.UtcNow));
         }
 
