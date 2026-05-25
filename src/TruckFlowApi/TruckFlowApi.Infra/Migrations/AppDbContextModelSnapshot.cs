@@ -374,6 +374,69 @@ namespace TruckFlowApi.Infra.Migrations
                     b.ToTable("Carga", (string)null);
                 });
 
+            modelBuilder.Entity("TruckFlow.Domain.Entities.DispositivoUsuario", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AppVersion")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("Ativo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ExpoPushToken")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Plataforma")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UltimoUsoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpoPushToken")
+                        .IsUnique()
+                        .HasDatabaseName("IX_DispositivoUsuario_ExpoPushToken");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("IX_DispositivoUsuario_UsuarioAtivo")
+                        .HasFilter("\"Ativo\" = true");
+
+                    b.ToTable("DispositivoUsuario", (string)null);
+                });
+
             modelBuilder.Entity("TruckFlow.Domain.Entities.Empresa", b =>
                 {
                     b.Property<Guid>("Id")
@@ -977,7 +1040,11 @@ namespace TruckFlowApi.Infra.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AgendamentoId")
+                    b.Property<string>("Corpo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("CorrelationId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -989,8 +1056,185 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Descricao")
+                    b.Property<Guid>("DestinatarioUsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("LidaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Payload")
                         .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("Prioridade")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DestinatarioUsuarioId");
+
+                    b.HasIndex("EmpresaId", "DestinatarioUsuarioId")
+                        .HasDatabaseName("IX_Notificacao_Naolidas")
+                        .HasFilter("\"LidaEm\" IS NULL");
+
+                    b.HasIndex("EmpresaId", "DestinatarioUsuarioId", "CreatedAt")
+                        .IsDescending(false, false, true)
+                        .HasDatabaseName("IX_Notificacao_FeedDestinatario");
+
+                    b.ToTable("Notificacao", (string)null);
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.NotificacaoEntrega", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Canal")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Erro")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("NotificacaoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProviderMessageId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("ProximaTentativaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ReceiptCheckedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TentativasEfetuadas")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("UltimaTentativaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificacaoId")
+                        .HasDatabaseName("IX_NotificacaoEntrega_Notificacao");
+
+                    b.HasIndex("UltimaTentativaEm")
+                        .HasDatabaseName("IX_NotificacaoEntrega_Receipt_Pending")
+                        .HasFilter("\"Status\" = 1 AND \"Canal\" = 2 AND \"ReceiptCheckedAt\" IS NULL");
+
+                    b.HasIndex("Status", "ProximaTentativaEm")
+                        .HasDatabaseName("IX_NotificacaoEntrega_Dispatcher_Pendente")
+                        .HasFilter("\"Status\" = 0");
+
+                    b.ToTable("NotificacaoEntrega", (string)null);
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.OutboxEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CorrelationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("OcorridoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ProximaTentativaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Tentativas")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("UltimoErro")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -999,11 +1243,23 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AgendamentoId");
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_OutboxEvent_IdempotencyKey");
 
-                    b.ToTable("Notificacao", (string)null);
+                    b.HasIndex("ProcessedAt", "ProximaTentativaEm")
+                        .HasDatabaseName("IX_OutboxEvent_Claim_Pending")
+                        .HasFilter("\"ProcessedAt\" IS NULL");
+
+                    b.ToTable("OutboxEvent", (string)null);
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.PlanejamentoRecebimento", b =>
@@ -1605,6 +1861,17 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Navigation("Agedamento");
                 });
 
+            modelBuilder.Entity("TruckFlow.Domain.Entities.DispositivoUsuario", b =>
+                {
+                    b.HasOne("TruckFlow.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("TruckFlow.Domain.Entities.Fornecedor", b =>
                 {
                     b.HasOne("TruckFlow.Domain.Entities.Empresa", "Empresa")
@@ -1757,11 +2024,24 @@ namespace TruckFlowApi.Infra.Migrations
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.Notificacao", b =>
                 {
-                    b.HasOne("TruckFlow.Domain.Entities.Agendamento", "Agendamento")
-                        .WithMany("Notificacoes")
-                        .HasForeignKey("AgendamentoId");
+                    b.HasOne("TruckFlow.Domain.Entities.Usuario", "Destinatario")
+                        .WithMany()
+                        .HasForeignKey("DestinatarioUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.Navigation("Agendamento");
+                    b.Navigation("Destinatario");
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.NotificacaoEntrega", b =>
+                {
+                    b.HasOne("TruckFlow.Domain.Entities.Notificacao", "Notificacao")
+                        .WithMany("Entregas")
+                        .HasForeignKey("NotificacaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Notificacao");
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.PlanejamentoRecebimento", b =>
@@ -1915,11 +2195,6 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Navigation("Motorista");
                 });
 
-            modelBuilder.Entity("TruckFlow.Domain.Entities.Agendamento", b =>
-                {
-                    b.Navigation("Notificacoes");
-                });
-
             modelBuilder.Entity("TruckFlow.Domain.Entities.Empresa", b =>
                 {
                     b.Navigation("Fornecedores");
@@ -1973,6 +2248,11 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Navigation("Agendamento");
 
                     b.Navigation("Itens");
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.Notificacao", b =>
+                {
+                    b.Navigation("Entregas");
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.PlanejamentoRecebimento", b =>

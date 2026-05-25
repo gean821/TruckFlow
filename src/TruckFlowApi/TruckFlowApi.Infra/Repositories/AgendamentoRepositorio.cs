@@ -149,6 +149,11 @@ namespace TruckFlowApi.Infra.Repositories
                                         ? x.Usuario.Motorista.NomeReal
                                         : null
                                      : null,
+                    MotoristaTelefone = x.Usuario != null
+                                        ? x.Usuario.Motorista != null
+                                           ? x.Usuario.Motorista.Telefone
+                                           : null
+                                        : null,
                     DataInicio = x.DataInicio,
                     DataFim = x.DataFim,
                     Produto = x.Grade != null

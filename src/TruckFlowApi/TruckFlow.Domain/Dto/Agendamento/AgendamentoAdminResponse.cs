@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,6 +27,7 @@ namespace TruckFlow.Domain.Dto.Agendamento
         public required string Status { get; set; }
 
         public string? MotoristaNome { get; set; }
+        public string? MotoristaTelefone { get; set; }
         public string? UnidadeEntrega { get; set; } 
         public string? LocalDescarga { get; set; } 
         public required DateTime CreatedAt { get; set; }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -50,6 +50,9 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new EmpresaConfiguracao());
             modelBuilder.ApplyConfiguration(new AuditLogConfiguracao());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguracao());
+            modelBuilder.ApplyConfiguration(new OutboxEventConfiguracao());
+            modelBuilder.ApplyConfiguration(new NotificacaoEntregaConfiguracao());
+            modelBuilder.ApplyConfiguration(new DispositivoUsuarioConfiguracao());
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -72,6 +75,9 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<Empresa> Empresa { get; set; }
         public DbSet<AuditLog> AuditLog { get; set; }
         public DbSet<RefreshToken> RefreshToken { get; set; }
+        public DbSet<OutboxEvent> OutboxEvent { get; set; }
+        public DbSet<NotificacaoEntrega> NotificacaoEntrega { get; set; }
+        public DbSet<DispositivoUsuario> DispositivoUsuario { get; set; }
 
         private void ApplyGlobalFilters(ModelBuilder modelBuilder)
         {

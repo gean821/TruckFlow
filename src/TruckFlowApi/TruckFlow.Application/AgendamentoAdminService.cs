@@ -302,8 +302,9 @@ namespace TruckFlow.Application
             var pesoAnterior = agendamento.VolumeCarga ?? 0m;
 
             agendamento.UnidadeEntregaId = dto.UnidadeEntregaId;
-            agendamento.DataInicio = DateTime.SpecifyKind(dto.DataInicio, DateTimeKind.Utc);
-            agendamento.DataFim = DateTime.SpecifyKind(dto.DataFim, DateTimeKind.Utc);
+            agendamento.Reagendar(
+                DateTime.SpecifyKind(dto.DataInicio, DateTimeKind.Utc),
+                DateTime.SpecifyKind(dto.DataFim, DateTimeKind.Utc));
 
             agendamento.UsuarioId = dto.MotoristaId;
             agendamento.NotaFiscalId = dto.NotaFiscalId;
@@ -463,6 +464,7 @@ namespace TruckFlow.Application
                 Id = agendamento.Id,
                 FornecedorNome = agendamento.Fornecedor?.Nome,
                 MotoristaNome = agendamento.Usuario?.Motorista?.NomeReal,
+                MotoristaTelefone = agendamento.Usuario?.Motorista?.Telefone,
                 DataInicio = agendamento.DataInicio,
                 DataFim = agendamento.DataFim,
                 Produto = agendamento.Grade?.Produto?.Nome ?? agendamento?.Produto?.Nome!,
