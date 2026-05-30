@@ -613,6 +613,58 @@ namespace TruckFlow.Application
                 userId);
         }
 
+        public async Task AlterarSenhaComCodigoAsync(
+            Guid usuarioId,
+            string novaSenha,
+            CancellationToken token = default)
+        {
+            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString())
+                ?? throw new NotFoundException("Usuário não encontrado.");
+
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(usuario);
+            var result = await _userManager.ResetPasswordAsync(usuario, resetToken, novaSenha);
+
+            if (!result.Succeeded)
+                throw new BadRequestException(string.Join(" | ", result.Errors.Select(e => e.Description)));
+
+            _logger.LogInformation("Senha alterada via código para usuário {UsuarioId}", usuarioId);
+        }
+
+        public async Task AlterarEmailComCodigoAsync(
+            Guid usuarioId,
+            string novoEmail,
+            CancellationToken token = default)
+        {
+            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString())
+                ?? throw new NotFoundException("Usuário não encontrado.");
+
+            var emailToken = await _userManager.GenerateChangeEmailTokenAsync(usuario, novoEmail);
+            var result = await _userManager.ChangeEmailAsync(usuario, novoEmail, emailToken);
+
+            if (!result.Succeeded)
+                throw new BadRequestException(string.Join(" | ", result.Errors.Select(e => e.Description)));
+
+            usuario.NormalizedEmail = novoEmail.ToUpperInvariant();
+            usuario.UpdatedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(usuario);
+
+            _logger.LogInformation("Email alterado via código para usuário {UsuarioId}", usuarioId);
+        }
+
+        public async Task ConfirmarContaAsync(
+            Guid usuarioId,
+            CancellationToken token = default)
+        {
+            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString())
+                ?? throw new NotFoundException("Usuário não encontrado.");
+
+            usuario.EmailConfirmed = true;
+            usuario.UpdatedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(usuario);
+
+            _logger.LogInformation("Conta confirmada via código para usuário {UsuarioId}", usuarioId);
+        }
+
         private async Task<UserAdminResponseDto> MapUsuarioAsync(Usuario usuario)
         {
             var roles = await _userManager.GetRolesAsync(usuario);

@@ -33,6 +33,7 @@ using TruckFlow.Filters;
 using TruckFlow.Middlewares;
 using TruckFlowApi.Infra.Database;
 using TruckFlowApi.Infra.Database.Interceptors;
+using TruckFlow.Extensions.Email;
 
 
 namespace TruckFlow
@@ -85,12 +86,36 @@ namespace TruckFlow
             builder.Services.AddSaas();
             builder.Services.AddAudit();
             builder.Services.AddSecurity();
+            builder.Services.AddEmail(builder.Configuration);
 
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwaggerGen(x =>
             {
                 x.OperationFilter<FileUploadOperationFilter>();
+                x.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "Cole o token JWT: Bearer {token}"
+                });
+                x.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
             });
 
             builder.Services.AddScoped<AuditSaveChangesInterceptor>();
