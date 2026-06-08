@@ -125,5 +125,16 @@ namespace TruckFlow.Controllers
             await _service.AlterarEmailComCodigoAsync(usuarioId, dto.NovoEmail, token);
             return Ok(new { message = "E-mail alterado com sucesso." });
         }
+
+        [Authorize]
+        [HttpPatch("me")]
+        public async Task<IActionResult> AtualizarPerfil(
+            [FromBody] AtualizarPerfilAdminDto dto,
+            CancellationToken token = default)
+        {
+            var usuarioId = Guid.Parse(User.FindFirst("UserId")!.Value);
+            await _service.AtualizarPerfilAsync(usuarioId, dto, token);
+            return Ok(new { message = "Perfil atualizado com sucesso." });
+        }
     }
 }

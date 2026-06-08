@@ -290,8 +290,7 @@ namespace TruckFlow.Application
                 ?? throw new NotFoundException("Usuário não encontrado.");
 
             var adm = await _db.Administrador
-                .FirstOrDefaultAsync(a => a.UsuarioId == id, token)
-                ?? throw new NotFoundException("Administrador não encontrado.");
+                .FirstOrDefaultAsync(a => a.UsuarioId == id, token);
 
             await ApplyPatch(adm, usuario, dto, token);
 
@@ -488,7 +487,7 @@ namespace TruckFlow.Application
         }
 
         private async Task ApplyPatch(
-                Administrador adm,
+                Administrador? adm,
                 Usuario user,
                 UserAdminEditDto dto,
                 CancellationToken? token
@@ -496,7 +495,7 @@ namespace TruckFlow.Application
         {
             if (dto.Username is not null)
             {
-                adm.UserName = dto.Username;
+                if (adm is not null) adm.UserName = dto.Username;
                 user.UserName = dto.Username;
                 user.NormalizedUserName = dto.Username.ToUpperInvariant();
             }
@@ -522,7 +521,7 @@ namespace TruckFlow.Application
                 }
             }
 
-            adm.UpdatedAt = DateTime.UtcNow;
+            if (adm is not null) adm.UpdatedAt = DateTime.UtcNow;
             user.UpdatedAt = DateTime.UtcNow;
         }
 
@@ -663,6 +662,34 @@ namespace TruckFlow.Application
             await _userManager.UpdateAsync(usuario);
 
             _logger.LogInformation("Conta confirmada via código para usuário {UsuarioId}", usuarioId);
+        }
+
+        public async Task AtualizarPerfilAsync(
+            Guid usuarioId, 
+            AtualizarPerfilAdminDto dto, 
+            CancellationToken token = default)
+        {
+            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString())
+                ?? throw new NotFoundException("Usuário não encontrado.");
+
+            if (dto.Username is not null)
+            {
+                usuario.UserName = dto.Username;
+                usuario.NormalizedUserName = dto.Username.ToUpperInvariant();
+            }
+
+            if (dto.Telefone is not null)
+                usuario.PhoneNumber = dto.Telefone;
+
+            usuario.UpdatedAt = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(usuario);
+
+            if (!result.Succeeded)
+            {
+                var erros = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new BadRequestException($"Erro ao atualizar perfil: {erros}");
+            }
         }
 
         private async Task<UserAdminResponseDto> MapUsuarioAsync(Usuario usuario)

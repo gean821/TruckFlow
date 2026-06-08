@@ -26,5 +26,6 @@ namespace TruckFlow.Application.Interfaces
         Task AlterarSenhaComCodigoAsync(Guid usuarioId, string novaSenha, CancellationToken token = default);
         Task AlterarEmailComCodigoAsync(Guid usuarioId, string novoEmail, CancellationToken token = default);
         Task ConfirmarContaAsync(Guid usuarioId, CancellationToken token = default);
+        Task AtualizarPerfilAsync(Guid usuarioId, AtualizarPerfilAdminDto dto, CancellationToken token = default);
     }
 }
