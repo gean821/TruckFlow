@@ -51,6 +51,18 @@ namespace TruckFlow.Middlewares
                 await context.Response.WriteAsJsonAsync(result);
             }
 
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning("Acesso negado: {Message}", ex.Message);
+
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+
             catch (Exception ex)
             {
                 _logger.LogError("Erro inesperado: {exception}", ex.ToString());

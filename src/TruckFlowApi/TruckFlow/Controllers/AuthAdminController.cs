@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.Auth;
 using TruckFlow.Domain.Dto.User.Administrador;
 using TruckFlow.Domain.Entities;
-using TruckFlow.Extensions.Auth;
-using TruckFlow.Domain.Dto.Auth;
 using TruckFlow.Domain.Enums;
+using TruckFlow.Extensions.Auth;
 
 namespace TruckFlow.Controllers
 {
@@ -16,12 +17,14 @@ namespace TruckFlow.Controllers
         private readonly IUsuarioService _service;
         private readonly IWebHostEnvironment _env;
         private readonly IVerificacaoEmailService _verificacaoService;
+        private readonly UserManager<Usuario> _userManager;
 
-        public AuthAdminController(IUsuarioService service, IWebHostEnvironment env, IVerificacaoEmailService verificacaoService)
+        public AuthAdminController(IUsuarioService service, IWebHostEnvironment env, IVerificacaoEmailService verificacaoService, UserManager<Usuario> userManager)
         {
             _service = service;
             _env = env;
             _verificacaoService = verificacaoService;
+            _userManager = userManager;
         }
 
         [HttpPost("register")]
@@ -135,6 +138,42 @@ namespace TruckFlow.Controllers
             var usuarioId = Guid.Parse(User.FindFirst("UserId")!.Value);
             await _service.AtualizarPerfilAsync(usuarioId, dto, token);
             return Ok(new { message = "Perfil atualizado com sucesso." });
+        }
+
+        [HttpPost("esqueci-senha")]
+        public async Task<IActionResult> EsqueciSenha(
+            [FromBody] EsqueciSenhaDto dto,
+            CancellationToken token = default)
+        {
+            var usuario = await _userManager.FindByEmailAsync(dto.Email);
+
+            if (usuario != null && usuario.DeletedAt == null)
+                await _verificacaoService.EnviarCodigoAsync(usuario.Id, FinalidadeVerificacaoEmail.AlterarSenha, token);
+
+            return Ok(new { message = "Se o e-mail estiver cadastrado, um código será enviado." });
+        }
+
+        [HttpPost("redefinir-senha")]
+        public async Task<IActionResult> RedefinirSenha(
+            [FromBody] RedefinirSenhaDto dto,
+            CancellationToken token = default)
+        {
+            if (dto.NovaSenha != dto.ConfirmarSenha)
+                return BadRequest(new { message = "As senhas não coincidem." });
+
+            var usuario = await _userManager.FindByEmailAsync(dto.Email);
+            if (usuario == null || usuario.DeletedAt != null)
+                return BadRequest(new { message = "Código inválido ou expirado." });
+
+            var codigoToken = await _verificacaoService.ValidarCodigoAsync(
+                usuario.Id, dto.Codigo, FinalidadeVerificacaoEmail.AlterarSenha, token);
+
+            var payload = _verificacaoService.ExtrairCodigoToken(codigoToken);
+            if (payload.UsuarioId != usuario.Id || payload.Finalidade != FinalidadeVerificacaoEmail.AlterarSenha)
+                return BadRequest(new { message = "Código inválido ou expirado." });
+
+            await _service.AlterarSenhaComCodigoAsync(usuario.Id, dto.NovaSenha, token);
+            return Ok(new { message = "Senha redefinida com sucesso." });
         }
     }
 }
