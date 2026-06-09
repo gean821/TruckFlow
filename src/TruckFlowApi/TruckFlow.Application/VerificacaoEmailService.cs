@@ -187,7 +187,6 @@ namespace TruckFlow.Application
 
         private static string ObterAssunto(FinalidadeVerificacaoEmail finalidade) => finalidade switch
         {
-            FinalidadeVerificacaoEmail.CriarConta => "Confirme seu e-mail - TruckFlow",
             FinalidadeVerificacaoEmail.AlterarSenha => "Código para redefinição de senha - TruckFlow",
             FinalidadeVerificacaoEmail.AlterarEmail => "Confirme a alteração do seu e-mail - TruckFlow",
             _ => "Código de verificação - TruckFlow"
@@ -197,7 +196,6 @@ namespace TruckFlow.Application
         {
             var titulo = finalidade switch
             {
-                FinalidadeVerificacaoEmail.CriarConta => "Confirme seu e-mail",
                 FinalidadeVerificacaoEmail.AlterarSenha => "Redefinição de senha",
                 FinalidadeVerificacaoEmail.AlterarEmail => "Alteração de e-mail",
                 _ => "Verificação"
@@ -205,7 +203,6 @@ namespace TruckFlow.Application
 
             var icone = finalidade switch
             {
-                FinalidadeVerificacaoEmail.CriarConta => "✉️",
                 FinalidadeVerificacaoEmail.AlterarSenha => "🔐",
                 FinalidadeVerificacaoEmail.AlterarEmail => "📧",
                 _ => "🔑"
@@ -213,7 +210,6 @@ namespace TruckFlow.Application
 
             var mensagem = finalidade switch
             {
-                FinalidadeVerificacaoEmail.CriarConta => "Use o código abaixo para confirmar seu e-mail e ativar sua conta no sistema TruckFlow.",
                 FinalidadeVerificacaoEmail.AlterarSenha => "Use o código abaixo para confirmar a redefinição da sua senha.",
                 FinalidadeVerificacaoEmail.AlterarEmail => $"Use o código abaixo para confirmar a alteração para o e-mail <strong style=\"color:#0d3f6e;\">{email}</strong>.",
                 _ => "Use o código abaixo para continuar."

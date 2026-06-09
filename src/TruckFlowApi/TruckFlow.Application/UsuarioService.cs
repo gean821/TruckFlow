@@ -349,6 +349,7 @@ namespace TruckFlow.Application
                 UserName = dto.UserName,
                 Email = dto.Email,
                 PhoneNumber = dto.Telefone,
+                EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -650,19 +651,6 @@ namespace TruckFlow.Application
             _logger.LogInformation("Email alterado via código para usuário {UsuarioId}", usuarioId);
         }
 
-        public async Task ConfirmarContaAsync(
-            Guid usuarioId,
-            CancellationToken token = default)
-        {
-            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString())
-                ?? throw new NotFoundException("Usuário não encontrado.");
-
-            usuario.EmailConfirmed = true;
-            usuario.UpdatedAt = DateTime.UtcNow;
-            await _userManager.UpdateAsync(usuario);
-
-            _logger.LogInformation("Conta confirmada via código para usuário {UsuarioId}", usuarioId);
-        }
 
         public async Task AtualizarPerfilAsync(
             Guid usuarioId, 

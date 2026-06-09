@@ -97,24 +97,6 @@ namespace TruckFlow.Controllers
         }
 
         [Authorize(Roles = Roles.Motorista)]
-        [HttpPost("confirmar-conta")]
-        public async Task<IActionResult> ConfirmarConta(
-            [FromBody] VerificarCodigoEmailDto dto,
-            CancellationToken token = default)
-        {
-            var usuarioId = Guid.Parse(User.FindFirst("UserId")!.Value);
-            var codigoToken = await _verificacaoService.ValidarCodigoAsync(usuarioId, dto.Codigo, dto.Finalidade, token);
-
-            var payload = _verificacaoService.ExtrairCodigoToken(codigoToken);
-
-            if (payload.UsuarioId != usuarioId || payload.Finalidade != FinalidadeVerificacaoEmail.CriarConta)
-                return BadRequest(new { message = "Token de verificação inválido." });
-
-            await _service.ConfirmarContaAsync(usuarioId, token);
-            return Ok(new { message = "Conta confirmada com sucesso." });
-        }
-
-        [Authorize(Roles = Roles.Motorista)]
         [HttpPost("alterar-senha")]
         public async Task<IActionResult> AlterarSenha(
             [FromBody] AlterarSenhaComCodigoDto dto,
