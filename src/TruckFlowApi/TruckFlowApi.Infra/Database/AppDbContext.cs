@@ -53,6 +53,7 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new OutboxEventConfiguracao());
             modelBuilder.ApplyConfiguration(new NotificacaoEntregaConfiguracao());
             modelBuilder.ApplyConfiguration(new DispositivoUsuarioConfiguracao());
+            modelBuilder.ApplyConfiguration(new CodigoVerificacaoEmailConfiguracao());
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -78,6 +79,7 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<OutboxEvent> OutboxEvent { get; set; }
         public DbSet<NotificacaoEntrega> NotificacaoEntrega { get; set; }
         public DbSet<DispositivoUsuario> DispositivoUsuario { get; set; }
+        public DbSet<CodigoVerificacaoEmail> CodigoVerificacaoEmail { get; set; }
 
         private void ApplyGlobalFilters(ModelBuilder modelBuilder)
         {

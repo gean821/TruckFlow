@@ -22,5 +22,9 @@ namespace TruckFlow.Application.Interfaces
         Task DeleteMotoristaAsync(Guid id, CancellationToken token = default);
 
         Task ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
+
+        Task AlterarSenhaComCodigoAsync(Guid usuarioId, string novaSenha, CancellationToken token = default);
+        Task AlterarEmailComCodigoAsync(Guid usuarioId, string novoEmail, CancellationToken token = default);
+        Task AtualizarPerfilAsync(Guid usuarioId, AtualizarPerfilAdminDto dto, CancellationToken token = default);
     }
 }
