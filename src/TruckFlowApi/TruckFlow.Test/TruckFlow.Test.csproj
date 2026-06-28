@@ -28,4 +28,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TruckFlow.Domain\TruckFlow.Domain.csproj" />
+    <ProjectReference Include="..\TruckFlow.Application\TruckFlow.Application.csproj" />
+  </ItemGroup>
+
 </Project>
