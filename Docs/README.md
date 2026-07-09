@@ -21,3 +21,4 @@ A documentação é distribuída entre os três repos do produto:
 | **Admin** (web) | `TruckFlowApp/truckflow.app/docs/adr/` | Consumo de SSE, mapa, contato WhatsApp, UX admin |
 
 Cada repo tem seu próprio número de ADR independente. Quando uma decisão cruza repos, o ADR canônico vive no backend e os outros linkam.
+
