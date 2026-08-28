@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.Agendamento;
 using TruckFlow.Domain.Dto.Shared;
+using TruckFlow.Domain.Dto.Relatorio;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
@@ -180,6 +181,82 @@ namespace TruckFlowApi.Infra.Repositories
                 TotalCount = totalCount,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             };
+        }
+
+        public async Task<List<AgendamentoAdminResponse>> GetForRelatorioAsync(
+            RelatorioAgendamentoFilterDto filtros,
+            CancellationToken cancellationToken)
+        {
+            const int maxLinhas = 20_000;
+
+            var query = _db.Agendamento
+                .AsNoTracking()
+                .Include(x => x.Fornecedor)
+                .Include(x => x.Produto)
+                .Include(x => x.Grade)
+                    .ThenInclude(g => g.Produto)
+                .Include(x => x.UnidadeEntrega) 
+                .Include(x => x.Usuario)
+                    .ThenInclude(u => u.Motorista)
+                    .Include(x => x.NotaFiscal)
+                .AsQueryable();
+
+            if (filtros.DataInicio.HasValue)
+            {
+                query = query.Where(x => x.DataInicio >= filtros.DataInicio.Value);
+            }
+
+            if (filtros.FornecedorId.HasValue)
+            {
+                query = query.Where(x => x.FornecedorId == filtros.FornecedorId.Value);
+            }
+
+            if (filtros.ProdutoId.HasValue)
+            {
+                var produtoId = filtros.ProdutoId.Value;
+                query = query.Where(x =>
+                    x.ProdutoId == produtoId ||
+                    (x.Grade != null && x.Grade.ProdutoId == produtoId));
+            }
+
+            if (!string.IsNullOrWhiteSpace(filtros.Motorista))
+            {
+                var nome = filtros.Motorista.Trim();
+                query = query.Where(x =>
+                    x.Usuario != null && x.Usuario.Motorista != null &&
+                    x.Usuario.Motorista.NomeReal.Contains(nome));
+            }
+
+            return await query
+                .OrderBy(x => x.DataInicio)
+                .Take(maxLinhas)
+                .Select(x => new AgendamentoAdminResponse
+                {
+                    Id = x.Id,
+                    FornecedorNome = x.Fornecedor.Nome,
+                    MotoristaNome = x.Usuario != null
+                                     ? x.Usuario.Motorista != null ? x.Usuario.Motorista.NomeReal : null
+                                     : null,
+                    MotoristaTelefone = x.Usuario != null
+                                ? x.Usuario.Motorista != null ? x.Usuario.Motorista.Telefone : null
+                                : null,
+                    DataInicio = x.DataInicio,
+                    DataFim = x.DataFim,
+                    Produto = x.Grade != null
+                        ? x.Grade.Produto.Nome
+                        : (x.Produto != null ? x.Produto.Nome : x.TipoCarga.ToString()),
+                    PesoCarga = x.NotaFiscal != null
+                        ? (x.NotaFiscal.PesoBruto ?? x.VolumeCarga ?? 0m)
+                        : (x.VolumeCarga ?? 0m),
+                    PlacaVeiculo = x.PlacaVeiculo ?? (x.NotaFiscal != null ? x.NotaFiscal.PlacaVeiculo : null),
+                    TipoVeiculo = x.TipoVeiculo.HasValue ? x.TipoVeiculo.Value.ToString() : null,
+                    UnidadeEntrega = x.UnidadeEntrega != null ? x.UnidadeEntrega.Nome : null,
+                    Status = x.StatusAgendamento.ToString(),
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt,
+                    DeletedAt = x.DeletedAt
+                })
+                .ToListAsync(cancellationToken);
         }
 
         public async Task<Agendamento> GetById(

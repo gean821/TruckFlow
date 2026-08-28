@@ -24,6 +24,7 @@ using TruckFlow.Extensions.Motorista;
 using TruckFlow.Extensions.NotaFiscal;
 using TruckFlow.Extensions.Notificacao;
 using TruckFlow.Extensions.Produto;
+using TruckFlow.Extensions.Relatorio;
 using TruckFlow.Extensions.Recebimento;
 using TruckFlow.Extensions.RecebimentoEvento;
 using TruckFlow.Extensions.Saas;
@@ -43,6 +44,7 @@ namespace TruckFlow
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
             builder.WebHost.ConfigureKestrel(serverOptions =>
             {
@@ -70,9 +72,10 @@ namespace TruckFlow
             builder.Services.AddUnidadeEntrega();
             builder.Services.AddGrade();
             builder.Services.AddNotaFiscal();
+            builder.Services.AddNotificacao();
             builder.Services.AddSefaz(builder.Configuration);
             builder.Services.AddAgendamento();
-            builder.Services.AddNotificacao();
+            builder.Services.AddRelatorio();
             builder.Services.AddUserAuth();
             builder.Services.AddMotorista();
             builder.Services.AddConferencia();

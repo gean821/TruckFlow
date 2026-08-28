@@ -28,7 +28,8 @@ namespace TruckFlow.Extensions.Cors
                     policy.WithOrigins(origins)
                           .AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowCredentials();
+                          .AllowCredentials()
+                          .WithExposedHeaders("Content-Disposition");
                 });
             });
 
