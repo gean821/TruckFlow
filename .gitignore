@@ -62,3 +62,6 @@ nunit-*.xml
 *.db-wal
 *.suo
 *.vsidx
+
+#enviroment
+.env
