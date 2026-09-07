@@ -1,0 +1,41 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-dev:
+    name: Deploy DEV
+    if: github.ref == 'refs/heads/develop' && vars.DEPLOY_DEV_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: development
+
+    steps:
+      - name: Deploy DEV
+        run: |
+          echo "TODO(INFRA-06): ambiente de dev no Railway."
+          exit 1
+          
+  deploy-production:
+    name: Deploy PROD
+    if: github.ref == 'refs/heads/master' && vars.DEPLOY_PROD_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+
+    steps:
+      - name: Deploy Production
+        run: |
+          echo "TODO: deploy de producao hoje e do Railway (auto-deploy no push da master)."
+          exit 1

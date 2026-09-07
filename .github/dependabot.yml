@@ -1,0 +1,34 @@
+version: 2
+
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/src/TruckFlowApi"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    # PR de dependencia vai para develop, nunca direto para master (producao).
+    target-branch: "develop"
+    open-pull-requests-limit: 5
+    groups:
+      # Um PR unico para minor/patch.
+      dotnet-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    target-branch: "develop"
+    open-pull-requests-limit: 3
+    groups:
+      github-actions:
+        update-types:
+          - "minor"
+          - "patch"

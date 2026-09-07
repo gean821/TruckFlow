@@ -18,6 +18,7 @@ using TruckFlow.Extensions.Empresa;
 using TruckFlow.Extensions.Fornecedor;
 using TruckFlow.Extensions.Grade;
 using TruckFlow.Extensions.Guards;
+using TruckFlow.Extensions.Health;
 using TruckFlow.Extensions.ItemPlanejamento;
 using TruckFlow.Extensions.LocalDescarga;
 using TruckFlow.Extensions.Motorista;
@@ -86,6 +87,7 @@ namespace TruckFlow
             builder.Services.AddSaas();
             builder.Services.AddAudit();
             builder.Services.AddSecurity();
+            builder.Services.AddHealthDependency();
             builder.Services.AddEmail(builder.Configuration);
 
             builder.Services.AddEndpointsApiExplorer();
@@ -175,12 +177,18 @@ namespace TruckFlow
 
             if (!app.Environment.IsDevelopment())
             {
-                app.UseHttpsRedirection();
+                // /health fica fora do redirect: a sonda local (Docker HEALTHCHECK) nao
+                // manda X-Forwarded-Proto, levaria 307 e o curl acusaria saude sem
+                // nunca ter tocado a aplicacao.
+                app.UseWhen(
+                    context => !context.Request.Path.StartsWithSegments(AddHealthDependencyInjection.BasePath),
+                    branch => branch.UseHttpsRedirection());
             }
 
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+            app.MapHealthEndpoints();
 
             if (app.Environment.IsDevelopment())
             {
