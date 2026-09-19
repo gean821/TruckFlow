@@ -142,6 +142,7 @@ namespace TruckFlow
                 .AddDefaultTokenProviders();
 
             builder.AddAuthenticationJwt();
+            builder.AddAuthenticationEntraId();
             builder.Services.AddAuthorization();
             builder.Services.AddTransient<RequestLoggingMiddleware>();
             builder.Services.AddScoped<ActionLoggingFilter>();

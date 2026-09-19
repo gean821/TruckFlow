@@ -21,5 +21,19 @@ namespace TruckFlow.Domain.Entities
         public Empresa? Empresa { get; set; }
 
         public ICollection<Agendamento>? Agendamentos { get; set; }
+        
+        public OrigemUsuario Origem { get; set; } = OrigemUsuario.Local;
+
+        /// <summary>
+        /// Última vez que os papéis deste usuário foram sincronizados a partir dos grupos do Entra ID.
+        /// Null para usuários que nunca logaram via SSO.
+        /// </summary>
+        public DateTime? UltimoSyncEntraEm { get; set; }
+    }
+
+    public enum OrigemUsuario
+    {
+        Local,
+        EntraId,
     }
 }

@@ -54,6 +54,7 @@ namespace TruckFlowApi.Infra.Database
             modelBuilder.ApplyConfiguration(new NotificacaoEntregaConfiguracao());
             modelBuilder.ApplyConfiguration(new DispositivoUsuarioConfiguracao());
             modelBuilder.ApplyConfiguration(new CodigoVerificacaoEmailConfiguracao());
+            modelBuilder.ApplyConfiguration(new EntraGroupRoleMappingConfiguracao());
         }
 
         public DbSet<Usuario> Usuario { get; set; }
@@ -80,6 +81,7 @@ namespace TruckFlowApi.Infra.Database
         public DbSet<NotificacaoEntrega> NotificacaoEntrega { get; set; }
         public DbSet<DispositivoUsuario> DispositivoUsuario { get; set; }
         public DbSet<CodigoVerificacaoEmail> CodigoVerificacaoEmail { get; set; }
+        public DbSet<EntraGroupRoleMapping> EntraGroupRoleMapping { get; set; }
 
         private void ApplyGlobalFilters(ModelBuilder modelBuilder)
         {

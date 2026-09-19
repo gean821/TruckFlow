@@ -33,6 +33,15 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.DeletedAt)
                     .IsRequired(false);
 
+            builder.Property(x => x.Origem)
+                    .HasConversion<string>()
+                    .HasMaxLength(20)
+                    .HasDefaultValue(OrigemUsuario.Local)
+                    .IsRequired();
+
+            builder.Property(x => x.UltimoSyncEntraEm)
+                    .IsRequired(false);
+
             builder.HasOne(u => u.Motorista)
                     .WithOne(m => m.Usuario)
                     .HasForeignKey<Motorista>(m => m.UsuarioId)

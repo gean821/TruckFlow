@@ -18,6 +18,8 @@ namespace TruckFlow.Extensions.Auth
             services.AddTransient<IUsuarioRepositorio, UsuarioRepositorio>();
             services.AddTransient<IRefreshTokenRepositorio, RefreshTokenRepositorio>();
             services.AddTransient<IRefreshTokenService, RefreshTokenService>();
+            services.AddTransient<IEntraGroupRoleMappingRepositorio, EntraGroupRoleMappingRepositorio>();
+            services.AddTransient<IJitProvisioningService, JitProvisioningService>();
 
             return services;
         }

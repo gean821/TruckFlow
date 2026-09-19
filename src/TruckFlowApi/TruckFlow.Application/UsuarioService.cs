@@ -132,6 +132,22 @@ namespace TruckFlow.Application
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
+            if (usuario.EmpresaId.HasValue)
+            {
+                var configuracoes = await _db.Empresa
+                    .Where(e => e.Id == usuario.EmpresaId.Value)
+                    .Select(e => e.Configuracoes)
+                    .FirstOrDefaultAsync(ct);
+
+                if (!EmpresaAuthMethods.Permite(configuracoes, EmpresaAuthMethods.Local))
+                {
+                    _logger.LogWarning(
+                        "Falha de login admin: Empresa {EmpresaId} não permite login Local (usuário {UsuarioId}).",
+                        usuario.EmpresaId, usuario.Id);
+                    throw new BusinessException("Esta empresa exige login corporativo (SSO). Use o botão \"Entrar com Microsoft\".");
+                }
+            }
+
             if (!await _userManager.CheckPasswordAsync(usuario, dto.Password))
             {
                 _logger.LogWarning(
@@ -244,6 +260,8 @@ namespace TruckFlow.Application
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuário não encontrado.");
 
+            GarantirNaoEntraId(usuario);
+
             usuario.DeletedAt = ativo ? null : DateTime.UtcNow;
             usuario.UpdatedAt = DateTime.UtcNow;
 
@@ -289,6 +307,8 @@ namespace TruckFlow.Application
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuário não encontrado.");
 
+            GarantirNaoEntraId(usuario);
+
             var adm = await _db.Administrador
                 .FirstOrDefaultAsync(a => a.UsuarioId == id, token);
 
@@ -327,6 +347,8 @@ namespace TruckFlow.Application
         {
             var usuario = await _userManager.FindByIdAsync(id.ToString())
                 ?? throw new NotFoundException("Usuario não encontrado.");
+
+            GarantirNaoEntraId(usuario);
 
             usuario.DeletedAt = DateTime.UtcNow;
 
@@ -695,8 +717,26 @@ namespace TruckFlow.Application
                 DeletedAt = usuario.DeletedAt,
                 NomeReal = usuario?.Administrador?.Nome,
                 Empresa = usuario?.Empresa?.NomeFantasia,
-                EmpresaId = usuario?.EmpresaId
+                EmpresaId = usuario?.EmpresaId,
+                IsEntraId = usuario?.Origem == OrigemUsuario.EntraId,
+                UltimoSyncEntraEm = usuario?.UltimoSyncEntraEm
             };
+        }
+
+        /// <summary>
+        /// Usuários provisionados via Entra ID (SSO) são geridos pelo diretório da empresa
+        /// (grupo → Role/Empresa), não por CRUD manual — editar/desativar aqui seria desfeito
+        /// no próximo login/sync, então bloqueamos na origem em vez de deixar a UI confundir.
+        /// Ver Docs/entra-id-integracao-backlog.md (ENTRA-08).
+        /// </summary>
+        private static void GarantirNaoEntraId(Usuario usuario)
+        {
+            if (usuario.Origem == OrigemUsuario.EntraId)
+            {
+                throw new BusinessException(
+                    "Este usuário é provisionado automaticamente via Entra ID (SSO). " +
+                    "Acesso e papel são controlados pelo grupo no diretório da empresa, não editáveis manualmente aqui.");
+            }
         }
 
             private static UserMotoristaResponseDto MapMotoristaAsync(Usuario usuario)
