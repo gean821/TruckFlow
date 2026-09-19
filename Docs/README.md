@@ -10,6 +10,8 @@ Este diretório contém ADRs (Architecture Decision Records) e documentos de des
 - [`rastreamento-motorista-backlog.md`](./rastreamento-motorista-backlog.md) — Revisão da decisão de infra do [ADR-0003](./adr/0003-design-tracking-motorista.md): remove a dependência de TimescaleDB/PostGIS (feature é plus, não contratual) para não restringir a escolha de provedor com hospedagem obrigatória no Brasil.
 - [`entra-id-fluxo-diagrama.mmd`](./entra-id-fluxo-diagrama.mmd) — Diagrama Mermaid do fluxo completo de login (local + federado Entra ID) para estudo e apresentação à TI da Aurora. Importar via "Mermaid to Excalidraw" (excalidraw.com/mermaid ou ícone na barra de ferramentas).
 - [`migracao-azure-brasil.md`](./migracao-azure-brasil.md) — Passo a passo esboçado (executar só na assinatura do contrato) para migrar a hospedagem de Railway para Azure Brazil South, atendendo o requisito de residência de dados no Brasil da Aurora.
+- [`sefaz-certificado-consulta-nfe.md`](./sefaz-certificado-consulta-nfe.md) — Investiga de quem precisa ser o certificado digital A1 pra leitura de NF-e. Mapeia os dois serviços SEFAZ envolvidos (consulta de status, já implementado, vs. consulta de nota completa, ainda não implementado) e conclui que o certificado da Aurora é necessário pro fluxo real de produção (buscar a nota completa na hora, sem depender de XML já enviado).
+- [`nfe-distribuicao-dfe-backlog.md`](./nfe-distribuicao-dfe-backlog.md) — Backlog pronto pra Jira da implementação do `NFeDistribuicaoDFe` (busca de nota completa na SEFAZ): pode começar hoje com mock, sem esperar o certificado da Aurora.
 
 ## Como ler
 

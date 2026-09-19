@@ -45,13 +45,20 @@ namespace TruckFlow.Controllers
                 return BadRequest("os dados da nota Fiscal são obrigátorios.");
             }
 
-            var userId = Guid.NewGuid(); //ajustar para pegar do JWT, por hora funciona só para testes..
+            var userId = Guid.Parse(User.FindFirst("UserId")!.Value);
 
             var nota = await _service.SaveParsedNotaAsync(dto, userId,token);
 
             return CreatedAtAction(nameof(BuscarNotaPorChave),
                                    new { chaveAcesso = nota.ChaveAcesso },
                                    nota);
+        }
+
+        [HttpGet("buscar-completa-sefaz/{chaveAcesso}")]
+        public async Task<IActionResult> BuscarNotaCompletaNaSefaz(string chaveAcesso, CancellationToken token)
+        {
+            var notaFiscalDto = await _service.ParseFromSefazAsync(chaveAcesso, token);
+            return Ok(notaFiscalDto);
         }
 
         [HttpGet("buscar-por-chave/{chaveAcesso}")]
@@ -75,11 +82,6 @@ namespace TruckFlow.Controllers
         [HttpPost("validar-sefaz/{chaveAcesso}")]
         public async Task<IActionResult> ValidarNaSefaz(string chaveAcesso, CancellationToken token)
         {
-            if (string.IsNullOrWhiteSpace(chaveAcesso) || chaveAcesso.Length != 44)
-            {
-                return BadRequest("Chave de acesso inválida.");
-            }
-
             var resultado = await _service.ValidarNaSefazAsync(chaveAcesso, token);
             return Ok(resultado);
         }

@@ -1,9 +1,11 @@
 using DFe.Classes.Entidades;
 using DFe.Classes.Flags;
+using DFe.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NFe.Servicos;
 using NFe.Utils;
+using System.Text;
 
 namespace TruckFlow.Application.Sefaz
 {
@@ -97,6 +99,98 @@ namespace TruckFlow.Application.Sefaz
                 Ambiente = (int)ambiente,
                 RawRespostaXml = retorno.RetornoStr
             };
+        }
+
+        public Task<ConsultaDistribuicaoResultado> ConsultarDistribuicaoAsync(
+            string chaveAcesso,
+            CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(_options.Certificado.Caminho))
+            {
+                throw new InvalidOperationException(
+                    "Sefaz:Certificado:Caminho não configurado. " +
+                    "Defina o caminho do .pfx (A1) ou habilite Sefaz:UseFake=true para dev.");
+            }
+
+            if (string.IsNullOrWhiteSpace(_options.CnpjConsultante))
+            {
+                throw new InvalidOperationException(
+                    "Sefaz:CnpjConsultante não configurado. NFeDistribuicaoDFe exige informar " +
+                    "explicitamente o CNPJ de quem consulta (o do certificado configurado) — " +
+                    "ver Docs/sefaz-certificado-consulta-nfe.md.");
+            }
+
+            return Task.Run(() => ExecutarConsultaDistribuicao(chaveAcesso), token);
+        }
+
+        private ConsultaDistribuicaoResultado ExecutarConsultaDistribuicao(string chaveAcesso)
+        {
+            var config = new ConfiguracaoServico
+            {
+                tpAmb = _options.Ambiente == 1 ? TipoAmbiente.Producao : TipoAmbiente.Homologacao,
+                VersaoNFeDistribuicaoDFe = VersaoServico.Versao100
+            };
+
+            config.Certificado.Arquivo = _options.Certificado.Caminho!;
+            config.Certificado.Senha = _options.Certificado.Senha ?? string.Empty;
+
+            _logger.LogInformation(
+                "[ZeusSefazClient] Consulta distribuição SEFAZ. Chave={Chave} CnpjConsultante={Cnpj}",
+                chaveAcesso, _options.CnpjConsultante);
+
+            var servicos = new ServicosNFe(config);
+            
+            var retorno = servicos.NfeDistDFeInteresse(
+                "AN", _options.CnpjConsultante!, "0", "0", chaveAcesso);
+
+            var resp = retorno.Retorno;
+            var lote = resp.loteDistDFeInt?.FirstOrDefault();
+
+            string? xmlNfe = ExtrairXmlDoLote(lote);
+
+            _logger.LogInformation(
+                "[ZeusSefazClient] Resposta distribuição SEFAZ. Chave={Chave} cStat={CStat} xMotivo={XMotivo} xmlDisponivel={Disponivel}",
+                chaveAcesso, resp.cStat, resp.xMotivo, xmlNfe != null);
+
+            return new ConsultaDistribuicaoResultado
+            {
+                ChaveAcesso = chaveAcesso,
+                CStat = resp.cStat,
+                XMotivo = resp.xMotivo ?? string.Empty,
+                XmlNfe = xmlNfe
+            };
+        }
+
+
+        private static string? ExtrairXmlDoLote(NFe.Classes.Servicos.DistribuicaoDFe.loteDistDFeInt? lote)
+        {
+            if (lote == null)
+            {
+                return null;
+            }
+
+            if (lote.NfeProc?.NFe?.infNFe != null)
+            {
+                return FuncoesXml.ClasseParaXmlString(lote.NfeProc);
+            }
+
+            if (lote.XmlNfe is { Length: > 0 })
+            {
+                try
+                {
+                    using var comprimido = new MemoryStream(lote.XmlNfe);
+                    using var gzip = new System.IO.Compression.GZipStream(comprimido, System.IO.Compression.CompressionMode.Decompress);
+                    using var descomprimido = new MemoryStream();
+                    gzip.CopyTo(descomprimido);
+                    return Encoding.UTF8.GetString(descomprimido.ToArray());
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            return null;
         }
     }
 }

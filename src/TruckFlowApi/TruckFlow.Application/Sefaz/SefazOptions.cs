@@ -8,6 +8,15 @@ namespace TruckFlow.Application.Sefaz
         public string? UfEmitenteFallback { get; set; } // ex: "SP" — usado quando a Empresa não fornece UF
         public bool UseFake { get; set; } = true;        // true = não bate na SEFAZ, retorna mock canônico
 
+        /// <summary>
+        /// CNPJ (só dígitos) do titular do certificado configurado abaixo — obrigatório pra
+        /// NFeDistribuicaoDFe (ConsultarDistribuicaoAsync), que exige informar explicitamente
+        /// o CNPJ de quem está consultando (não é inferido do certificado pela lib).
+        /// Ver Docs/sefaz-certificado-consulta-nfe.md — precisa ser o CNPJ do destinatário
+        /// (cliente), não da TruckFlow, pra esse serviço específico.
+        /// </summary>
+        public string? CnpjConsultante { get; set; }
+
         public SefazCertificadoOptions Certificado { get; set; } = new();
     }
 
