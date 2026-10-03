@@ -206,6 +206,11 @@ namespace TruckFlowApi.Infra.Repositories
                 query = query.Where(x => x.DataInicio >= filtros.DataInicio.Value);
             }
 
+            if (filtros.DataFim.HasValue)
+            {
+                query = query.Where(x => x.DataInicio <= filtros.DataFim.Value);
+            }
+
             if (filtros.FornecedorId.HasValue)
             {
                 query = query.Where(x => x.FornecedorId == filtros.FornecedorId.Value);
@@ -217,6 +222,15 @@ namespace TruckFlowApi.Infra.Repositories
                 query = query.Where(x =>
                     x.ProdutoId == produtoId ||
                     (x.Grade != null && x.Grade.ProdutoId == produtoId));
+            }
+
+            if(!string.IsNullOrWhiteSpace(filtros.PlacaVeiculo))
+            {
+                var placa = filtros.PlacaVeiculo.Trim();
+                query = query.Where(x =>
+                    (x.PlacaVeiculo != null && x.PlacaVeiculo.Contains(placa)) ||
+                    (x.NotaFiscal != null && x.NotaFiscal.PlacaVeiculo != null &&
+                     x.NotaFiscal.PlacaVeiculo.Contains(placa)));
             }
 
             if (!string.IsNullOrWhiteSpace(filtros.Motorista))

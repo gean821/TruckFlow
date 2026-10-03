@@ -32,4 +32,8 @@
     <Folder Include="Resources\Sucesso\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Relatorio\logo.png" />
+  </ItemGroup>
+
 </Project>
