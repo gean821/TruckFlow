@@ -24,6 +24,6 @@ namespace TruckFlow.Application.Sefaz
     {
         public string? Caminho { get; set; }     // .pfx (A1)
         public string? Senha { get; set; }
-        public string? Thumbprint { get; set; }  // alternativa: cert instalado na store da máquina
+        public string? Thumbprint { get; set; }  // alternativa: cert instalado na store da máquina (TipoCertificado.A1Repositorio)
     }
 }

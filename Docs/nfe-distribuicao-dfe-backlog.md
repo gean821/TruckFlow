@@ -12,14 +12,12 @@
 2. ✅ Refatoração de `NotaFiscalService`: extraído `NotaFiscalXmlExtractor` (`TruckFlow.Application/NotaFiscais/`) — parsing + extração puros, sem banco, compartilhados entre `ParseXmlAsync` (upload) e `ParseFromSefazAsync` (SEFAZ) via `EnriquecerComMatchingAsync`.
 3. ✅ `FakeSefazClient.ConsultarDistribuicaoAsync` com fixture determinística (mesma convenção de sufixo de chave do método de status).
 4. ✅ Endpoint `GET /v1/NotaFiscal/buscar-completa-sefaz/{chaveAcesso}` + wiring no mobile: `useNotaFiscal.ts` agora tenta `buscarNotaPorChave` (banco) primeiro e cai automaticamente pra `buscarNotaCompletaSefaz` em caso de 404 — motorista não precisa escolher "outra forma" manualmente quando a nota é nova.
-5. ⏳ Troca pro certificado real da Aurora quando disponível (config, não código — mesmo padrão já usado hoje). Único item ainda bloqueado.
+5. ✅ **Validado contra a SEFAZ de produção real (2026-09-20)** — certificado A1 real (CR DA SILVA TRANSPORTES) + chave de acesso real. `validar-sefaz` retornou `cStat=100` com protocolo batendo exatamente com o DANFE real. `buscar-completa-sefaz` retornou `cStat=137` ("não localizado") — comunicação técnica funcionou (handshake/SOAP/parsing corretos), mas o documento não foi disponibilizado por essa consulta. Hipótese em teste: manifestação do destinatário pendente (não confirmada ainda) — ver `Docs/sefaz-certificado-consulta-nfe.md` seção 6 pro teste controlado planejado.
 
-**Testes (2026-09-19):** 275 testes passando (240 pré-existentes + 35 novos: extractor, fake, `ParseFromSefazAsync`, e cobertura nova de `SaveParsedNotaAsync`/`ObterPorChaveAsync`/`ValidarNaSefazAsync`, que não tinham teste de serviço antes). Smoke test manual via HTTP real (registro de empresa + JWT real + 3 cenários no endpoint novo) confirmado funcionando. `npx tsc --noEmit` do mobile limpo.
+**6 bugs reais corrigidos em `ZeusSefazClient.cs`** durante essa validação (nenhum pego por teste automatizado — só apareceram batendo na SEFAZ real): `TipoCertificado`, `ModeloDocumento`/`tpEmis`, `ValidarSchemas`, `ProtocoloDeSeguranca`, `TimeOut` (estava em segundos, precisa ser milissegundos — causa do "timeout" persistente por várias rodadas), e o mais sutil, `ConfiguracaoCertificado.KeyStorageFlags` não setado (causa raiz do "SSL connection could not be established" — só achado decompilando a lib com `ICSharpCode.Decompiler`, já que ela não preserva a exceção real). Detalhe completo em `Docs/sefaz-certificado-consulta-nfe.md` seção 4.
 
-## Bloqueio externo
+**Testes (2026-09-20):** 275 testes automatizados passando (240 pré-existentes + 35 novos). Smoke test HTTP real completo (registro de empresa/motorista, JWT real, parse→save→buscar→validar, idempotência) + validação final contra SEFAZ de produção real com certificado real. `npx tsc --noEmit` do mobile limpo. **Ticket fechado tecnicamente** — não há mais nenhum item de código pendente.
 
-Certificado A1 da Aurora — já solicitado por e-mail ao Gabriel. Não bloqueia o desenvolvimento (item 5 é só troca de config), só bloqueia a validação final ponta a ponta com a SEFAZ real.
+## Pendência que não depende do TruckFlow
 
-## Pendência paralela, não bloqueante
-
-Confirmar com o time fiscal da Aurora se eles já têm manifestação do destinatário configurada — pode ser pré-requisito adicional pra liberar o XML completo via `NFeDistribuicaoDFe`. Só descoberto no teste real com certificado.
+Quando testarmos com o certificado real da Aurora (destinatária de verdade das notas dos fornecedores dela), o esperado é que `buscar-completa-sefaz` funcione completo — mas se vier "não localizado" como no nosso teste, vale perguntar ao time fiscal deles sobre manifestação do destinatário. Não é código, é processo fiscal do lado do cliente.
