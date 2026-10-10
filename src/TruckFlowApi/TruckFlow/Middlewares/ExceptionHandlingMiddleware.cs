@@ -1,4 +1,5 @@
 ﻿using TruckFlow.Application.Exceptions;
+using TruckFlow.Domain.Exceptions;
 
 namespace TruckFlow.Middlewares
 {
@@ -36,6 +37,19 @@ namespace TruckFlow.Middlewares
                 };
 
                 await context.Response.WriteAsJsonAsync(result);
+            }
+
+            catch (DomainException ex)
+            {
+                _logger.LogWarning(ex, "Erro de negócio (domínio)");
+
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    success = false,
+                    code = ex.Code,
+                    message = ex.Message
+                });
             }
 
             catch (FluentValidation.ValidationException ex)

@@ -1,6 +1,7 @@
 using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Enums;
 using TruckFlow.Domain.Events;
+using TruckFlow.Domain.Exceptions;
 using TruckFlow.Domain.Rules;
 
 
@@ -39,7 +40,7 @@ namespace TruckFlow.Domain.Entities
         {
             if (!StatusAgendamento.PodeTransitarPara(novoStatus))
             {
-                throw new Exception(
+                throw new DomainException(
                     $"Transição inválida: {StatusAgendamento} → {novoStatus}");
             }
 
@@ -56,17 +57,17 @@ namespace TruckFlow.Domain.Entities
         {
             if (StatusAgendamento != StatusAgendamento.Disponivel)
             {
-                throw new Exception("A vaga não está disponível para reserva.");
+                throw new DomainException("A vaga não está disponível para reserva.");
             }
 
             if (DataFim <= DateTime.UtcNow)
             {
-                throw new Exception("Esta vaga já expirou e não pode mais ser reservada.");
+                throw new DomainException("Esta vaga já expirou e não pode mais ser reservada.");
             }
 
             if (!ProdutoId.HasValue)
             {
-                throw new Exception("Vaga sem produto definido. Contate o administrador.");
+                throw new DomainException("Vaga sem produto definido. Contate o administrador.");
             }
 
             var temProdutoNaNota = notaFiscal.Itens?
@@ -74,12 +75,12 @@ namespace TruckFlow.Domain.Entities
 
             if (!temProdutoNaNota)
             {
-                throw new Exception("A nota fiscal não contém o produto desta vaga.");
+                throw new DomainException("A nota fiscal não contém o produto desta vaga.");
             }
 
             if (FornecedorId.HasValue && FornecedorId != notaFiscal.FornecedorId)
             {
-                throw new Exception("Esta vaga é exclusiva de outro fornecedor.");
+                throw new DomainException("Esta vaga é exclusiva de outro fornecedor.");
             }
 
             StatusAgendamento = StatusAgendamento.Agendado;
