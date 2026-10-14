@@ -127,23 +127,26 @@ sequenceDiagram
 
 ## 7) Divergências e falhas mapeadas (estado atual)
 
+> **Esta lista é a fonte única do status dos gaps.** Quando um item for resolvido ou reclassificado, atualize só aqui. Menções em outros agentes/skills são exemplos e podem estar atrasadas; em caso de dúvida, vale esta lista.
+
 ### P0 — Bloqueadores (segurança / isolamento / integridade)
 
-1. **`POST /v1/AuthAdmin/register` anônimo** aceitando `EmpresaId` do body; `RegisterAdminAsync` não valida empresa nula → criação de admin em tenant alheio. (`AuthAdminController.cs:30`, `UsuarioService.cs` ~L55-65.)
-2. **`UsuarioService.SetAdminStatusAsync` / `GetAdminByIdAsync`** via `FindByIdAsync` sem checar `EmpresaId` → BOLA entre tenants (OWASP API1).
-3. **Migrations no startup** (`db.Database.Migrate()`) + seed síncrono → race com 2 instâncias (ADR-0004 item 2) e deploy Railway sem gate.
-4. **`AgendamentoExpirationWorker` sem claim distribuído** (`FOR UPDATE SKIP LOCKED`), protegido só por `xmin` → com 2 instâncias, trabalho duplicado e ruído de concorrência (ADR-0004 item 4).
-5. **Idempotency-Key** ausente em `/reservar` e futura ingestão de posição (ADR-0004 item 12).
+1. **Migrations no startup** (`db.Database.Migrate()`) + seed síncrono → race com 2 instâncias (ADR-0004 item 2) e deploy Railway sem gate.
+2. **`AgendamentoExpirationWorker` sem claim distribuído** (`FOR UPDATE SKIP LOCKED`), protegido só por `xmin` → com 2 instâncias, trabalho duplicado e ruído de concorrência (ADR-0004 item 4).
+3. **Idempotency-Key** ausente em `/reservar` e futura ingestão de posição (ADR-0004 item 12).
+
+Resolvido em 2026-10-14: métodos admin do `UsuarioService` filtram por empresa (`FindUsuarioDaEmpresaAsync`), cobertos por `TruckFlow.Test/Integration/UsuarioCrossTenantTests.cs`.
+
+Nota: `POST /v1/AuthAdmin/register` anônimo aceitando `EmpresaId` é **intencional** — bootstrap usado pelo time para criar o primeiro admin de uma empresa. Não é bug; reavaliar a forma de restringir antes do rollout.
 
 ### P1 — Alta prioridade funcional / operacional
 
-1. `BadRequestException` e `DbUpdateConcurrencyException` não tratadas → **500** para erro de negócio.
+1. `DbUpdateConcurrencyException` não tratada → **500** para erro de negócio.
 2. Dois formatos de erro (envelope custom vs `ValidationProblemDetails` do `[ApiController]`).
-3. `VeiculoDependencyInjection.AddProduto` nunca chamado → `VeiculoController` falha ao ativar.
-4. Swagger UI em produção; `DevToolsController` protegido só por `IsDevelopment()` em runtime.
-5. HttpClients sem resiliência (Expo, Resend, Geocoding); SEFAZ via Zeus síncrono em `Task.Run`.
-6. Front: chaves de detalhe não invalidadas (`agendamento`/`grade`), `enabled` estático, views chamando service direto, `v-maska` sem pacote, toast em segundos, SSE com token antigo após refresh, **zero testes** e CI só com build.
-7. Mobile: tap de push manda `{ id }` e a tela lê `agendamentoId`; sem unregister de push no logout; telas chamando `AuthService` direto; chave admin Firebase na pasta do app.
+3. Swagger UI em produção; `DevToolsController` protegido só por `IsDevelopment()` em runtime.
+4. HttpClients sem resiliência (Expo, Resend, Geocoding); SEFAZ via Zeus síncrono em `Task.Run`.
+5. Front: chaves de detalhe não invalidadas (`agendamento`/`grade`), `enabled` estático, views chamando service direto, `v-maska` sem pacote, toast em segundos, SSE com token antigo após refresh, **zero testes** e CI só com build.
+6. Mobile: sem unregister de push no logout; telas chamando `AuthService` direto; chave admin Firebase na pasta do app.
 
 ### P2 — Hardening / dívida
 
@@ -209,8 +212,8 @@ rg -n "dto\.EmpresaId|EmpresaId\s*=\s*dto|\[FromBody\].*Empresa" src/TruckFlowAp
 rg -n "AllowAnonymous|\[HttpPost\(\"register" src/TruckFlowApi/TruckFlow/Controllers
 # concorrência
 rg -n "xmin|IsConcurrencyToken|SKIP LOCKED|23P01|23505|DbUpdateConcurrencyException" src/TruckFlowApi
-# exceções que viram 500
-rg -n "BadRequestException|throw new Exception\(" src/TruckFlowApi
+# exceções genéricas que viram 500
+rg -n "throw new Exception\(" src/TruckFlowApi
 # DI chamada?
 rg -n "public static IServiceCollection Add" src/TruckFlowApi/TruckFlow/Extensions ; rg -n "builder.Services.Add" src/TruckFlowApi/TruckFlow/Program.cs
 # front: bypass do padrão

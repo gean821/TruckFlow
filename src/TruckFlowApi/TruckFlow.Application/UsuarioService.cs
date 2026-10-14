@@ -26,6 +26,7 @@ namespace TruckFlow.Application
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly AppDbContext _db;
+        private readonly CurrentUserGuard _currentUser;
         private readonly ILogger<UsuarioService> _logger;
 
         public UsuarioService(
@@ -35,6 +36,7 @@ namespace TruckFlow.Application
             IRefreshTokenService refreshTokenService,
             IEmpresaRepositorio empresaRepo,
             AppDbContext db,
+            CurrentUserGuard currentUser,
             ILogger<UsuarioService> logger
         )
         {
@@ -43,6 +45,7 @@ namespace TruckFlow.Application
             _authService = authService;
             _refreshTokenService = refreshTokenService;
             _db = db;
+            _currentUser = currentUser;
             _empresaRepo = empresaRepo;
             _logger = logger;
         }
@@ -257,8 +260,7 @@ namespace TruckFlow.Application
             bool ativo,
             CancellationToken token = default)
         {
-            var usuario = await _userManager.FindByIdAsync(id.ToString())
-                ?? throw new NotFoundException("Usuário não encontrado.");
+            var usuario = await FindUsuarioDaEmpresaAsync(id, token);
 
             GarantirNaoEntraId(usuario);
 
@@ -293,8 +295,7 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            var usuario = await _userManager.FindByIdAsync(id.ToString())
-                            ?? throw new NotFoundException("Usuário não encontrado.");
+            var usuario = await FindUsuarioDaEmpresaAsync(id, token);
 
             return await MapUsuarioAsync(usuario);
         }
@@ -304,8 +305,7 @@ namespace TruckFlow.Application
             CancellationToken token = default
         )
         {
-            var usuario = await _userManager.FindByIdAsync(id.ToString())
-                ?? throw new NotFoundException("Usuário não encontrado.");
+            var usuario = await FindUsuarioDaEmpresaAsync(id, token);
 
             GarantirNaoEntraId(usuario);
 
@@ -345,8 +345,7 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            var usuario = await _userManager.FindByIdAsync(id.ToString())
-                ?? throw new NotFoundException("Usuario não encontrado.");
+            var usuario = await FindUsuarioDaEmpresaAsync(id, token);
 
             GarantirNaoEntraId(usuario);
 
@@ -729,6 +728,18 @@ namespace TruckFlow.Application
         /// no próximo login/sync, então bloqueamos na origem em vez de deixar a UI confundir.
         /// Ver Docs/entra-id-integracao-backlog.md (ENTRA-08).
         /// </summary>
+        // Usuario não é IEmpresaScoped (herda IdentityUser), então o filtro global de tenant
+        // não se aplica: a busca por id precisa restringir à empresa do usuário logado.
+        // Usuário de outra empresa responde como inexistente (404), sem revelar que existe.
+        private async Task<Usuario> FindUsuarioDaEmpresaAsync(Guid id, CancellationToken token)
+        {
+            var empresaId = _currentUser.GetEmpresaId();
+
+            return await _userManager.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.EmpresaId == empresaId, token)
+                ?? throw new NotFoundException("Usuário não encontrado.");
+        }
+
         private static void GarantirNaoEntraId(Usuario usuario)
         {
             if (usuario.Origem == OrigemUsuario.EntraId)

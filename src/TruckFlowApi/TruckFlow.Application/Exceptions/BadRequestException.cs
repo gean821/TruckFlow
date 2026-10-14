@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 
 namespace TruckFlow.Application.Exceptions
 {
-    public class BadRequestException : Exception
+    public class BadRequestException(string message) : HttpResponseException("BAD_REQUEST", message)
     {
-        public BadRequestException(string message) : base(message)
-        {
-        }
     }
 }

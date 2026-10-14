@@ -71,7 +71,7 @@ src/TruckFlowApi/
 ## Erros
 
 `ExceptionHandlingMiddleware` devolve envelope `{ success: false, code, message }`:
-`NotFoundException` → 404 · `BusinessException`/`DomainException` → 400 · `ValidationException` (FluentValidation) → 400 `VALIDATION_ERROR` com `errors[]` · `UnauthorizedAccessException` → 401 · resto → 500.
+`NotFoundException` → 404 · `BusinessException`/`DomainException` → 400 · `BadRequestException` → 400 `BAD_REQUEST` · `ValidationException` (FluentValidation) → 400 `VALIDATION_ERROR` com `errors[]` · `UnauthorizedAccessException` → 401 · resto → 500.
 
 ## CORS
 
