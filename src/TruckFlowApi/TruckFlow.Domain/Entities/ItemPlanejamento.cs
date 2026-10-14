@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Contracts;
+using TruckFlow.Domain.Exceptions;
 
 namespace TruckFlow.Domain.Entities
 {
@@ -33,7 +34,7 @@ namespace TruckFlow.Domain.Entities
         public void Reservar(decimal quantidade)
         {
             if (quantidade <= 0)
-                throw new Exception("Quantidade inválida.");
+                throw new DomainException("Quantidade inválida.");
 
             QuantidadeReservada += quantidade;
             UpdatedAt = DateTime.UtcNow;
@@ -42,7 +43,7 @@ namespace TruckFlow.Domain.Entities
         public void EstornarReserva(decimal quantidade)
         {
             if (quantidade <= 0)
-                throw new Exception("Quantidade inválida.");
+                throw new DomainException("Quantidade inválida.");
 
             QuantidadeReservada = Math.Max(0m, QuantidadeReservada - quantidade);
             UpdatedAt = DateTime.UtcNow;
@@ -51,7 +52,7 @@ namespace TruckFlow.Domain.Entities
         public void ConfirmarRecebimento(decimal quantidadeReal, decimal quantidadeReservadaOriginal)
         {
             if (quantidadeReal <= 0)
-                throw new Exception("Quantidade inválida.");
+                throw new DomainException("Quantidade inválida.");
 
             if (quantidadeReservadaOriginal > 0)
             {
@@ -65,7 +66,7 @@ namespace TruckFlow.Domain.Entities
         public void RegistrarRecebimento(decimal quantidade)
         {
             if (quantidade <= 0)
-                throw new Exception("Quantidade inválida.");
+                throw new DomainException("Quantidade inválida.");
 
             QuantidadeTotalRecebida += quantidade;
             UpdatedAt = DateTime.UtcNow;
@@ -74,7 +75,7 @@ namespace TruckFlow.Domain.Entities
         public void EstornarRecebimento(decimal quantidade)
         {
             if (quantidade <= 0)
-                throw new Exception("Quantidade inválida.");
+                throw new DomainException("Quantidade inválida.");
 
             QuantidadeTotalRecebida = Math.Max(0m, QuantidadeTotalRecebida - quantidade);
             UpdatedAt = DateTime.UtcNow;

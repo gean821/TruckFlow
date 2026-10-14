@@ -1,5 +1,6 @@
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
+using TruckFlow.Domain.Exceptions;
 
 namespace TruckFlow.Test.Domain;
 
@@ -80,7 +81,7 @@ public class ItemPlanejamentoTests
     public void Reservar_QuantidadeInvalida_LancaExcecao(decimal quantidade)
     {
         var item = CriarItem();
-        Assert.Throws<Exception>(() => item.Reservar(quantidade));
+        Assert.Throws<DomainException>(() => item.Reservar(quantidade));
     }
 
     // --- EstornarReserva ---
@@ -109,7 +110,7 @@ public class ItemPlanejamentoTests
     public void EstornarReserva_QuantidadeInvalida_LancaExcecao(decimal quantidade)
     {
         var item = CriarItem();
-        Assert.Throws<Exception>(() => item.EstornarReserva(quantidade));
+        Assert.Throws<DomainException>(() => item.EstornarReserva(quantidade));
     }
 
     // --- ConfirmarRecebimento ---
@@ -139,7 +140,7 @@ public class ItemPlanejamentoTests
     public void ConfirmarRecebimento_QuantidadeInvalida_LancaExcecao(decimal quantidade)
     {
         var item = CriarItem();
-        Assert.Throws<Exception>(() => item.ConfirmarRecebimento(quantidade, 0));
+        Assert.Throws<DomainException>(() => item.ConfirmarRecebimento(quantidade, 0));
     }
 
     // --- RegistrarRecebimento ---
@@ -158,7 +159,7 @@ public class ItemPlanejamentoTests
     public void RegistrarRecebimento_QuantidadeInvalida_LancaExcecao(decimal quantidade)
     {
         var item = CriarItem();
-        Assert.Throws<Exception>(() => item.RegistrarRecebimento(quantidade));
+        Assert.Throws<DomainException>(() => item.RegistrarRecebimento(quantidade));
     }
 
     // --- EstornarRecebimento ---
@@ -187,7 +188,7 @@ public class ItemPlanejamentoTests
     public void EstornarRecebimento_QuantidadeInvalida_LancaExcecao(decimal quantidade)
     {
         var item = CriarItem();
-        Assert.Throws<Exception>(() => item.EstornarRecebimento(quantidade));
+        Assert.Throws<DomainException>(() => item.EstornarRecebimento(quantidade));
     }
 
     // --- EstaConcluido ---

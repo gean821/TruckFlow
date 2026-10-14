@@ -79,3 +79,7 @@ Em `Docs/adr/`:
 - Services retornam DTOs, nunca entidades EF.
 - Controllers magros: validação + chamada de service + retorno.
 - Async/await em tudo que toca BD.
+
+## Git
+
+- Nunca incluir linhas de atribuição ao Claude (`Co-Authored-By: Claude...`, `Claude-Session: ...` etc.) em mensagens de commit ou PR. Mensagens de commit só com o conteúdo do próprio commit.

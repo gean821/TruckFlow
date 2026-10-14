@@ -1,6 +1,7 @@
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlow.Domain.Events;
+using TruckFlow.Domain.Exceptions;
 
 namespace TruckFlow.Test.Domain;
 
@@ -25,7 +26,7 @@ public class AgendamentoTests
         agendamento.AlterarStatus(StatusAgendamento.EmAndamento);
         agendamento.AlterarStatus(StatusAgendamento.Finalizado);
 
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<DomainException>(() =>
             agendamento.AlterarStatus(StatusAgendamento.Cancelado));
 
         Assert.Contains("Transição inválida", ex.Message);
@@ -80,7 +81,7 @@ public class AgendamentoTests
         var notaFiscal = CriarNotaFiscal(produtoId: produtoId);
         agendamento.Reservar(Guid.NewGuid(), notaFiscal, null, null);
 
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<DomainException>(() =>
             agendamento.Reservar(Guid.NewGuid(), notaFiscal, null, null));
 
         Assert.Contains("não está disponível", ex.Message);
@@ -95,7 +96,7 @@ public class AgendamentoTests
             dataFim: DateTime.UtcNow.AddHours(-1));
         var notaFiscal = CriarNotaFiscal(produtoId: produtoId);
 
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<DomainException>(() =>
             agendamento.Reservar(Guid.NewGuid(), notaFiscal, null, null));
 
         Assert.Contains("já expirou", ex.Message);
@@ -107,7 +108,7 @@ public class AgendamentoTests
         var agendamento = CriarAgendamentoDisponivel(produtoId: null);
         var notaFiscal = CriarNotaFiscal(produtoId: Guid.NewGuid());
 
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<DomainException>(() =>
             agendamento.Reservar(Guid.NewGuid(), notaFiscal, null, null));
 
         Assert.Contains("Vaga sem produto definido", ex.Message);
@@ -119,7 +120,7 @@ public class AgendamentoTests
         var agendamento = CriarAgendamentoDisponivel(produtoId: Guid.NewGuid());
         var notaFiscal = CriarNotaFiscal(produtoId: Guid.NewGuid());
 
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<DomainException>(() =>
             agendamento.Reservar(Guid.NewGuid(), notaFiscal, null, null));
 
         Assert.Contains("nota fiscal não contém o produto", ex.Message);
@@ -136,7 +137,7 @@ public class AgendamentoTests
             produtoId: produtoId,
             fornecedorId: Guid.NewGuid());
 
-        var ex = Assert.Throws<Exception>(() =>
+        var ex = Assert.Throws<DomainException>(() =>
             agendamento.Reservar(Guid.NewGuid(), notaFiscal, null, null));
 
         Assert.Contains("exclusiva de outro fornecedor", ex.Message);
@@ -211,7 +212,7 @@ public class AgendamentoTests
         agendamento.RegistrarChegada();
         agendamento.FinalizarOperacao();
 
-        Assert.Throws<Exception>(() => agendamento.Cancelar());
+        Assert.Throws<DomainException>(() => agendamento.Cancelar());
     }
 
     [Fact]

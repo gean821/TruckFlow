@@ -13,12 +13,13 @@
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="4.16.0" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
     <PackageReference Include="Zeus.Net.NFe.NFCe" Version="2025.10.9.2019" />
@@ -31,6 +32,8 @@
   <ItemGroup>
     <ProjectReference Include="..\TruckFlow.Domain\TruckFlow.Domain.csproj" />
     <ProjectReference Include="..\TruckFlow.Application\TruckFlow.Application.csproj" />
+    <ProjectReference Include="..\TruckFlowApi.Infra\TruckFlowApi.Infra.csproj" />
+    <ProjectReference Include="..\TruckFlow\TruckFlow.csproj" />
   </ItemGroup>
 
 </Project>
