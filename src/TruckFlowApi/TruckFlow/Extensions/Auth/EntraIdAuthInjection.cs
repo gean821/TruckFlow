@@ -130,6 +130,15 @@ namespace TruckFlow.Extensions.Auth
                 {
                     originalOnRemoteFailure?.Invoke(context);
 
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("EntraIdAuthInjection");
+
+                    logger.LogError(
+                        context.Failure,
+                        "OnRemoteFailure no handshake OIDC do Entra ID. Motivo={Motivo}",
+                        context.Failure?.Message);
+
                     var frontendBase = context.HttpContext.RequestServices
                         .GetRequiredService<IConfiguration>()["EntraIdOptions:FrontendLoginUrl"]
                         ?? "/login";

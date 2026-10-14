@@ -1,0 +1,20 @@
+{
+	"version": "1.0.0",
+	"organization": "TruckFlow",
+	"date": "Outubro 2026",
+	"abstract": "Guia de boas práticas de PostgreSQL 16 com EF Core 9 e Npgsql 9 para o backend multi-tenant do TruckFlow (cliente Aurora Alimentos, 21 fábricas). Regras em 9 categorias priorizadas por impacto, cada uma com anti-padrão e correção em SQL e em EF Core/Npgsql, notas apontando o código real e referências. Adaptado de supabase/postgres-best-practices (MIT), substituindo RLS/Supabase por multi-tenant via global query filter e adicionando migrations seguras, concorrência (xmin, exclusion constraint, SKIP LOCKED), idempotência e LISTEN/NOTIFY.",
+	"references": [
+		"https://www.postgresql.org/docs/16/",
+		"https://www.npgsql.org/efcore/",
+		"https://learn.microsoft.com/ef/core/",
+		"https://use-the-index-luke.com/",
+		"https://www.cybertec-postgresql.com/en/blog/",
+		"https://www.crunchydata.com/blog",
+		"https://www.depesz.com/",
+		"https://pganalyze.com/blog",
+		"https://hakibenita.com/",
+		"https://brandur.org/",
+		"https://www.laurenzalbe.com/",
+		"https://github.com/supabase/agent-skills"
+	]
+}
