@@ -11,7 +11,7 @@ namespace TruckFlow.Extensions.Auth
             {
                 HttpOnly = true,
                 Secure = !env.IsDevelopment(),
-                SameSite = SameSiteMode.Lax,
+                SameSite = env.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.None,
                 Path = "/",
                 Expires = expiresAt
             };
