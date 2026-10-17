@@ -82,6 +82,9 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             CancellationToken cancellationToken = default);
 
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+
+        Task<bool> TryAdvisoryLockEmpresaAsync(Guid empresaId, CancellationToken cancellationToken = default);
+        
         Task DeleteTodosPorGrade(Guid gradeId, CancellationToken cancellationToken = default);
         Task DeleteDisponiveisPorGrade(Guid gradeId, CancellationToken cancellationToken = default);
     }

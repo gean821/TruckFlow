@@ -118,7 +118,7 @@ namespace TruckFlow.Extensions.Notificacao
             {
                 var eventType = typeResolver.Resolve(outboxEvent.EventType);
                 var domainEvent = 
-                    (IDomainEvent)OutboxEventSerializer.Deserialize(outboxEvent.Payload, eventType);
+                    OutboxEventSerializer.Deserialize(outboxEvent.Payload, eventType);
 
                 using (empresaContext.WithTenant(outboxEvent.EmpresaId))
                 {

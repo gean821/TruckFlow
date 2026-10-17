@@ -354,6 +354,16 @@ namespace TruckFlowApi.Infra.Repositories
             return _db.Database.BeginTransactionAsync(cancellationToken);
         }
 
+        public async Task<bool> TryAdvisoryLockEmpresaAsync(
+            Guid empresaId,
+            CancellationToken cancellationToken = default)
+        {
+
+            return await _db.Database
+                .SqlQuery<bool>($"SELECT pg_try_advisory_xact_lock(hashtext({empresaId.ToString()})) AS \"Value\"")
+                .SingleAsync(cancellationToken);
+        }
+
         public async Task DeleteTodosPorGrade(
             Guid gradeId,
             CancellationToken cancellationToken = default

@@ -104,6 +104,7 @@ Em `Docs/adr/`:
 
 ## Convenções
 
+- **Toda task que mude comportamento sai com teste cobrindo o cenário** — não é opcional, não é "depois". Unitário (fake de repositório, sem BD) pra regra/branch do service; integração (Postgres real via Testcontainers) pra concorrência, multi-tenant e qualquer coisa que dependa de mecanismo do próprio Postgres (lock, xmin, constraint) — fake não prova isso. Task sem teste não está pronta.
 - Nada de mock em testes de integração — usar Postgres real (feedback Aurora: prod migration quebrou com mock). Fixture: `TruckFlow.Test/Integration/Fixtures/DatabaseFixture.cs`.
 - DTOs em `Domain/Dto/<Feature>/`: `XxxCreateDto`, `XxxUpdateDto`, `XxxListQueryDto`, `XxxResponseDto`; listagens retornam `PagedResponse<T>`.
 - Services retornam DTOs, nunca entidades EF — mapeamento manual com `private static MapToResponse(...)`.

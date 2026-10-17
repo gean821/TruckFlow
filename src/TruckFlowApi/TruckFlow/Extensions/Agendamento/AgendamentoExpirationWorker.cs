@@ -77,7 +77,7 @@ namespace TruckFlow.Extensions.Agendamento
 
                 try
                 {
-                    await service.ExpirarVencidosAsync(stoppingToken);
+                    await service.ExpirarVencidosAsync(empresa.Id, stoppingToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
