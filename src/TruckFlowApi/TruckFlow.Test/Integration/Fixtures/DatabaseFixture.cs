@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 using TruckFlow.Domain.Contracts;
-using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Database;
 using TruckFlowApi.Infra.Database.Interceptors;
 
@@ -16,11 +14,11 @@ public sealed class DatabaseFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _container = new PostgreSqlBuilder()
-            .WithImage("postgres:16-alpine")
+        _container = new PostgreSqlBuilder("postgres:16-alpine")
             .WithDatabase("truckflow_test")
             .WithUsername("truckflow_test")
             .WithPassword("truckflow_test")
+            .WithCommand("-c", "max_connections=300")
             .Build();
 
         await _container.StartAsync();
