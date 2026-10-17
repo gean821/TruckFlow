@@ -74,7 +74,7 @@ namespace TruckFlow.Application
                 _logger.LogWarning(
                     "Falha ao registrar admin: {Errors}",
                     string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
-                throw new Exception(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
+                throw new BusinessException(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
             }
 
             var role = string.IsNullOrWhiteSpace(dto.Role) ? Roles.Admin : dto.Role.Trim();
@@ -151,13 +151,34 @@ namespace TruckFlow.Application
                 }
             }
 
+            if (await _userManager.IsLockedOutAsync(usuario))
+            {
+                var minutos = Math.Max(1, (int)Math.Ceiling((usuario.LockoutEnd!.Value - DateTimeOffset.UtcNow).TotalMinutes));
+                _logger.LogWarning(
+                    "Falha de login admin: conta bloqueada por tentativas (usuário {UsuarioId}).",
+                    usuario.Id);
+                throw new UnauthorizedAccessException($"Conta bloqueada por tentativas incorretas. Tente novamente em {minutos} minuto(s).");
+            }
+
             if (!await _userManager.CheckPasswordAsync(usuario, dto.Password))
             {
+                await _userManager.AccessFailedAsync(usuario);
+
+                if (await _userManager.IsLockedOutAsync(usuario))
+                {
+                    _logger.LogWarning(
+                        "Login admin bloqueado após exceder tentativas (usuário {UsuarioId}).",
+                        usuario.Id);
+                    throw new UnauthorizedAccessException("Conta bloqueada por tentativas incorretas. Tente novamente em 15 minutos.");
+                }
+
                 _logger.LogWarning(
                     "Falha de login admin: senha inválida para {UsuarioId}",
                     usuario.Id);
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
+
+            await _userManager.ResetAccessFailedCountAsync(usuario);
 
             var usuarioComAdmin = await _db.Users
                 .Include(u => u.Administrador)
@@ -381,7 +402,7 @@ namespace TruckFlow.Application
                 _logger.LogWarning(
                     "Falha ao registrar motorista: {Errors}",
                     string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
-                throw new Exception(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
+                throw new BusinessException(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
             }
 
             if (!await _roleManager.RoleExistsAsync(Roles.Motorista))
@@ -438,13 +459,34 @@ namespace TruckFlow.Application
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
+            if (await _userManager.IsLockedOutAsync(usuario))
+            {
+                var minutos = Math.Max(1, (int)Math.Ceiling((usuario.LockoutEnd!.Value - DateTimeOffset.UtcNow).TotalMinutes));
+                _logger.LogWarning(
+                    "Falha de login motorista: conta bloqueada por tentativas (usuário {UsuarioId}).",
+                    usuario.Id);
+                throw new UnauthorizedAccessException($"Conta bloqueada por tentativas incorretas. Tente novamente em {minutos} minuto(s).");
+            }
+
             if (!await _userManager.CheckPasswordAsync(usuario, dto.Password))
             {
+                await _userManager.AccessFailedAsync(usuario);
+
+                if (await _userManager.IsLockedOutAsync(usuario))
+                {
+                    _logger.LogWarning(
+                        "Login motorista bloqueado após exceder tentativas (usuário {UsuarioId}).",
+                        usuario.Id);
+                    throw new UnauthorizedAccessException("Conta bloqueada por tentativas incorretas. Tente novamente em 15 minutos.");
+                }
+
                 _logger.LogWarning(
                     "Falha de login motorista: senha inválida para {UsuarioId}",
                     usuario.Id);
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
+
+            await _userManager.ResetAccessFailedCountAsync(usuario);
 
             var usuarioComMotorista = await _db.Users
                 .Include(u => u.Motorista)
