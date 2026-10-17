@@ -160,7 +160,7 @@ namespace TruckFlow
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                db.Database.Migrate();
+                MigrationLockRunner.MigrateComLock(db);
 
                 scope.ServiceProvider.SeedRolesAsync().GetAwaiter().GetResult();
             }
