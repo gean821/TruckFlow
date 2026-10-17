@@ -25,6 +25,7 @@ using TruckFlow.Extensions.Motorista;
 using TruckFlow.Extensions.NotaFiscal;
 using TruckFlow.Extensions.Notificacao;
 using TruckFlow.Extensions.Produto;
+using TruckFlow.Extensions.RateLimiting;
 using TruckFlow.Extensions.Recebimento;
 using TruckFlow.Extensions.RecebimentoEvento;
 using TruckFlow.Extensions.Saas;
@@ -89,6 +90,7 @@ namespace TruckFlow
             builder.Services.AddSecurity();
             builder.Services.AddHealthDependency();
             builder.Services.AddEmail(builder.Configuration);
+            builder.Services.AddRateLimitingDependency();
 
             builder.Services.AddEndpointsApiExplorer();
 
@@ -137,6 +139,10 @@ namespace TruckFlow
             builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>
             {
                 options.User.RequireUniqueEmail = true;
+                options.Password.RequiredLength = 10;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
@@ -168,6 +174,7 @@ namespace TruckFlow
             app.UseForwardedHeaders();
             app.UseRouting();
             app.UseCors("AllowFrontend");
+            app.UseRateLimitingDependency();
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseMiddleware<RequestLoggingMiddleware>();
 

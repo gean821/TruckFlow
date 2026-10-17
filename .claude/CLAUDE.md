@@ -59,6 +59,7 @@ src/TruckFlowApi/
 - Claims: `Name`, `Email`, `UserId`, `EmpresaId` (multi-tenant), `MotoristaId` se for motorista, Roles do Identity
 - Papéis: `Admin`, `Gerente`, `Monitor`, `Portaria`, `Motorista` — grupos em `Domain/Entities/Roles.cs` (`RoleGroups`)
 - Setup do middleware: `TruckFlow/Extensions/Auth/AuthInjection.cs` — `ClockSkew=0`, valida Issuer/Audience/Key
+- Senha/lockout do login local (10+ caracteres, 1 não-alfanumérico, 5 tentativas → bloqueio de 15min) e rate limiting dos dois endpoints de login (por IP e por conta, Sliding Window, `429 RATE_LIMITED`) documentados em `SECURITY.md`
 
 ## Multi-tenant
 
