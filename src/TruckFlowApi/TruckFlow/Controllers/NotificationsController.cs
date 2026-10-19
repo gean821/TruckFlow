@@ -47,6 +47,13 @@ namespace TruckFlow.Controllers
             return found ? NoContent() : NotFound();
         }
 
+        [HttpPost("mark-all-read")]
+        public async Task<IActionResult> MarkAllAsRead(CancellationToken token = default)
+        {
+            var count = await _service.MarcarTodasComoLidasAsync(token);
+            return Ok(new { count });
+        }
+
         [HttpGet("agendamento/{agendamentoId:guid}")]
         public async Task<IActionResult> ListByAgendamento(
             [FromRoute] Guid agendamentoId,

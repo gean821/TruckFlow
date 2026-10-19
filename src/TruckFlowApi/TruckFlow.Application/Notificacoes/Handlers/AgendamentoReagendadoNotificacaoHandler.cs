@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlow.Domain.Events;
@@ -20,13 +21,13 @@ namespace TruckFlow.Application.Notificacoes.Handlers
             _db = db;
         }
 
-        public Task HandleAsync(
+        public async Task HandleAsync(
             AgendamentoEvent.AgendamentoReagendadoEvent domainEvent,
             CancellationToken cancellationToken)
         {
             if (domainEvent.MotoristaUsuarioId is null)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             var now = DateTime.UtcNow;
@@ -35,6 +36,17 @@ namespace TruckFlow.Application.Notificacoes.Handlers
                 .ToLocalTime()
                 .ToString("dd/MM 'às' HH:mm", PtBr);
 
+            var agendamentoInfo = await _db.Agendamento
+                .AsNoTracking()
+                .Where(a => a.Id == domainEvent.AgendamentoId)
+                .Select(a => new
+                {
+                    UnidadeEntregaNome = a.UnidadeEntrega != null ? a.UnidadeEntrega.Nome : null,
+                    LocalDescargaNome = a.LocalDescarga != null ? a.LocalDescarga.Nome : null,
+                    EmpresaNome = a.Empresa != null ? a.Empresa.NomeFantasia : null,
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
             var payload = JsonSerializer.Serialize(new
             {
                 agendamentoId = domainEvent.AgendamentoId,
@@ -42,6 +54,10 @@ namespace TruckFlow.Application.Notificacoes.Handlers
                 dataFimAnterior = domainEvent.DataFimAnterior,
                 dataInicioNova = domainEvent.DataInicioNova,
                 dataFimNova = domainEvent.DataFimNova,
+                unidadeEntregaNome = agendamentoInfo?.UnidadeEntregaNome,
+                localDescargaNome = agendamentoInfo?.LocalDescargaNome,
+                dataAgendamentoIso = domainEvent.DataInicioNova,
+                empresaNome = agendamentoInfo?.EmpresaNome,
             }, OutboxEventSerializer.Options);
 
             var notificacao = new Notificacao
@@ -74,8 +90,6 @@ namespace TruckFlow.Application.Notificacoes.Handlers
             });
 
             _db.Notificacao.Add(notificacao);
-
-            return Task.CompletedTask;
         }
     }
 }

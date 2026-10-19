@@ -54,11 +54,6 @@ namespace TruckFlow.Application
 
             var meusAgendamentos = await _repo.GetByMotoristaIdAcrossTenants(motoristaId, token);
 
-            if (meusAgendamentos.Count == 0)
-            {
-                throw new NotFoundException("Nenhum agendamento para o motorista.");
-            }
-
             return meusAgendamentos.Select(MapToResponse).ToList();
         }
 

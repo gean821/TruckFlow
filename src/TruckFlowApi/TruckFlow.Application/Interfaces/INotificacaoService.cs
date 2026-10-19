@@ -13,6 +13,8 @@ namespace TruckFlow.Application.Interfaces
 
         Task<bool> MarcarComoLidaAsync(Guid notificacaoId, CancellationToken ct);
 
+        Task<int> MarcarTodasComoLidasAsync(CancellationToken ct);
+
         Task<IReadOnlyList<NotificacaoListItemDto>> ListarPorAgendamentoAsync(
             Guid agendamentoId,
             CancellationToken ct);

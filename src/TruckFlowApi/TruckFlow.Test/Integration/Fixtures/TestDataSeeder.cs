@@ -126,6 +126,54 @@ internal static class TestDataSeeder
         DataFim = (dataInicio ?? DateTime.UtcNow.AddHours(1)).AddHours(2),
     };
 
+    public static Agendamento NovoAgendamentoAtivoNaDoca(
+        Guid empresaId,
+        Guid localDescargaId,
+        Guid unidadeEntregaId,
+        Guid produtoId,
+        DateTime dataInicio,
+        DateTime dataFim,
+        StatusAgendamento status = StatusAgendamento.Agendado) => new()
+    {
+        EmpresaId = empresaId,
+        LocalDescargaId = localDescargaId,
+        UnidadeEntregaId = unidadeEntregaId,
+        ProdutoId = produtoId,
+        TipoCarga = TipoCarga.SojaCrua,
+        StatusAgendamento = status,
+        DataInicio = dataInicio,
+        DataFim = dataFim,
+    };
+
+    public static Grade NovaGrade(
+        Guid empresaId,
+        Guid produtoId,
+        Produto produto,
+        Guid localDescargaId,
+        LocalDescarga localDescarga,
+        Guid unidadeEntregaId,
+        DateOnly dataInicio,
+        DateOnly dataFim,
+        TimeOnly horaInicial,
+        TimeOnly horaFinal,
+        int intervaloMinutos,
+        string diasSemana = "0,1,2,3,4,5,6") => new()
+    {
+        EmpresaId = empresaId,
+        ProdutoId = produtoId,
+        Produto = produto,
+        LocalDescargaId = localDescargaId,
+        LocalDescarga = localDescarga,
+        UnidadeEntregaId = unidadeEntregaId,
+        DataInicio = dataInicio,
+        DataFim = dataFim,
+        HoraInicial = horaInicial,
+        HoraFinal = horaFinal,
+        IntervaloMinutos = intervaloMinutos,
+        DiasSemana = diasSemana,
+        CreatedAt = DateTime.UtcNow,
+    };
+
     private static string NovoCnpj() =>
         Random.Shared.NextInt64(10_000_000_000_000, 99_999_999_999_999).ToString();
 

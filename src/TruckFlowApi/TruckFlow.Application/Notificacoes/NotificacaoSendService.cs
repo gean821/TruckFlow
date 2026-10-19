@@ -67,6 +67,10 @@ namespace TruckFlow.Application.Notificacoes
                 autorUsuarioId,
                 autorNome =  nomeAutor,
                 autorTipo = "Admin",
+                unidadeEntregaNome = agendamento.UnidadeEntrega?.Nome,
+                localDescargaNome = agendamento.LocalDescarga?.Nome,
+                dataAgendamentoIso = agendamento.DataInicio,
+                empresaNome = agendamento.Empresa?.NomeFantasia,
             }, OutboxEventSerializer.Options);
 
             var notificacao = new Notificacao
@@ -134,12 +138,17 @@ namespace TruckFlow.Application.Notificacoes
             }
 
             var now = DateTime.UtcNow;
+            var correlationId = Guid.NewGuid();
             var payload = JsonSerializer.Serialize(new
             {
                 agendamentoId = agendamento.Id,
                 autorUsuarioId = motoristaUserId,
                 autorNome = nomeAutor,
                 autorTipo = "Motorista",
+                unidadeEntregaNome = agendamento.UnidadeEntrega?.Nome,
+                localDescargaNome = agendamento.LocalDescarga?.Nome,
+                dataAgendamentoIso = agendamento.DataInicio,
+                empresaNome = agendamento.Empresa?.NomeFantasia,
             }, OutboxEventSerializer.Options);
 
             var notificacoes = adminsDaEmpresa.Select(admin =>
@@ -153,6 +162,7 @@ namespace TruckFlow.Application.Notificacoes
                     Titulo = string.IsNullOrWhiteSpace(dto.Titulo) ? nomeAutor : dto.Titulo.Trim(),
                     Corpo = dto.Corpo,
                     Payload = payload,
+                    CorrelationId = correlationId,
                     CreatedAt = now,
                 };
 

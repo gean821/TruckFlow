@@ -53,6 +53,23 @@ namespace TruckFlowApi.Infra.Repositories
                 baseQuery = baseQuery.Where(n => n.Prioridade == prio);
             }
 
+            if (query.DataInicio.HasValue)
+            {
+                baseQuery = baseQuery.Where(n => n.CreatedAt >= query.DataInicio.Value);
+            }
+
+            if (query.DataFim.HasValue)
+            {
+                baseQuery = baseQuery.Where(n => n.CreatedAt <= query.DataFim.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var termo = $"%{query.Search.Trim()}%";
+                baseQuery = baseQuery.Where(n =>
+                    EF.Functions.ILike(n.Titulo, termo) || EF.Functions.ILike(n.Corpo, termo));
+            }
+
             var totalCount = await baseQuery.CountAsync(token);
 
             var items = await baseQuery
@@ -121,16 +138,23 @@ namespace TruckFlowApi.Infra.Repositories
             var agendamentoIdString = agendamentoId.ToString();
             var userIdString = userId.ToString();
 
+            // Mensagens com fan-out (ex.: motorista → todos os admins da empresa) compartilham
+            // o mesmo CorrelationId; o DISTINCT ON abaixo colapsa cada grupo em uma única linha
+            // representante, evitando que a mesma mensagem apareça duplicada na conversa.
+            // Notificações sem fan-out não têm CorrelationId, então cada uma é seu próprio grupo (por Id).
             var query = _db.Notificacao
                 .FromSqlInterpolated($@"
-                    SELECT *, xmin
-                    FROM ""Notificacao""
-                    WHERE ""Payload""::jsonb->>'agendamentoId' = {agendamentoIdString}
-                      AND (
-                        ""DestinatarioUsuarioId"" = {userId}
-                        OR ""Payload""::jsonb->>'autorUsuarioId' = {userIdString}
-                      )
-                    ORDER BY ""CreatedAt"" ASC")
+                    SELECT * FROM (
+                        SELECT DISTINCT ON (COALESCE(""CorrelationId""::text, ""Id""::text)) *, xmin
+                        FROM ""Notificacao""
+                        WHERE ""Payload""::jsonb->>'agendamentoId' = {agendamentoIdString}
+                          AND (
+                            ""DestinatarioUsuarioId"" = {userId}
+                            OR ""Payload""::jsonb->>'autorUsuarioId' = {userIdString}
+                          )
+                        ORDER BY COALESCE(""CorrelationId""::text, ""Id""::text), ""CreatedAt"" ASC, ""Id"" ASC
+                    ) grouped
+                    ORDER BY grouped.""CreatedAt"" ASC")
                 .AsNoTracking();
 
             if (!applyFilters)
@@ -165,6 +189,30 @@ namespace TruckFlowApi.Infra.Repositories
         {
             await _db.Notificacao.AddRangeAsync(notificacoes, token);
             await _db.SaveChangesAsync(token);
+        }
+
+        public Task<int> MarkAllAsReadByUserAsync(
+            Guid userId,
+            CancellationToken token = default) =>
+            MarkAllAsReadCoreAsync(_db.Notificacao, userId, token);
+
+        public Task<int> MarkAllAsReadByUserAcrossTenantsAsync(
+            Guid userId,
+            CancellationToken token = default) =>
+            MarkAllAsReadCoreAsync(_db.Notificacao.IgnoreQueryFilters(), userId, token);
+
+        private static Task<int> MarkAllAsReadCoreAsync(
+            IQueryable<Notificacao> source,
+            Guid userId,
+            CancellationToken token)
+        {
+            var now = DateTime.UtcNow;
+
+            return source
+                .Where(n => n.DestinatarioUsuarioId == userId && n.LidaEm == null)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(n => n.LidaEm, now)
+                    .SetProperty(n => n.UpdatedAt, now), token);
         }
     }
 }

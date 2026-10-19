@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Application.Validators.Grade;
 using TruckFlow.Domain.Dto.Fornecedor;
 using TruckFlow.Domain.Dto.Grade;
 using TruckFlow.Domain.Dto.Produto;
@@ -302,32 +303,73 @@ namespace TruckFlow.Application
 
             await ApplyPatch(grade, dto, token);
 
-            // Apaga os slots disponíveis e regenera do zero com a config atualizada
-            await _agendamentoRepo.DeleteDisponiveisPorGrade(id, token);
-
-            var novosSlots = grade.GerarSlots();
-
-            if (novosSlots.Count > 0 && grade.LocalDescargaId.HasValue)
+            if (grade.HoraInicial == grade.HoraFinal)
             {
-                var minInicio = novosSlots.Min(s => s.DataInicio);
-                var maxFim = novosSlots.Max(s => s.DataFim);
-
-                var conflitosNovos = await _agendamentoRepo.GetConflitosAsync(
-                    grade.LocalDescargaId.Value,
-                    minInicio,
-                    maxFim,
-                    excludeAgendamentoId: null,
-                    token);
-
-                var slotsValidos = novosSlots
-                    .Where(slot => !conflitosNovos.Any(c => c.DataInicio < slot.DataFim && slot.DataInicio < c.DataFim))
-                    .ToList();
-
-                if (slotsValidos.Count > 0)
-                    await _agendamentoRepo.AddRangeAsync(slotsValidos, token);
+                throw new BusinessException("A hora final não pode ser igual à hora inicial.");
             }
 
-            await _repo.Update(grade, token);
+            if (!GradeJanelaRules.IntervaloCabeNaJanela(grade.HoraInicial, grade.HoraFinal, grade.IntervaloMinutos))
+            {
+                throw new BusinessException(
+                    "O intervalo em minutos não pode ser maior que a janela entre a hora inicial e a hora final.");
+            }
+
+            await using var tx = await _agendamentoRepo.BeginTransactionAsync(token);
+            try
+            {
+                await _agendamentoRepo.DeleteDisponiveisPorGrade(id, token);
+
+                var novosSlots = grade.GerarSlots();
+
+                var agora = DateTime.UtcNow;
+                novosSlots = novosSlots.Where(s => s.DataInicio >= agora).ToList();
+
+                if (novosSlots.Count > 0 && grade.LocalDescargaId.HasValue)
+                {
+                    var minInicio = novosSlots.Min(s => s.DataInicio);
+                    var maxFim = novosSlots.Max(s => s.DataFim);
+
+                    var conflitosNovos = await _agendamentoRepo.GetConflitosAsync(
+                        grade.LocalDescargaId.Value,
+                        minInicio,
+                        maxFim,
+                        excludeAgendamentoId: null,
+                        token);
+
+                    foreach (var slot in novosSlots)
+                    {
+                        var conflito = conflitosNovos.FirstOrDefault(c =>
+                            c.DataInicio < slot.DataFim && slot.DataInicio < c.DataFim);
+
+                        if (conflito is not null)
+                        {
+                            var inicioBrt = TimeZoneInfo.ConvertTimeFromUtc(conflito.DataInicio, Grade.OperationalTimeZone);
+                            var fimBrt = TimeZoneInfo.ConvertTimeFromUtc(conflito.DataFim, Grade.OperationalTimeZone);
+                            var docaNome = conflito.LocalDescarga?.Nome ?? grade.LocalDescarga?.Nome ?? "doca";
+                            var produtoNome = conflito.Produto?.Nome ?? "carga geral";
+
+                            throw new BusinessException(
+                                $"Conflito ao atualizar grade: a doca '{docaNome}' já tem um agendamento de '{produtoNome}' " +
+                                $"entre {inicioBrt:dd/MM/yyyy HH:mm} e {fimBrt:dd/MM/yyyy HH:mm}.");
+                        }
+                    }
+
+                    if (novosSlots.Count > 0)
+                        await _agendamentoRepo.AddRangeAsync(novosSlots, token);
+                }
+
+                await _repo.Update(grade, token);
+
+                await tx.CommitAsync(token);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+                when (ex.InnerException is PostgresException pg && pg.SqlState == "23P01")
+            {
+                throw new BusinessException(
+                    "Conflito detectado ao atualizar a grade: algum dos novos slots sobrepõe " +
+                    "um agendamento existente nesta doca. Pode ter sido criado em paralelo. " +
+                    "Atualize e tente novamente.");
+            }
 
             _logger.LogInformation(
                 "Grade atualizada: {GradeId} (empresa {EmpresaId})",
@@ -335,23 +377,24 @@ namespace TruckFlow.Application
 
             return MapToResponse(grade);
         }
+
         public async Task DeleteGrade(
-            Guid id, 
+            Guid id,
             CancellationToken cancellationToken = default
             )
         {
             var gradeEncontrada = await _repo.GetById(id, cancellationToken)
                 ?? throw new NotFoundException("Grade não encontrado");
 
-            var agendamentosAtivos = await _agendamentoRepo.ExisteAgendamentoBloqueantePorGrade(id, cancellationToken);
+            var agendamentosBloqueantes = await _agendamentoRepo.ExisteAgendamentoBloqueantePorGradeParaExclusao(id, cancellationToken);
 
-            if (agendamentosAtivos.Any())
+            if (agendamentosBloqueantes.Any())
             {
                 throw new BusinessException(
-                    "Não é possível remover a grade pois existem agendamentos pendentes, agendados ou em andamento.");
+                    "Não é possível remover a grade pois existem agendamentos pendentes, agendados, " +
+                    "em andamento ou finalizados (histórico de entregas) vinculados a ela.");
             }
 
-            // Remove todos os slots da grade (disponíveis, cancelados, expirados, finalizados)
             await _agendamentoRepo.DeleteTodosPorGrade(id, cancellationToken);
 
             await _repo.Delete(gradeEncontrada, cancellationToken);
@@ -411,6 +454,7 @@ namespace TruckFlow.Application
 
             grade.UpdatedAt = DateTime.UtcNow;
         }
+        
         private static GradeResponse MapToResponse(Grade g) =>
             new GradeResponse
             {

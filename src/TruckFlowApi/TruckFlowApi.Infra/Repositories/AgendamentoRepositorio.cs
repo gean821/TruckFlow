@@ -77,6 +77,7 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Usuario)
                     .ThenInclude(u => u.Motorista)
                 .Include(x => x.NotaFiscal)
+                    .ThenInclude(n => n!.Fornecedor)
                 .AsQueryable();
 
             if (filtros.DataInicio.HasValue)
@@ -143,7 +144,11 @@ namespace TruckFlowApi.Infra.Repositories
                 .Select(x => new AgendamentoAdminResponse
                 {
                     Id = x.Id,
-                    FornecedorNome = x.Fornecedor.Nome,
+                    FornecedorNome = x.Fornecedor != null
+                        ? x.Fornecedor.Nome
+                        : (x.NotaFiscal != null && x.NotaFiscal.Fornecedor != null
+                            ? x.NotaFiscal.Fornecedor.Nome
+                            : null),
                     MotoristaNome = x.Usuario != null
                                      ? x.Usuario.Motorista != null
                                         ? x.Usuario.Motorista.NomeReal
@@ -191,8 +196,10 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Fornecedor)
                 .Include(x => x.Usuario)
                 .Include(x => x.NotaFiscal)
+                    .ThenInclude(n => n!.Fornecedor)
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.LocalDescarga)
+                .Include(x => x.Empresa)
                 .Include(x => x.Grade)
                     .ThenInclude(x => x!.Produto)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
@@ -208,8 +215,10 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Fornecedor)
                 .Include(x => x.Usuario)
                 .Include(x => x.NotaFiscal)
+                    .ThenInclude(n => n!.Fornecedor)
                 .Include(x => x.UnidadeEntrega)
                 .Include(x => x.LocalDescarga)
+                .Include(x => x.Empresa)
                 .Include(x => x.Grade)
                     .ThenInclude(x => x!.Produto)
                 .FirstOrDefaultAsync(x => x.Id == id, token);
@@ -257,6 +266,22 @@ namespace TruckFlowApi.Infra.Repositories
                     (a.StatusAgendamento == StatusAgendamento.Pendente ||
                      a.StatusAgendamento == StatusAgendamento.Agendado ||
                      a.StatusAgendamento == StatusAgendamento.EmAndamento))
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<Agendamento>> ExisteAgendamentoBloqueantePorGradeParaExclusao(
+            Guid gradeId,
+            CancellationToken cancellationToken = default
+            )
+        {
+            return await _db.Agendamento
+                .AsNoTracking()
+                .Where(a =>
+                    a.GradeId == gradeId &&
+                    (a.StatusAgendamento == StatusAgendamento.Pendente ||
+                     a.StatusAgendamento == StatusAgendamento.Agendado ||
+                     a.StatusAgendamento == StatusAgendamento.EmAndamento ||
+                     a.StatusAgendamento == StatusAgendamento.Finalizado))
                 .ToListAsync(cancellationToken);
         }
 

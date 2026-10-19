@@ -171,13 +171,19 @@ namespace TruckFlow.Application
 
                 if (itemResolvido is null)
                 {
+                    if (reserva is not null)
+                    {
+                        await _eventoRepo.Remove(reserva, token);
+                    }
+
                     var confirmOrfa = RecebimentoEvento.CriarOrfao(
                         produtoId,
                         fornecedorId,
                         quantidadeRealRecebida,
                         agendamento.Id,
                         "Confirmação órfã: sem planejamento ativo no momento do recebimento.",
-                        agendamento.EmpresaId);
+                        agendamento.EmpresaId,
+                        TipoMovimentoRecebimento.Confirmacao);
 
                     await _eventoRepo.AddAsync(confirmOrfa, token);
 
