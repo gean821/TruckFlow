@@ -462,7 +462,7 @@ namespace TruckFlow.Application
             return new AgendamentoAdminResponse
             {
                 Id = agendamento.Id,
-                FornecedorNome = agendamento.Fornecedor?.Nome,
+                FornecedorNome = agendamento.Fornecedor?.Nome ?? agendamento.NotaFiscal?.Fornecedor?.Nome,
                 MotoristaNome = agendamento.Usuario?.Motorista?.NomeReal,
                 MotoristaTelefone = agendamento.Usuario?.Motorista?.Telefone,
                 DataInicio = agendamento.DataInicio,

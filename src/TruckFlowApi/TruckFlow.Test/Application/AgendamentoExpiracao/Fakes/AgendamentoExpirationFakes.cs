@@ -90,6 +90,9 @@ internal sealed class FakeAgendamentoRepositorioParaExpiracao : IAgendamentoRepo
     public Task<IReadOnlyList<AgendamentoEntity>> ExisteAgendamentoBloqueantePorGrade(Guid gradeId, CancellationToken cancellationToken = default) =>
         throw new NotImplementedException();
 
+    public Task<IReadOnlyList<AgendamentoEntity>> ExisteAgendamentoBloqueantePorGradeParaExclusao(Guid gradeId, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
     public Task<AgendamentoEntity?> GetByIdWithFornecedor(Guid id, CancellationToken token = default) =>
         throw new NotImplementedException();
 

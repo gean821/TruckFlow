@@ -1,9 +1,9 @@
-﻿using FluentValidation;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentValidation;
 using TruckFlow.Domain.Dto.Grade;
 
 namespace TruckFlow.Application.Validators.Grade
@@ -12,7 +12,6 @@ namespace TruckFlow.Application.Validators.Grade
     {
         public GradeUpdateValidator()
         {
-            // Validator de update só é acionado quando o campo é enviado pelo front
             RuleFor(x => x.ProdutoId)
                 .NotEmpty()
                 .WithMessage("O produto deve ser informado.")
@@ -24,8 +23,8 @@ namespace TruckFlow.Application.Validators.Grade
                 .When(x => x.DataFim.HasValue && x.DataInicio.HasValue);
 
             RuleFor(x => x.HoraFinal)
-                .GreaterThan(x => x.HoraInicial)
-                .WithMessage("A hora final deve ser maior que a hora inicial.")
+                .NotEqual(x => x.HoraInicial)
+                .WithMessage("A hora final não pode ser igual à hora inicial.")
                 .When(x => x.HoraFinal.HasValue && x.HoraInicial.HasValue);
 
             RuleFor(x => x.IntervaloMinutos)

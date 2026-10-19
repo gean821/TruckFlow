@@ -12,9 +12,15 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
 {
     public interface IAgendamentoRepositorio
     {
-        public Task<Agendamento> AddAgendamento(Agendamento agendamento, CancellationToken token = default);
+        public Task<Agendamento> AddAgendamento(
+            Agendamento agendamento,
+            CancellationToken token = default
+        );
 
-        public Task AddRangeAsync(List<Agendamento> agendamentos, CancellationToken token = default);
+        public Task AddRangeAsync(
+            List<Agendamento> agendamentos,
+            CancellationToken token = default
+        );
 
         public Task<List<Agendamento>> GetAvailableByProdutos(
             IReadOnlyCollection<Guid> produtoIds,
@@ -23,24 +29,25 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             DateTime dataFim,
             Guid empresaId,
             CancellationToken token = default
-            );
+        );
         public Task<Agendamento> GetById(Guid id, CancellationToken token = default);
 
         /// <summary>
         /// Lookup por ID ignorando filter de tenant. Uso restrito a rotas de motorista (cross-tenant
         /// por design) que precisam resolver o EmpresaId do recurso antes de ativar WithTenant.
         /// </summary>
-        Task<Agendamento?> GetByIdAcrossTenants(
-            Guid id,
-            CancellationToken token = default);
+        Task<Agendamento?> GetByIdAcrossTenants(Guid id, CancellationToken token = default);
         public Task<List<Agendamento>> GetAll(CancellationToken token = default);
 
         Task<PagedResponse<AgendamentoAdminResponse>> GetAdminViewAsync(
-                                                AgendamentoFilterDto filtros,
-                                                CancellationToken cancellationToken = default
-            );
+            AgendamentoFilterDto filtros,
+            CancellationToken cancellationToken = default
+        );
 
-        public Task<List<Agendamento>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default);
+        public Task<List<Agendamento>> GetByMotoristaId(
+            Guid motoristaId,
+            CancellationToken token = default
+        );
 
         /// <summary>
         /// Lista agendamentos do motorista em qualquer empresa, ignorando filter de tenant.
@@ -48,7 +55,8 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         /// </summary>
         Task<List<Agendamento>> GetByMotoristaIdAcrossTenants(
             Guid motoristaId,
-            CancellationToken token = default);
+            CancellationToken token = default
+        );
         public Task<Agendamento> Update(Agendamento Agendamento, CancellationToken token = default);
         public Task Delete(Agendamento agendamento, CancellationToken token = default);
 
@@ -58,14 +66,21 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         /// </summary>
         Task<IReadOnlyList<Agendamento>> ExisteAgendamentoBloqueantePorGrade(
             Guid gradeId,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken = default
+        );
+
+        Task<IReadOnlyList<Agendamento>> ExisteAgendamentoBloqueantePorGradeParaExclusao(
+            Guid gradeId,
+            CancellationToken cancellationToken = default
+        );
         public Task SaveChangesAsync(CancellationToken token = default);
         Task<Agendamento?> GetByIdWithFornecedor(Guid id, CancellationToken token = default);
 
         Task<List<Agendamento>> GetExpiradosCandidatos(
             DateTime referenciaUtc,
             int batchSize,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken = default
+        );
 
         /// <summary>
         /// Retorna agendamentos ATIVOS na mesma doca cuja janela [DataInicio, DataFim) sobrepõe
@@ -79,12 +94,18 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             DateTime inicioUtc,
             DateTime fimUtc,
             Guid? excludeAgendamentoId,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken = default
+        );
 
-        Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+        Task<IDbContextTransaction> BeginTransactionAsync(
+            CancellationToken cancellationToken = default
+        );
 
-        Task<bool> TryAdvisoryLockEmpresaAsync(Guid empresaId, CancellationToken cancellationToken = default);
-        
+        Task<bool> TryAdvisoryLockEmpresaAsync(
+            Guid empresaId,
+            CancellationToken cancellationToken = default
+        );
+
         Task DeleteTodosPorGrade(Guid gradeId, CancellationToken cancellationToken = default);
         Task DeleteDisponiveisPorGrade(Guid gradeId, CancellationToken cancellationToken = default);
     }

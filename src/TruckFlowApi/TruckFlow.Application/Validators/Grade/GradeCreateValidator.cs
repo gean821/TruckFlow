@@ -5,20 +5,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.Grade;
+using TruckFlow.Domain.Entities;
 
 namespace TruckFlow.Application.Validators.Grade
 {
     public class GradeCreateValidator : AbstractValidator<GradeCreateDto>
     {
-        public GradeCreateValidator() 
+        public GradeCreateValidator()
         {
             RuleFor(x => x.ProdutoId)
                 .NotEmpty()
                 .WithMessage("O produto deve ser informado.");
 
+            RuleFor(x => x.LocalDescargaId)
+                .NotEmpty()
+                .WithMessage("O local de descarga deve ser informado.");
+
             RuleFor(x => x.DataInicio)
                 .NotNull()
-                .WithMessage("A data de início deve ser informada.");
+                .WithMessage("A data de início deve ser informada.")
+                .GreaterThanOrEqualTo(_ =>
+                    DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(
+                        DateTime.UtcNow, TruckFlow.Domain.Entities.Grade.OperationalTimeZone)))
+                .WithMessage("A data de início não pode ser no passado.");
 
             RuleFor(x => x.DataFim)
                 .NotNull()
@@ -39,6 +48,12 @@ namespace TruckFlow.Application.Validators.Grade
             RuleFor(x => x.IntervaloMinutos)
                 .GreaterThan(0)
                 .WithMessage("O intervalo em minutos deve ser maior que 0.");
+
+            RuleFor(x => x)
+                .Must(dto => GradeJanelaRules.IntervaloCabeNaJanela(dto.HoraInicial, dto.HoraFinal, dto.IntervaloMinutos))
+                .WithName("IntervaloMinutos")
+                .WithMessage("O intervalo em minutos não pode ser maior que a janela entre a hora inicial e a hora final.")
+                .When(dto => dto.IntervaloMinutos > 0);
 
             RuleFor(x => x.DiasSemana)
     .NotEmpty().WithMessage("Dias da semana são obrigatórios.")

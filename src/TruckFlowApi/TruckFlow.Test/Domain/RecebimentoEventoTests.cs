@@ -136,6 +136,28 @@ public class RecebimentoEventoTests
     }
 
     [Fact]
+    public void CriarOrfao_SemTipoInformado_UsaReservaComoDefault()
+    {
+        var orfao = RecebimentoEvento.CriarOrfao(Guid.NewGuid(), null, 10m, null, null, Guid.NewGuid());
+
+        Assert.Equal(TipoMovimentoRecebimento.Reserva, orfao.Tipo);
+    }
+
+    [Fact]
+    public void CriarOrfao_ComTipoConfirmacaoExplicito_SetaTipoConfirmacao()
+    {
+        // Regressão: CriarOrfao tinha o Tipo fixado em Reserva, mesmo quando o chamador
+        // (ex.: AoFinalizarAsync, ao criar a confirmação órfã) precisava de Confirmacao —
+        // isso colidia com o índice único por (AgendamentoId, Tipo) quando já existia uma
+        // reserva órfã para o mesmo agendamento.
+        var orfao = RecebimentoEvento.CriarOrfao(
+            Guid.NewGuid(), null, 10m, null, null, Guid.NewGuid(),
+            TipoMovimentoRecebimento.Confirmacao);
+
+        Assert.Equal(TipoMovimentoRecebimento.Confirmacao, orfao.Tipo);
+    }
+
+    [Fact]
     public void CriarOrfao_EhOrfao_RetornaTrue()
     {
         var orfao = RecebimentoEvento.CriarOrfao(Guid.NewGuid(), null, 10m, null, null, Guid.NewGuid());
