@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Relatorio;
 using TruckFlow.Domain.Entities;
@@ -20,13 +21,22 @@ namespace TruckFlow.Controllers
         }
 
         [HttpGet("agendamentos")]
-        public async Task<IActionResult> GerarRelatorioAgendamentos(
+        public async Task GerarRelatorioAgendamentos(
             [FromQuery] FormatoRelatorio formato,
             [FromQuery] RelatorioAgendamentoFilterDto filtros,
             CancellationToken token)
         {
+            
             var arquivo = await _service.GerarRelatorioAgendamentos(filtros, formato, token);
-            return File(arquivo.Conteudo, arquivo.ContentType, arquivo.NomeArquivo);
+
+            Response.ContentType = arquivo.ContentType;
+            Response.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+            {
+                FileName = arquivo.NomeArquivo,
+                FileNameStar = arquivo.NomeArquivo
+            }.ToString();
+
+            await arquivo.EscreverConteudo(Response.Body, token);
         }
     }
 }

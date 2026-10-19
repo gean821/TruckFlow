@@ -39,11 +39,20 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         Task<PagedResponse<AgendamentoAdminResponse>> GetAdminViewAsync(
                                                 AgendamentoFilterDto filtros,
                                                 CancellationToken cancellationToken = default
-            );
+            ); 
 
-        Task<List<AgendamentoAdminResponse>> GetForRelatorioAsync(
-            RelatorioAgendamentoFilterDto filtros,
+        Task<int> CountLinhasRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,         
             CancellationToken cancellationToken = default);
+
+        Task<List<AgendamentoRelatorioLinha>> GetLinhasRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            int limite,
+            CancellationToken cancellationToken = default);
+
+        IAsyncEnumerable<AgendamentoRelatorioLinha> StreamLinhasRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            int limite);
 
         public Task<List<Agendamento>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default);
 

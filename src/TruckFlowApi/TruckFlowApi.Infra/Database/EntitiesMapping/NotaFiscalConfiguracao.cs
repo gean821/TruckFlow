@@ -39,6 +39,11 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.HasIndex(x => x.ChaveAcesso)
                 .IsUnique();
 
+            builder.HasIndex(x => x.PlacaVeiculo)
+                .HasDatabaseName("IX_NotaFiscal_PlacaVeiculo_trgm")
+                .HasMethod("gin")
+                .HasOperators("gin_trgm_ops");
+
             builder.Property(x => x.EmitenteNome)
                 .HasMaxLength(200)
                 .IsRequired();

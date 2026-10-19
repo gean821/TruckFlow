@@ -1,4 +1,5 @@
-﻿using TruckFlow.Application;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using TruckFlow.Application;
 using TruckFlow.Application.Interfaces;
 
 namespace TruckFlow.Extensions.Relatorio
@@ -7,6 +8,7 @@ namespace TruckFlow.Extensions.Relatorio
     {
         public static IServiceCollection AddRelatorio(this IServiceCollection services)
         {
+            services.TryAddSingleton(TimeProvider.System);
             services.AddTransient<IRelatorioService, RelatorioService>();
             return services;
         }

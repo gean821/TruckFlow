@@ -21,6 +21,11 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
                 .IsRequired()
                 .HasMaxLength(250);
 
+            builder.HasIndex(x => x.NomeReal)
+                .HasDatabaseName("IX_Motorista_NomeReal_trgm")
+                .HasMethod("gin")
+                .HasOperators("gin_trgm_ops");
+
             builder.Property(x => x.Telefone)
                 .IsRequired().
                 HasMaxLength(11);

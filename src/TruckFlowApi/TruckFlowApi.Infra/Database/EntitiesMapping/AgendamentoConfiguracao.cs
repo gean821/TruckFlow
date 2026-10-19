@@ -70,6 +70,14 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
 
             builder.HasIndex(x => new { x.LocalDescargaId, x.DataInicio, x.DataFim });
 
+            builder.HasIndex(x => new { x.EmpresaId, x.DataInicio })
+                .HasDatabaseName("IX_Agendamento_EmpresaId_DataInicio");
+
+            builder.HasIndex(x => x.PlacaVeiculo)
+                .HasDatabaseName("IX_Agendamento_PlacaVeiculo_trgm")
+                .HasMethod("gin")
+                .HasOperators("gin_trgm_ops");
+
             builder.HasOne(x => x.Empresa)
                 .WithMany()
                 .HasForeignKey(x => x.EmpresaId)

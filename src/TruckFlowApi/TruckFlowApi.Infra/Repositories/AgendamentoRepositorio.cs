@@ -182,95 +182,115 @@ namespace TruckFlowApi.Infra.Repositories
                 TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             };
         }
+         
+        private const string FusoOperacionalIana = "America/Sao_Paulo";
 
-        public async Task<List<AgendamentoAdminResponse>> GetForRelatorioAsync(
-            RelatorioAgendamentoFilterDto filtros,
-            CancellationToken cancellationToken)
+        public Task<int> CountLinhasRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            CancellationToken cancellationToken = default) => 
+            FiltrarRelatorio(criteria).CountAsync(cancellationToken);
+
+        public Task<List<AgendamentoRelatorioLinha>> GetLinhasRelatorioAsync(
+           RelatorioAgendamentoCriteria criteria,
+           int limite,
+           CancellationToken cancellationToken = default) =>
+           ProjetarRelatorio(FiltrarRelatorio(criteria), limite)
+               .ToListAsync(cancellationToken);
+
+        public IAsyncEnumerable<AgendamentoRelatorioLinha> StreamLinhasRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            int limite) =>
+            ProjetarRelatorio(FiltrarRelatorio(criteria), limite)
+                .AsAsyncEnumerable();
+
+        private IQueryable<Agendamento> FiltrarRelatorio(RelatorioAgendamentoCriteria criteria)
         {
-            const int maxLinhas = 20_000;
-
             var query = _db.Agendamento
                 .AsNoTracking()
-                .Include(x => x.Fornecedor)
-                .Include(x => x.Produto)
-                .Include(x => x.Grade)
-                    .ThenInclude(g => g.Produto)
-                .Include(x => x.UnidadeEntrega) 
-                .Include(x => x.Usuario)
-                    .ThenInclude(u => u.Motorista)
-                    .Include(x => x.NotaFiscal)
-                .AsQueryable();
+                .Where(x => x.DataInicio >= criteria.DataInicioUtc
+                         && x.DataInicio <= criteria.DataFimUtc);
 
-            if (filtros.DataInicio.HasValue)
+            if (criteria.HoraInicio.HasValue)
             {
-                query = query.Where(x => x.DataInicio >= filtros.DataInicio.Value);
+                var horaInicio = criteria.HoraInicio.Value;
+                query = query.Where(x =>
+                    TimeZoneInfo.ConvertTimeBySystemTimeZoneId(x.DataInicio, FusoOperacionalIana).TimeOfDay >= horaInicio);
             }
 
-            if (filtros.DataFim.HasValue)
+            if (criteria.HoraFim.HasValue)
             {
-                query = query.Where(x => x.DataInicio <= filtros.DataFim.Value);
+                var horaFim = criteria.HoraFim.Value;
+                query = query.Where(x =>
+                    TimeZoneInfo.ConvertTimeBySystemTimeZoneId(x.DataInicio, FusoOperacionalIana).TimeOfDay <= horaFim);
             }
 
-            if (filtros.FornecedorId.HasValue)
+            if (criteria.FornecedorId.HasValue)
             {
-                query = query.Where(x => x.FornecedorId == filtros.FornecedorId.Value);
+                var fornecedorId = criteria.FornecedorId.Value;
+                query = query.Where(x => x.FornecedorId == fornecedorId);
             }
 
-            if (filtros.ProdutoId.HasValue)
+            if (criteria.ProdutoId.HasValue)
             {
-                var produtoId = filtros.ProdutoId.Value;
+                var produtoId = criteria.ProdutoId.Value;
                 query = query.Where(x =>
                     x.ProdutoId == produtoId ||
                     (x.Grade != null && x.Grade.ProdutoId == produtoId));
             }
 
-            if(!string.IsNullOrWhiteSpace(filtros.PlacaVeiculo))
+            if (!string.IsNullOrWhiteSpace(criteria.PlacaVeiculo))
             {
-                var placa = filtros.PlacaVeiculo.Trim();
+                var padrao = PadraoContem(criteria.PlacaVeiculo);
                 query = query.Where(x =>
-                    (x.PlacaVeiculo != null && x.PlacaVeiculo.Contains(placa)) ||
-                    (x.NotaFiscal != null && x.NotaFiscal.PlacaVeiculo != null &&
-                     x.NotaFiscal.PlacaVeiculo.Contains(placa)));
+                    EF.Functions.ILike(x.PlacaVeiculo!, padrao, "\\") ||
+                    (x.NotaFiscal != null && EF.Functions.ILike(x.NotaFiscal.PlacaVeiculo!, padrao, "\\")));
             }
 
-            if (!string.IsNullOrWhiteSpace(filtros.Motorista))
+            if (!string.IsNullOrWhiteSpace(criteria.Motorista))
             {
-                var nome = filtros.Motorista.Trim();
+                var padrao = PadraoContem(criteria.Motorista);
                 query = query.Where(x =>
                     x.Usuario != null && x.Usuario.Motorista != null &&
-                    x.Usuario.Motorista.NomeReal.Contains(nome));
+                    EF.Functions.ILike(x.Usuario.Motorista.NomeReal!, padrao, "\\"));
             }
 
-            return await query
+            return query;
+        }
+
+        private static IQueryable<AgendamentoRelatorioLinha> ProjetarRelatorio(
+            IQueryable<Agendamento> query,
+            int limite) =>
+            query
                 .OrderBy(x => x.DataInicio)
-                .Take(maxLinhas)
-                .Select(x => new AgendamentoAdminResponse
+                .Take(limite)
+                .Select(x => new AgendamentoRelatorioLinha
                 {
-                    Id = x.Id,
-                    FornecedorNome = x.Fornecedor.Nome,
-                    MotoristaNome = x.Usuario != null
-                                     ? x.Usuario.Motorista != null ? x.Usuario.Motorista.NomeReal : null
-                                     : null,
-                    MotoristaTelefone = x.Usuario != null
-                                ? x.Usuario.Motorista != null ? x.Usuario.Motorista.Telefone : null
-                                : null,
-                    DataInicio = x.DataInicio,
-                    DataFim = x.DataFim,
-                    Produto = x.Grade != null
+                    FornecedorNome = x.Fornecedor != null ? x.Fornecedor.Nome : null,
+                    ProdutoNome = x.Grade != null
                         ? x.Grade.Produto.Nome
-                        : (x.Produto != null ? x.Produto.Nome : x.TipoCarga.ToString()),
-                    PesoCarga = x.NotaFiscal != null
-                        ? (x.NotaFiscal.PesoBruto ?? x.VolumeCarga ?? 0m)
-                        : (x.VolumeCarga ?? 0m),
+                        : (x.Produto != null ? x.Produto.Nome : null),
+                    TipoCarga = x.TipoCarga,
                     PlacaVeiculo = x.PlacaVeiculo ?? (x.NotaFiscal != null ? x.NotaFiscal.PlacaVeiculo : null),
-                    TipoVeiculo = x.TipoVeiculo.HasValue ? x.TipoVeiculo.Value.ToString() : null,
+                    MotoristaNome = x.Usuario != null && x.Usuario.Motorista != null
+                        ? x.Usuario.Motorista.NomeReal
+                        : null,
                     UnidadeEntrega = x.UnidadeEntrega != null ? x.UnidadeEntrega.Nome : null,
-                    Status = x.StatusAgendamento.ToString(),
-                    CreatedAt = x.CreatedAt,
-                    UpdatedAt = x.UpdatedAt,
-                    DeletedAt = x.DeletedAt
-                })
-                .ToListAsync(cancellationToken);
+                    LocalDescarga = x.LocalDescarga != null ? x.LocalDescarga.Nome : null,
+                    TipoVeiculo = x.TipoVeiculo,
+                    PesoCarga = (x.NotaFiscal != null ? x.NotaFiscal.PesoBruto : null) ?? x.VolumeCarga,
+                    Status = x.StatusAgendamento,
+                    DataInicio = x.DataInicio,
+                    DataFim = x.DataFim
+                });
+
+        private static string PadraoContem(string termo)
+        {
+            var escapado = termo.Trim()
+                .Replace("\\", "\\\\")
+                .Replace("%", "\\%")
+                .Replace("_", "\\_");
+
+            return $"%{escapado}%";
         }
 
         public async Task<Agendamento> GetById(

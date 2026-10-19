@@ -20,6 +20,7 @@ namespace TruckFlowApi.Infra.Migrations
                 .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -268,8 +269,6 @@ namespace TruckFlowApi.Infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmpresaId");
-
                     b.HasIndex("FornecedorId");
 
                     b.HasIndex("GradeId");
@@ -277,11 +276,20 @@ namespace TruckFlowApi.Infra.Migrations
                     b.HasIndex("NotaFiscalId")
                         .IsUnique();
 
+                    b.HasIndex("PlacaVeiculo")
+                        .HasDatabaseName("IX_Agendamento_PlacaVeiculo_trgm");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("PlacaVeiculo"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("PlacaVeiculo"), new[] { "gin_trgm_ops" });
+
                     b.HasIndex("ProdutoId");
 
                     b.HasIndex("UnidadeEntregaId");
 
                     b.HasIndex("UsuarioId");
+
+                    b.HasIndex("EmpresaId", "DataInicio")
+                        .HasDatabaseName("IX_Agendamento_EmpresaId_DataInicio");
 
                     b.HasIndex("LocalDescargaId", "DataInicio", "DataFim");
 
@@ -859,6 +867,12 @@ namespace TruckFlowApi.Infra.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("NomeReal")
+                        .HasDatabaseName("IX_Motorista_NomeReal_trgm");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("NomeReal"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("NomeReal"), new[] { "gin_trgm_ops" });
+
                     b.HasIndex("UsuarioId")
                         .IsUnique();
 
@@ -983,6 +997,12 @@ namespace TruckFlowApi.Infra.Migrations
                     b.HasIndex("EmpresaId");
 
                     b.HasIndex("FornecedorId");
+
+                    b.HasIndex("PlacaVeiculo")
+                        .HasDatabaseName("IX_NotaFiscal_PlacaVeiculo_trgm");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("PlacaVeiculo"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("PlacaVeiculo"), new[] { "gin_trgm_ops" });
 
                     b.ToTable("NotaFiscal", (string)null);
                 });
