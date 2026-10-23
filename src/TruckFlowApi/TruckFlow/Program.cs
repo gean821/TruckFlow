@@ -18,6 +18,7 @@ using TruckFlow.Extensions.Empresa;
 using TruckFlow.Extensions.Fornecedor;
 using TruckFlow.Extensions.Grade;
 using TruckFlow.Extensions.Guards;
+using TruckFlow.Extensions.Health;
 using TruckFlow.Extensions.ItemPlanejamento;
 using TruckFlow.Extensions.LocalDescarga;
 using TruckFlow.Extensions.Motorista;
@@ -25,6 +26,7 @@ using TruckFlow.Extensions.NotaFiscal;
 using TruckFlow.Extensions.Notificacao;
 using TruckFlow.Extensions.Produto;
 using TruckFlow.Extensions.Relatorio;
+using TruckFlow.Extensions.RateLimiting;
 using TruckFlow.Extensions.Recebimento;
 using TruckFlow.Extensions.RecebimentoEvento;
 using TruckFlow.Extensions.Saas;
@@ -89,7 +91,9 @@ namespace TruckFlow
             builder.Services.AddSaas();
             builder.Services.AddAudit();
             builder.Services.AddSecurity();
+            builder.Services.AddHealthDependency();
             builder.Services.AddEmail(builder.Configuration);
+            builder.Services.AddRateLimitingDependency();
 
             builder.Services.AddEndpointsApiExplorer();
 
@@ -138,11 +142,16 @@ namespace TruckFlow
             builder.Services.AddIdentity<Usuario, IdentityRole<Guid>>(options =>
             {
                 options.User.RequireUniqueEmail = true;
+                options.Password.RequiredLength = 10;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
             builder.AddAuthenticationJwt();
+            builder.AddAuthenticationEntraId();
             builder.Services.AddAuthorization();
             builder.Services.AddTransient<RequestLoggingMiddleware>();
             builder.Services.AddScoped<ActionLoggingFilter>();
@@ -160,7 +169,7 @@ namespace TruckFlow
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                db.Database.Migrate();
+                MigrationLockRunner.MigrateComLock(db);
 
                 scope.ServiceProvider.SeedRolesAsync().GetAwaiter().GetResult();
             }
@@ -168,6 +177,7 @@ namespace TruckFlow
             app.UseForwardedHeaders();
             app.UseRouting();
             app.UseCors("AllowFrontend");
+            app.UseRateLimitingDependency();
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseMiddleware<RequestLoggingMiddleware>();
 
@@ -178,12 +188,18 @@ namespace TruckFlow
 
             if (!app.Environment.IsDevelopment())
             {
-                app.UseHttpsRedirection();
+                // /health fica fora do redirect: a sonda local (Docker HEALTHCHECK) nao
+                // manda X-Forwarded-Proto, levaria 307 e o curl acusaria saude sem
+                // nunca ter tocado a aplicacao.
+                app.UseWhen(
+                    context => !context.Request.Path.StartsWithSegments(AddHealthDependencyInjection.BasePath),
+                    branch => branch.UseHttpsRedirection());
             }
 
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+            app.MapHealthEndpoints();
 
             if (app.Environment.IsDevelopment())
             {

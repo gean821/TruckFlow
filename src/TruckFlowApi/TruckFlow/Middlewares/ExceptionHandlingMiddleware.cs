@@ -1,13 +1,16 @@
 ﻿using TruckFlow.Application.Exceptions;
+using TruckFlow.Domain.Exceptions;
 
 namespace TruckFlow.Middlewares
 {
     public class ExceptionHandlingMiddleware(
         RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger)
+        ILogger<ExceptionHandlingMiddleware> logger,
+        IWebHostEnvironment env)
     {
         private readonly RequestDelegate _next = next;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
+        private readonly IWebHostEnvironment _env = env;
 
         public async Task InvokeAsync(HttpContext context)
         {
@@ -30,10 +33,24 @@ namespace TruckFlow.Middlewares
                 {
                     NotFoundException => StatusCodes.Status404NotFound,
                     BusinessException => StatusCodes.Status400BadRequest,
+                    BadRequestException => StatusCodes.Status400BadRequest,
                     _ => StatusCodes.Status500InternalServerError
                 };
 
                 await context.Response.WriteAsJsonAsync(result);
+            }
+
+            catch (DomainException ex)
+            {
+                _logger.LogWarning(ex, "Erro de negócio (domínio)");
+
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    success = false,
+                    code = ex.Code,
+                    message = ex.Message
+                });
             }
 
             catch (FluentValidation.ValidationException ex)
@@ -65,16 +82,24 @@ namespace TruckFlow.Middlewares
 
             catch (Exception ex)
             {
-                _logger.LogError("Erro inesperado: {exception}", ex.ToString());
+                _logger.LogError(ex, "Erro inesperado");
 
-                context.Response.StatusCode = 500;
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    success = false,
-                    message = ex.Message,
-                    stack = ex.StackTrace
-                });
+                object body = _env.IsDevelopment()
+                    ? new
+                    {
+                        success = false,
+                        message = ex.Message,
+                        stack = ex.StackTrace
+                    }
+                    : new
+                    {
+                        success = false,
+                        message = "Erro interno. Tente novamente ou contate o suporte."
+                    };
+
+                await context.Response.WriteAsJsonAsync(body);
             }
         }
     }

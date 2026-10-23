@@ -62,3 +62,9 @@ nunit-*.xml
 *.db-wal
 *.suo
 *.vsidx
+
+#enviroment
+.env
+
+# Claude Code - config pessoal/local, nunca compartilhada
+**/.claude/settings.local.json

@@ -1,0 +1,86 @@
+flowchart TD
+    Start(["Usuário abre o TruckFlow Admin"]) --> ChoiceMethod{"Como vai entrar?"}
+
+    %% ===== LOGIN LOCAL =====
+    ChoiceMethod -->|"Login local"| LocalForm["Digita usuário e senha"]
+    LocalForm --> LocalCheckMethod{"Empresa permite<br/>login Local?"}
+    LocalCheckMethod -->|"Não"| LocalRejected[["403 · Esta empresa exige<br/>login corporativo (SSO)"]]
+    LocalCheckMethod -->|"Sim"| LocalValidate["AuthAdminController valida<br/>senha via ASP.NET Identity"]
+    LocalValidate --> LocalOk{"Senha correta?"}
+    LocalOk -->|"Não"| LocalInvalid[["401 · Credenciais inválidas"]]
+    LocalOk -->|"Sim"| IssueJwt
+
+    %% ===== LOGIN FEDERADO =====
+    ChoiceMethod -->|"Entrar com Microsoft"| EntraCheckMethod{"Empresa permite<br/>login via Entra ID?"}
+    EntraCheckMethod -->|"Não"| EntraRejectedEarly[["403 · Esta empresa não<br/>aceita login federado"]]
+    EntraCheckMethod -->|"Sim"| Challenge["Backend dispara Challenge<br/>GET /v1/AuthAdmin/entra/login"]
+    Challenge --> Redirect["Redireciona para<br/>login.microsoftonline.com"]
+
+    subgraph AuroraEntra ["🏢 AURORA — Microsoft Entra ID (tenant da Aurora)"]
+        Redirect --> AuroraLogin["Usuário digita credenciais<br/>corporativas da Aurora"]
+        AuroraLogin --> MFA["Conditional Access aplica<br/>MFA adaptável"]
+        MFA --> MFAOk{"MFA aprovado?"}
+        MFAOk -->|"Não"| MFAFail[["Login bloqueado<br/>pela própria Aurora"]]
+        MFAOk -->|"Sim"| Consent["Consentimento do app já dado<br/>pelo admin do tenant"]
+        Consent --> TokenIssued["Entra ID emite código + ID token<br/>claims: oid, email, name, groups[]"]
+    end
+
+    TokenIssued --> Callback["Callback do TruckFlow recebe<br/>GET /signin-oidc"]
+    Callback --> ExtractClaims["Middleware OIDC valida o token<br/>e extrai as claims"]
+
+    subgraph JIT ["⚙️ TRUCKFLOW — JitProvisioningService"]
+        ExtractClaims --> FindUser["FindByLoginAsync('EntraId', oid)"]
+        FindUser --> UserExists{"Usuário já<br/>existe?"}
+
+        UserExists -->|"Não"| CreateUser["Cria Usuario sem senha<br/>(Origem = EntraId)"]
+        CreateUser --> LinkLogin["AddLoginAsync('EntraId', oid)"]
+        LinkLogin --> ResolveGroup["Resolve grupos do token via<br/>EntraGroupRoleMapping"]
+
+        UserExists -->|"Sim"| ResolveGroup
+
+        ResolveGroup --> HasMapping{"Algum grupo<br/>mapeado?"}
+        HasMapping -->|"Não"| Reject403[["403 · Sem grupo autorizado.<br/>Não cria nem ativa usuário"]]
+
+        HasMapping -->|"Sim"| EntraCheckMethod2{"Empresa resolvida permite<br/>Entra ID? (defesa em profundidade)"}
+        EntraCheckMethod2 -->|"Não"| Reject403b[["403 · Empresa não aceita<br/>login federado"]]
+
+        EntraCheckMethod2 -->|"Sim"| SyncRoles["Sincroniza Roles<br/>AddToRoleAsync / RemoveFromRoleAsync<br/>bate com os grupos atuais"]
+        SyncRoles --> SetEmpresa["Atualiza EmpresaId +<br/>UltimoSyncEntraEm"]
+    end
+
+    SetEmpresa --> IssueJwt
+
+    subgraph DB ["🗄️ TRUCKFLOW — Banco de Dados"]
+        MapTable[["EntraGroupRoleMapping<br/>EntraGroupId → EmpresaId + RoleName"]]
+        UsuarioTable[["Usuario / Administrador<br/>AspNetUserLogins / AspNetUserRoles"]]
+        EmpresaTable[["Empresa.Configuracoes<br/>authMethods: [Local, EntraId]"]]
+    end
+
+    ResolveGroup -.consulta.-> MapTable
+    CreateUser -.grava.-> UsuarioTable
+    SyncRoles -.grava.-> UsuarioTable
+    LocalCheckMethod -.consulta.-> EmpresaTable
+    EntraCheckMethod -.consulta.-> EmpresaTable
+    EntraCheckMethod2 -.consulta.-> EmpresaTable
+
+    IssueJwt["IAuthService emite<br/>JWT + Refresh Token do TruckFlow<br/>(mesmo método para os dois mundos)"]
+    IssueJwt --> FrontendOk["Frontend Vue guarda o token<br/>(AuthStore) e abre o Dashboard"]
+    FrontendOk --> API["Chamadas seguintes usam<br/>Authorization: Bearer jwt-truckflow<br/>· API nunca sabe se veio de Local ou Entra ID ·"]
+
+    %% ===== DESATIVAÇÃO (ciclo de vida, não é login) =====
+    Deprov(["Aurora remove o usuário<br/>do grupo autorizado"]) -.próximo login/refresh<br/>até 15 min.-> HasMapping
+    Deprov --> Lockout["LockoutEnd = MaxValue<br/>Roles removidas<br/>Usuario NUNCA é apagado"]
+
+    classDef reject fill:#f8d7da,stroke:#c0392b,color:#611a15,stroke-width:2px
+    classDef success fill:#d4edda,stroke:#27ae60,color:#1e4620,stroke-width:2px
+    classDef entra fill:#fff3cd,stroke:#f39c12,color:#7a5b00
+    classDef jit fill:#d1ecf1,stroke:#2980b9,color:#0b3d5c
+    classDef db fill:#e2e3e5,stroke:#7f8c8d,color:#3a3f42
+    classDef warn fill:#ffe5d0,stroke:#e67e22,color:#7a3b00
+
+    class LocalRejected,LocalInvalid,EntraRejectedEarly,MFAFail,Reject403,Reject403b reject
+    class IssueJwt,FrontendOk,API success
+    class AuroraEntra entra
+    class JIT jit
+    class DB db
+    class Lockout warn

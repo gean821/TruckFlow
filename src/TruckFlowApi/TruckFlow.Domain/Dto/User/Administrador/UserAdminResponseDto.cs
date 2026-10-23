@@ -20,5 +20,14 @@ namespace TruckFlow.Domain.Dto.User.Administrador
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
+
+        /// <summary>
+        /// true quando o usuário foi provisionado via Entra ID (SSO) — o front usa isso pra
+        /// esconder as ações de CRUD (editar/ativar/inativar) dessas linhas, mantendo o
+        /// comportamento normal pra usuários locais de qualquer outra empresa que não use SSO.
+        /// </summary>
+        public bool IsEntraId { get; set; }
+
+        public DateTime? UltimoSyncEntraEm { get; set; }
     }
 }

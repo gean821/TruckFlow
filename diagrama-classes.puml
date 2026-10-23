@@ -1,0 +1,1353 @@
+@startuml TruckFlow - Diagrama Completo de Classes
+
+skinparam backgroundColor #0a0a0f
+skinparam classBackgroundColor #111118
+skinparam classBorderColor #4a6fa5
+skinparam classHeaderBackgroundColor #1a2744
+skinparam classFontColor #e2e2f0
+skinparam classAttributeFontColor #c0c0d8
+skinparam arrowColor #6366f1
+skinparam arrowThickness 1.5
+skinparam packageBackgroundColor #0d0d18
+skinparam packageBorderColor #2a2a4a
+skinparam packageFontColor #818cf8
+skinparam packageFontSize 13
+skinparam packageFontStyle bold
+skinparam interfaceBackgroundColor #0d1f0d
+skinparam interfaceBorderColor #2a5a2a
+skinparam interfaceFontColor #34d399
+skinparam enumBackgroundColor #1a0d00
+skinparam enumBorderColor #5a3a00
+skinparam enumFontColor #fbbf24
+skinparam stereotypeCBackgroundColor #1a2744
+skinparam stereotypeCBorderColor #4a6fa5
+skinparam stereotypeIBackgroundColor #0d1f0d
+skinparam stereotypeIBorderColor #2a5a2a
+skinparam stereotypeEBackgroundColor #1a0d00
+skinparam stereotypeEBorderColor #5a3a00
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam linetype ortho
+
+hide empty members
+
+' ═══════════════════════════════════════════════
+'  DOMAIN — ENTIDADES BASE
+' ═══════════════════════════════════════════════
+package "TruckFlow.Domain :: Entities" as domainEntities #0a0f1a {
+
+  abstract class EntidadeBase {
+    +Id : Guid
+    +CreatedAt : DateTime
+    +UpdatedAt : DateTime?
+    +DeletedAt : DateTime?
+    +CreatedBy : string?
+    +UpdatedBy : string?
+    +DomainEvents : List<IDomainEvent>
+  }
+
+  interface IEmpresaScoped {
+    +EmpresaId : Guid
+  }
+
+  class Empresa {
+    +RazaoSocial : string
+    +NomeFantasia : string
+    +CNPJ : string
+    +InscricaoEstadual : string?
+    +InscricaoMunicipal : string?
+    +Telefone : string?
+    +Logradouro : string?
+    +Complemento : string?
+    +Bairro : string?
+    +Cidade : string?
+    +Estado : string?
+    +Cep : string?
+    +Latitude : float
+    +Longitude : float
+    +Ativa : bool
+  }
+
+  class Usuario <<IdentityUser<Guid>>> {
+    +Administrador : bool
+    +Motorista : bool
+    +EmpresaId : Guid?
+    +Agendamentos : List<Agendamento>
+  }
+
+  class Administrador {
+    +Nome : string
+    +UserName : string
+    +UsuarioId : Guid
+    +Atualizar(dto : UpdateAdminDto) : void
+    +Excluir() : void
+  }
+
+  class Motorista {
+    +Username : string
+    +NomeReal : string
+    +Telefone : string?
+    +UsuarioId : Guid
+    +EmpresaId : Guid
+    +Veiculos : List<Veiculo>
+    +Atualizar(dto : UpdateMotoristaDto) : void
+    +ExcluirConta() : void
+  }
+
+  class Veiculo {
+    +Placa : string
+    +Modelo : string?
+    +Renavam : string?
+    +TipoVeiculo : TipoVeiculo
+    +MotoristaId : Guid
+    +Atualizar(dto : UpdateVeiculoDto) : void
+  }
+
+  class RefreshToken {
+    +UserId : Guid
+    +TokenHash : string
+    +FamilyId : Guid
+    +EmpresaId : Guid?
+    +DeviceInfo : string?
+    +IpAddress : string?
+    +ExpiresAt : DateTime
+    +RevokedAt : DateTime?
+  }
+
+  class CodigoVerificacaoEmail {
+    +UsuarioId : Guid
+    +CodigoHash : string
+    +Finalidade : FinalidadeVerificacaoEmail
+    +Tentativas : int
+    +ExpiraEm : DateTime
+  }
+
+  class DispositivoUsuario {
+    +UsuarioId : Guid
+    +ExpoPushToken : string
+    +Plataforma : PlataformaDispositivo
+    +AppVersion : string?
+    +UltimoUsoEm : DateTime
+    +Ativo : bool
+  }
+
+  class Fornecedor {
+    +Nome : string
+    +Cnpj : string?
+    +EmpresaId : Guid
+    +Produtos : List<Produto>
+    +Agendamentos : List<Agendamento>
+    +NotasFiscais : List<NotaFiscal>
+    +Recebimentos : List<PlanejamentoRecebimento>
+    +Atualizar(dto : UpdateFornecedorDto) : void
+    +AdicionarProduto(produtoId : Guid) : void
+    +RemoverProduto(produtoId : Guid) : void
+  }
+
+  class UnidadeEntrega {
+    +Nome : string
+    +Localizacao : string?
+    +Logradouro : string?
+    +Complemento : string?
+    +Bairro : string?
+    +Cidade : string?
+    +Estado : string?
+    +Cep : string?
+    +Latitude : float
+    +Longitude : float
+    +EmpresaId : Guid
+    +Ativa : bool
+  }
+
+  class LocalDescarga {
+    +Nome : string
+    +UnidadeEntregaId : Guid
+    +EmpresaId : Guid
+    +Ativa : bool
+    +Atualizar(dto : UpdateLocalDescargaDto) : void
+  }
+
+  class Produto {
+    +Nome : string
+    +LocalDescargaId : Guid
+    +CodigoEan : string?
+    +EmpresaId : Guid
+    +ProdutoFornecedores : List<ProdutoFornecedor>
+    +Grades : List<Grade>
+    +Atualizar(dto : UpdateProdutoDto) : void
+  }
+
+  class ProdutoFornecedor {
+    +FornecedorId : Guid
+    +ProdutoId : Guid
+    +CodigoFornecedor : string?
+    +EanFornecedor : string?
+    +EmpresaId : Guid
+    +CreatedAt : DateTime
+  }
+
+  class Grade <<sealed>> {
+    +ProdutoId : Guid
+    +FornecedorId : Guid
+    +UnidadeEntregaId : Guid
+    +LocalDescargaId : Guid
+    +DataInicio : DateTime
+    +DataFim : DateTime
+    +HoraInicial : TimeSpan
+    +HoraFinal : TimeSpan
+    +IntervaloMinutos : int
+    +DiasSemana : List<DiaSemana>
+    +EmpresaId : Guid
+    +Agendamentos : List<Agendamento>
+    +GerarSlots() : List<Agendamento>
+    +ValidarComercial(dto : UpdateGradeDto) : bool
+    +PodeSerExcluida() : bool
+  }
+
+  class Agendamento {
+    +GradeId : Guid?
+    +FornecedorId : Guid
+    +ProdutoId : Guid
+    +UnidadeEntregaId : Guid
+    +MotoristaId : Guid?
+    +UsuarioId : Guid?
+    +NotaFiscalId : Guid?
+    +PlacaVeiculo : string?
+    +DataInicio : DateTime
+    +DataFim : DateTime
+    +StatusAgendamento : StatusAgendamento
+    +VolumeCarga : decimal?
+    +EmpresaId : Guid
+    +Reservar(motoristaId : Guid, veiculoId : Guid, nfId : Guid?) : void
+    +RegistrarChegada() : void
+    +FinalizarOperacao() : void
+    +Cancelar(motivo : string) : void
+    +Reagendar(inicio : DateTime, fim : DateTime) : void
+    +PodeExpirarNaData() : bool
+    +Expirar() : void
+    +AlterarStatus(s : StatusAgendamento) : void
+    +PodeTransferirParaDestino(s : StatusAgendamento) : bool
+  }
+
+  class Carga {
+    +TipoCarga : TipoCarga
+    +AgendamentoId : Guid
+  }
+
+  class NotaFiscal {
+    +ChaveAcesso : string
+    +Numero : string
+    +Serie : string
+    +DataEmissao : DateTime
+    +Emitente : string
+    +Destinatario : string
+    +CNPJEmitente : string?
+    +ValorTotal : decimal
+    +PesoBruto : decimal?
+    +PlacaVeiculo : string?
+    +RawXml : string?
+    +Status : NotaFiscalStatus
+    +FornecedorId : Guid?
+    +AgendamentoId : Guid?
+    +UploadedByUserId : Guid?
+    +ValidationMessages : string?
+    +TipoCarga : TipoCarga
+    +StatusSefaz : string?
+    +UltimaValidacaoSefaz : DateTime?
+    +FonteValidacao : FonteValidacao
+    +EmpresaId : Guid
+    +Itens : List<NotaFiscalItem>
+    +ParsearXml(xml : string) : NotaFiscal
+    +Validar() : ValidationResult
+    +PertenceAEmpresa(empresaId : Guid) : bool
+  }
+
+  class NotaFiscalItem {
+    +NotaFiscalId : Guid
+    +Codigo : string
+    +Ean : string?
+    +Descricao : string
+    +Quantidade : decimal
+    +ValorUnitario : decimal
+    +ValorTotal : decimal
+    +ProdutoId : Guid?
+    +Status : NotaFiscalItemStatus
+    +OrigemMatch : OrigemMatchProduto?
+    +MatchadoEm : DateTime?
+    +MatchadoPor : Guid?
+    +EmpresaId : Guid
+    +VincularProduto(produtoId : Guid) : void
+    +ValidarValores() : bool
+  }
+
+  class PlanejamentoRecebimento <<sealed>> {
+    +FornecedorId : Guid
+    +DataInicio : DateTime
+    +DataFim : DateTime
+    +StatusRecebimento : StatusRecebimento
+    +EmpresaId : Guid
+    +ItemPlanejamentos : List<ItemPlanejamento>
+    +Criar(dto : CreatePlanejamentoDto) : PlanejamentoRecebimento
+    +Atualizar(dto : UpdatePlanejamentoDto) : void
+    +RecalcularStatus() : void
+    +VigenciaContem(data : DateTime) : bool
+    +ItemDoProduto(produtoId : Guid) : ItemPlanejamento?
+    +DeveCongelarProduto() : bool
+    +Encerrar() : void
+  }
+
+  class ItemPlanejamento {
+    +PlanejamentoRecebimentoId : Guid
+    +ProdutoId : Guid
+    +EmpresaId : Guid
+    +QuantidadeTotalPlanejada : decimal
+    +CadenciaDiariaPlanejada : decimal
+    +QuantidadeTotalRecebida : decimal
+    +QuantidadeReservada : decimal
+    +DiasSemana : string
+    +ToleranciaExtra : decimal
+    +RecebimentoEventos : List<RecebimentoEvento>
+    +Reservar(qtd : decimal) : void
+    +EstornarReserva(qtd : decimal) : void
+    +ConfirmarRecebimento(qtd : decimal) : void
+    +RegistrarRecebimento(qtd : decimal, data : DateTime) : bool
+    +EstornarRecebimento(qtd : decimal, data : DateTime) : bool
+    +EstaConcluido() : bool
+    +OperaEm(dia : DiaSemana) : bool
+    +QuantidadeRecebidaNoDia(data : DateTime) : decimal
+    +MetaDiariaAtingida(data : DateTime) : bool
+  }
+
+  class RecebimentoEvento {
+    +ItemPlanejamentoId : Guid
+    +AgendamentoId : Guid?
+    +ProdutoId : Guid
+    +FornecedorId : Guid
+    +EmpresaId : Guid
+    +Quantidade : decimal
+    +DataRecebimento : DateTime
+    +Observacao : string?
+    +Tipo : TipoMovimentoRecebimento
+    +EhOrfao : bool
+    +CriarOrfao() : RecebimentoEvento
+    +Vincular(itemId : Guid) : void
+    +AjustarComPesoReal(peso : decimal) : void
+  }
+
+  class Notificacao {
+    +DestinatarioUsuarioId : Guid
+    +EmpresaId : Guid
+    +Tipo : TipoNotificacao
+    +Prioridade : PrioridadeNotificacao
+    +Titulo : string
+    +Corpo : string
+    +Payload : string?
+    +LidaEm : DateTime?
+    +CorrelationId : string?
+    +Entregas : List<NotificacaoEntrega>
+    +MarcarComoLida() : void
+  }
+
+  class NotificacaoEntrega {
+    +NotificacaoId : Guid
+    +EmpresaId : Guid
+    +Canal : CanalNotificacao
+    +Status : StatusEntregaNotificacao
+    +TentativasEfetuadas : int
+    +ProximaTentativaEm : DateTime?
+    +UltimaTentativaEm : DateTime?
+    +ProviderMessageId : string?
+    +Erro : string?
+    +ReceiptCheckedAt : DateTime?
+    +MarcarEnviado(msgId : string) : void
+    +RegistrarFalha(erro : string) : void
+  }
+
+  class AuditLog {
+    +UserId : Guid?
+    +EmpresaId : Guid?
+    +EntityName : string
+    +EntityId : string
+    +Action : AuditAction
+    +ChangesJson : string?
+    +Timestamp : DateTime
+    +IpAddress : string?
+    +UserAgent : string?
+  }
+
+  class OutboxEvent {
+    +EventType : string
+    +Payload : string
+    +IdempotencyKey : string
+    +EmpresaId : Guid?
+    +OcorridoEm : DateTime
+    +ProcessedAt : DateTime?
+    +Tentativas : int
+    +ProximaTentativaEm : DateTime?
+    +UltimoErro : string?
+    +CorrelationId : string?
+    +MarcarProcessado() : void
+    +RegistrarFalha(erro : string) : void
+  }
+}
+
+' ═══════════════════════════════════════════════
+'  DOMAIN — ENUMS
+' ═══════════════════════════════════════════════
+package "TruckFlow.Domain :: Enums" as domainEnums #1a1000 {
+
+  enum StatusAgendamento {
+    Disponivel = 0
+    Pendente = 1
+    Agendado = 2
+    EmAndamento = 3
+    Finalizado = 4
+    Cancelado = 5
+    Expirado = 6
+  }
+
+  enum TipoCarga {
+    Indefinido = 0
+    Milho = 1
+    SojaCrua = 2
+    SojaProcessada = 3
+    Farelo = 4
+    Oleo = 5
+    Trigo = 6
+    Arroz = 7
+    Feijao = 8
+    Outro = 99
+  }
+
+  enum TipoVeiculo {
+    CarretaDoisEixos = 1
+    Ls = 2
+    CarretaCavaloTrucado = 3
+    Bitrem = 4
+    Rodotrem = 5
+    Vanderleia = 6
+    Julieta = 7
+    Graneleiro = 8
+    Bau = 9
+    Outros = 10
+  }
+
+  enum StatusRecebimento {
+    Planejado = 1
+    EmAndamento = 2
+    Concluido = 3
+    Encerrado = 4
+  }
+
+  enum NotaFiscalStatus {
+    Pendente
+    Validada
+    Rejeitada
+    Integrada
+  }
+
+  enum NotaFiscalItemStatus {
+    PendenteRevisao
+    Matched
+  }
+
+  enum TipoNotificacao {
+    AgendamentoCriado = 1
+    AgendamentoConfirmado = 2
+    AgendamentoCancelado = 3
+    AgendamentoReagendado = 4
+    AgendamentoExpirado = 5
+    MotoristaChegou = 6
+    AgendamentoFinalizado = 7
+    NotificacaoGeral = 8
+  }
+
+  enum CanalNotificacao {
+    InApp = 1
+    Push = 2
+  }
+
+  enum PrioridadeNotificacao {
+    Normal = 0
+    Alta = 1
+    Critica = 2
+  }
+
+  enum StatusEntregaNotificacao {
+    Pendente = 0
+    Enviado = 1
+    Falhou = 2
+    Cancelado = 3
+  }
+
+  enum AuditAction {
+    Create
+    Update
+    Delete
+  }
+
+  enum DiaSemana {
+    Domingo
+    Segunda
+    Terca
+    Quarta
+    Quinta
+    Sexta
+    Sabado
+  }
+
+  enum PlataformaDispositivo {
+    Ios = 1
+    Android = 2
+  }
+
+  enum FinalidadeVerificacaoEmail {
+    AlterarSenha = 2
+    AlterarEmail = 3
+  }
+
+  enum FonteValidacao {
+    XmlUpload = 0
+    Sefaz = 1
+    ConsultaProtocolo = 2
+  }
+
+  enum OrigemMatchProduto {
+    EanAuto
+    ProdFornecAuto
+    HistoricoAuto
+    AdminManual
+  }
+
+  enum TipoMovimentoRecebimento {
+    Reserva = 1
+    Confirmacao = 2
+    Estorno = 3
+  }
+}
+
+' ═══════════════════════════════════════════════
+'  DOMAIN — EVENTS & CORE INTERFACES
+' ═══════════════════════════════════════════════
+package "TruckFlow.Domain :: Events & Contracts" as domainContracts #0a1a0a {
+
+  interface IDomainEvent {
+    +EmpresaId : Guid
+    +OcorridoEm : DateTime
+    +IdempotencyKey : string
+  }
+
+  class AgendamentoCanceladoEvent <<record>> {
+    +AgendamentoId : Guid
+    +EmpresaId : Guid
+    +MotoristaUsuarioId : Guid?
+    +MotivoCancelamento : string?
+    +OcorridoEm : DateTime
+  }
+
+  class MotoristaChegouEvent <<record>> {
+    +AgendamentoId : Guid
+    +EmpresaId : Guid
+    +MotoristaUsuarioId : Guid
+    +OcorridoEm : DateTime
+  }
+
+  class AgendamentoReagendadoEvent <<record>> {
+    +AgendamentoId : Guid
+    +EmpresaId : Guid
+    +MotoristaUsuarioId : Guid?
+    +DataInicioAnterior : DateTime
+    +DataFimAnterior : DateTime
+    +DataInicioNova : DateTime
+    +DataFimNova : DateTime
+    +OcorridoEm : DateTime
+  }
+
+  interface ICurrentUserService {
+    +UserId : Guid
+    +UserIdOrNull : Guid?
+    +EmpresaId : Guid
+    +IsAdmin : bool
+    +IsMotorista : bool
+    +MotoristaId : Guid?
+    +NomeAutor : string
+  }
+
+  interface IEmpresaContext {
+    +EmpresaId : Guid
+    +EmpresaIdOrNull : Guid?
+    +WithTenant(id : Guid) : IDisposable
+  }
+
+  interface IEmailService {
+    +SendAsync(para : string, assunto : string, corpoHtml : string, token : CancellationToken) : Task
+  }
+}
+
+' ═══════════════════════════════════════════════
+'  APPLICATION — SERVICE INTERFACES
+' ═══════════════════════════════════════════════
+package "TruckFlow.Application :: Service Interfaces" as appInterfaces #0a1a10 {
+
+  interface IAuthService {
+    +GenerateTokenAsync(userId : Guid) : Task<TokenDto>
+    +RefreshAccessTokenAsync(refreshToken : string) : Task<TokenDto>
+  }
+
+  interface IRefreshTokenService {
+    +CreateAsync(userId : Guid, device : string, ip : string) : Task<string>
+    +ValidateAsync(token : string) : Task<RefreshTokenValidationDto>
+    +RevokeAsync(token : string) : Task
+    +RevokeAllForUserAsync(userId : Guid) : Task
+  }
+
+  interface IVerificacaoEmailService {
+    +EnviarCodigoAsync(usuarioId : Guid, finalidade : FinalidadeVerificacaoEmail) : Task
+    +ValidarCodigoAsync(usuarioId : Guid, codigo : string, finalidade : FinalidadeVerificacaoEmail) : Task<bool>
+  }
+
+  interface IUsuarioService {
+    +GetAll(query : QueryDto) : Task<PagedResponse<UsuarioDto>>
+    +GetById(id : Guid) : Task<UsuarioDto>
+    +Create(dto : CreateUsuarioDto) : Task<UsuarioDto>
+    +Update(id : Guid, dto : UpdateUsuarioDto) : Task
+    +Delete(id : Guid) : Task
+    +AlterarSenhaAsync(id : Guid, dto : AlterarSenhaDto) : Task
+  }
+
+  interface IAgendamentoAdminService {
+    +CreateAvulso(dto : CreateAgendamentoAvulsoDto) : Task<AgendamentoDto>
+    +GetByFiltros(filtros : AgendamentoFiltrosDto) : Task<PagedResponse<AgendamentoDto>>
+    +GetById(id : Guid) : Task<AgendamentoDto>
+    +Update(id : Guid, dto : UpdateAgendamentoDto) : Task
+    +RegistrarChegadaAsync(id : Guid) : Task
+    +FinalizarAgendamento(id : Guid) : Task
+    +FinalizarOperacao(id : Guid) : Task
+    +CancelarAgendamento(id : Guid, motivo : string) : Task
+    +Delete(id : Guid) : Task
+  }
+
+  interface IAgendamentoMotoristaService {
+    +BookAppointment(dto : BookAppointmentDto) : Task<AgendamentoDto>
+    +GetAvailableAppointments(query : QueryDto) : Task<PagedResponse<AgendamentoDto>>
+    +GetDriverAppointments(query : QueryDto) : Task<PagedResponse<AgendamentoDto>>
+  }
+
+  interface IAgendamentoExpirationService {
+    +ExpirarAgendamentosAsync(token : CancellationToken) : Task
+  }
+
+  interface IAgendamentoRecebimentoLifecycleService {
+    +ProcessarFinalizadoAsync(agendamentoId : Guid) : Task
+    +EstornarCanceladoAsync(agendamentoId : Guid) : Task
+  }
+
+  interface IEmpresaService {
+    +Create(dto : CreateEmpresaDto) : Task<EmpresaDto>
+    +GetById(id : Guid) : Task<EmpresaDto>
+    +GetAll(query : QueryDto) : Task<PagedResponse<EmpresaDto>>
+    +Update(id : Guid, dto : UpdateEmpresaDto) : Task
+    +Desativar(id : Guid) : Task
+  }
+
+  interface IProdutoService {
+    +GetAll(query : QueryDto) : Task<PagedResponse<ProdutoDto>>
+    +GetById(id : Guid) : Task<ProdutoDto>
+    +Create(dto : CreateProdutoDto) : Task<ProdutoDto>
+    +Update(id : Guid, dto : UpdateProdutoDto) : Task
+    +Delete(id : Guid) : Task
+  }
+
+  interface IFornecedorService {
+    +GetAll(query : QueryDto) : Task<PagedResponse<FornecedorDto>>
+    +GetById(id : Guid) : Task<FornecedorDto>
+    +Create(dto : CreateFornecedorDto) : Task<FornecedorDto>
+    +Update(id : Guid, dto : UpdateFornecedorDto) : Task
+    +Delete(id : Guid) : Task
+  }
+
+  interface IGradeService {
+    +GetAll(query : QueryDto) : Task<PagedResponse<GradeDto>>
+    +GetById(id : Guid) : Task<GradeDto>
+    +Create(dto : CreateGradeDto) : Task<GradeDto>
+    +Update(id : Guid, dto : UpdateGradeDto) : Task
+    +Delete(id : Guid) : Task
+    +GenerateSlots(gradeId : Guid) : Task<List<AgendamentoDto>>
+  }
+
+  interface IUnidadeEntregaService {
+    +GetAll(query : QueryDto) : Task<PagedResponse<UnidadeEntregaDto>>
+    +GetById(id : Guid) : Task<UnidadeEntregaDto>
+    +Create(dto : CreateUnidadeEntregaDto) : Task<UnidadeEntregaDto>
+    +Update(id : Guid, dto : UpdateUnidadeEntregaDto) : Task
+    +Delete(id : Guid) : Task
+  }
+
+  interface ILocalDescargaService {
+    +GetAll(query : QueryDto) : Task<PagedResponse<LocalDescargaDto>>
+    +GetById(id : Guid) : Task<LocalDescargaDto>
+    +Create(dto : CreateLocalDescargaDto) : Task<LocalDescargaDto>
+    +Update(id : Guid, dto : UpdateLocalDescargaDto) : Task
+    +Delete(id : Guid) : Task
+  }
+
+  interface IMotoristaService {
+    +GetAll(query : QueryDto) : Task<PagedResponse<MotoristaDto>>
+    +GetById(id : Guid) : Task<MotoristaDto>
+    +Create(dto : CreateMotoristaDto) : Task<MotoristaDto>
+    +Update(id : Guid, dto : UpdateMotoristaDto) : Task
+    +Delete(id : Guid) : Task
+  }
+
+  interface IVeiculoService {
+    +GetAll(query : QueryDto) : Task<PagedResponse<VeiculoDto>>
+    +GetById(id : Guid) : Task<VeiculoDto>
+    +Create(dto : CreateVeiculoDto) : Task<VeiculoDto>
+    +Update(id : Guid, dto : UpdateVeiculoDto) : Task
+    +Delete(id : Guid) : Task
+  }
+
+  interface INotaFiscalService {
+    +ParseXmlAsync(xml : string) : Task<NotaFiscalParseDto>
+    +SaveParsedNotaAsync(dto : SaveNotaFiscalDto) : Task<NotaFiscalDto>
+    +ObterPorChaveAsync(chave : string) : Task<NotaFiscalDto>
+    +ValidarNaSefazAsync(chave : string) : Task<SefazValidacaoDto>
+  }
+
+  interface IPlanejamentoRecebimentoService {
+    +GetAll(query : QueryDto) : Task<PagedResponse<PlanejamentoDto>>
+    +GetById(id : Guid) : Task<PlanejamentoDto>
+    +Create(dto : CreatePlanejamentoDto) : Task<PlanejamentoDto>
+    +Update(id : Guid, dto : UpdatePlanejamentoDto) : Task
+    +Delete(id : Guid) : Task
+    +GetDashboard() : Task<DashboardPlanejamentoDto>
+    +GetRelatorio(id : Guid) : Task<RelatorioPlanejamentoDto>
+    +Encerrar(id : Guid) : Task
+  }
+
+  interface IItemPlanejamentoService {
+    +GetAll(planejamentoId : Guid) : Task<List<ItemPlanejamentoDto>>
+    +GetById(id : Guid) : Task<ItemPlanejamentoDto>
+    +Create(dto : CreateItemPlanejamentoDto) : Task<ItemPlanejamentoDto>
+    +Update(id : Guid, dto : UpdateItemPlanejamentoDto) : Task
+    +Delete(id : Guid) : Task
+  }
+
+  interface IRecebimentoEventoService {
+    +GetByItem(itemId : Guid) : Task<List<RecebimentoEventoDto>>
+    +Create(dto : CreateRecebimentoEventoDto) : Task<RecebimentoEventoDto>
+    +Estornar(id : Guid) : Task
+  }
+
+  interface INotificacaoService {
+    +ListarMinhasAsync(query : QueryDto) : Task<PagedResponse<NotificacaoDto>>
+    +ContarNaoLidasMinhasAsync() : Task<int>
+    +MarcarComoLidaAsync(id : Guid) : Task
+    +ListarPorAgendamentoAsync(agendamentoId : Guid) : Task<List<NotificacaoDto>>
+  }
+
+  interface INotificacaoSendService {
+    +EnviarAsync(notificacaoId : Guid) : Task
+    +EnviarBatchAsync(ids : List<Guid>) : Task
+  }
+
+  interface IDispositivoUsuarioService {
+    +RegisterAsync(dto : RegisterDispositivoDto) : Task
+    +UnregisterAsync(token : string) : Task
+    +GetByUsuarioAsync(usuarioId : Guid) : Task<List<DispositivoDto>>
+  }
+
+  interface IAuditLogService {
+    +LogAsync(action : AuditAction, entityName : string, entityId : string, changes : object) : Task
+    +GetByEntityAsync(entityName : string, entityId : string) : Task<List<AuditLogDto>>
+  }
+
+  interface IDashboardService {
+    +GetOperacionalAsync() : Task<DashboardOperacionalDto>
+    +GetRelatorioAsync(filtros : RelatorioFiltrosDto) : Task<RelatorioDto>
+  }
+
+  interface IConferenciaService {
+    +ConferirNotaFiscalAsync(notaFiscalId : Guid) : Task<ConferenciaResultDto>
+    +MatchItemManualAsync(itemId : Guid, produtoId : Guid) : Task
+  }
+
+  interface ISaaSRegistrationService {
+    +RegisterAsync(dto : SaaSRegistrationDto) : Task<SaaSRegistrationResultDto>
+  }
+
+  interface IGeocodingService {
+    +GeocodeAsync(address : string) : Task<GeocodingResultDto?>
+  }
+}
+
+' ═══════════════════════════════════════════════
+'  INFRASTRUCTURE — REPOSITORY INTERFACES
+' ═══════════════════════════════════════════════
+package "TruckFlowApi.Infra :: Repositories" as infraRepos #1a0a1a {
+
+  interface IAgendamentoRepositorio {
+    +GetByFiltrosAsync(filtros : AgendamentoFiltrosDto) : Task<PagedResponse<Agendamento>>
+    +GetByIdAsync(id : Guid) : Task<Agendamento?>
+    +GetByMotoristaAsync(motoristaId : Guid) : Task<List<Agendamento>>
+    +AddAsync(entity : Agendamento) : Task
+    +UpdateAsync(entity : Agendamento) : Task
+    +DeleteAsync(id : Guid) : Task
+    +GetExpiradosAsync() : Task<List<Agendamento>>
+  }
+
+  interface IEmpresaRepositorio {
+    +GetByIdAsync(id : Guid) : Task<Empresa?>
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<Empresa>>
+    +AddAsync(entity : Empresa) : Task
+    +UpdateAsync(entity : Empresa) : Task
+    +GetByCnpjAsync(cnpj : string) : Task<Empresa?>
+  }
+
+  interface IProdutoRepositorio {
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<Produto>>
+    +GetByIdAsync(id : Guid) : Task<Produto?>
+    +AddAsync(entity : Produto) : Task
+    +UpdateAsync(entity : Produto) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface IFornecedorRepositorio {
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<Fornecedor>>
+    +GetByIdAsync(id : Guid) : Task<Fornecedor?>
+    +AddAsync(entity : Fornecedor) : Task
+    +UpdateAsync(entity : Fornecedor) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface IGradeRepositorio {
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<Grade>>
+    +GetByIdAsync(id : Guid) : Task<Grade?>
+    +AddAsync(entity : Grade) : Task
+    +UpdateAsync(entity : Grade) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface IMotoristaRepositorio {
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<Motorista>>
+    +GetByIdAsync(id : Guid) : Task<Motorista?>
+    +GetByUsuarioIdAsync(usuarioId : Guid) : Task<Motorista?>
+    +AddAsync(entity : Motorista) : Task
+    +UpdateAsync(entity : Motorista) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface IVeiculoRepositorio {
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<Veiculo>>
+    +GetByIdAsync(id : Guid) : Task<Veiculo?>
+    +AddAsync(entity : Veiculo) : Task
+    +UpdateAsync(entity : Veiculo) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface IUnidadeEntregaRepositorio {
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<UnidadeEntrega>>
+    +GetByIdAsync(id : Guid) : Task<UnidadeEntrega?>
+    +AddAsync(entity : UnidadeEntrega) : Task
+    +UpdateAsync(entity : UnidadeEntrega) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface ILocalDescargaRepositorio {
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<LocalDescarga>>
+    +GetByIdAsync(id : Guid) : Task<LocalDescarga?>
+    +AddAsync(entity : LocalDescarga) : Task
+    +UpdateAsync(entity : LocalDescarga) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface INotaFiscalRepositorio {
+    +GetByChaveAsync(chave : string) : Task<NotaFiscal?>
+    +GetByIdAsync(id : Guid) : Task<NotaFiscal?>
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<NotaFiscal>>
+    +AddAsync(entity : NotaFiscal) : Task
+    +UpdateAsync(entity : NotaFiscal) : Task
+  }
+
+  interface INotaFiscalItemRepositorio {
+    +GetByNotaAsync(notaId : Guid) : Task<List<NotaFiscalItem>>
+    +GetByIdAsync(id : Guid) : Task<NotaFiscalItem?>
+    +UpdateAsync(entity : NotaFiscalItem) : Task
+  }
+
+  interface IPlanejamentoRecebimentoRepositorio {
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<PlanejamentoRecebimento>>
+    +GetByIdAsync(id : Guid) : Task<PlanejamentoRecebimento?>
+    +AddAsync(entity : PlanejamentoRecebimento) : Task
+    +UpdateAsync(entity : PlanejamentoRecebimento) : Task
+    +DeleteAsync(id : Guid) : Task
+    +GetAtivosAsync(fornecedorId : Guid) : Task<List<PlanejamentoRecebimento>>
+  }
+
+  interface IItemPlanejamentoRepositorio {
+    +GetByPlanejamentoAsync(planejamentoId : Guid) : Task<List<ItemPlanejamento>>
+    +GetByIdAsync(id : Guid) : Task<ItemPlanejamento?>
+    +AddAsync(entity : ItemPlanejamento) : Task
+    +UpdateAsync(entity : ItemPlanejamento) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface IRecebimentoEventoRepositorio {
+    +GetByItemAsync(itemId : Guid) : Task<List<RecebimentoEvento>>
+    +AddAsync(entity : RecebimentoEvento) : Task
+    +UpdateAsync(entity : RecebimentoEvento) : Task
+  }
+
+  interface IUsuarioRepositorio {
+    +GetByIdAsync(id : Guid) : Task<Usuario?>
+    +GetAllAsync(query : QueryDto) : Task<PagedResponse<Usuario>>
+    +GetByEmailAsync(email : string) : Task<Usuario?>
+  }
+
+  interface INotificacaoRepositorio {
+    +GetByDestinatarioAsync(usuarioId : Guid, query : QueryDto) : Task<PagedResponse<Notificacao>>
+    +ContarNaoLidasAsync(usuarioId : Guid) : Task<int>
+    +GetByIdAsync(id : Guid) : Task<Notificacao?>
+    +AddAsync(entity : Notificacao) : Task
+    +UpdateAsync(entity : Notificacao) : Task
+  }
+
+  interface INotificacaoEntregaRepositorio {
+    +GetPendenteAsync() : Task<List<NotificacaoEntrega>>
+    +AddAsync(entity : NotificacaoEntrega) : Task
+    +UpdateAsync(entity : NotificacaoEntrega) : Task
+  }
+
+  interface IDispositivoUsuarioRepositorio {
+    +GetByUsuarioIdAsync(usuarioId : Guid) : Task<List<DispositivoUsuario>>
+    +GetByTokenAsync(token : string) : Task<DispositivoUsuario?>
+    +AddAsync(entity : DispositivoUsuario) : Task
+    +UpdateAsync(entity : DispositivoUsuario) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface IAuditLogRepositorio {
+    +AddAsync(entity : AuditLog) : Task
+    +GetByEntityAsync(entityName : string, entityId : string) : Task<List<AuditLog>>
+  }
+
+  interface ICodigoVerificacaoEmailRepositorio {
+    +GetByUsuarioIdAsync(usuarioId : Guid, finalidade : FinalidadeVerificacaoEmail) : Task<CodigoVerificacaoEmail?>
+    +AddAsync(entity : CodigoVerificacaoEmail) : Task
+    +UpdateAsync(entity : CodigoVerificacaoEmail) : Task
+    +DeleteAsync(id : Guid) : Task
+  }
+
+  interface IRefreshTokenRepositorio {
+    +GetByHashAsync(hash : string) : Task<RefreshToken?>
+    +GetByUsuarioIdAsync(userId : Guid) : Task<List<RefreshToken>>
+    +AddAsync(entity : RefreshToken) : Task
+    +UpdateAsync(entity : RefreshToken) : Task
+    +RevokeAllAsync(userId : Guid) : Task
+  }
+
+  interface IDashboardRepositorio {
+    +GetOperacionalAsync(empresaId : Guid) : Task<DashboardOperacionalDto>
+    +GetKpisAsync(empresaId : Guid, filtros : RelatorioFiltrosDto) : Task<KpisDto>
+  }
+
+  interface IOutboxEventRepositorio {
+    +GetPendentesAsync(limite : int) : Task<List<OutboxEvent>>
+    +AddAsync(entity : OutboxEvent) : Task
+    +UpdateAsync(entity : OutboxEvent) : Task
+  }
+
+  interface IProdutoFornecedorRepositorio {
+    +GetByProdutoAsync(produtoId : Guid) : Task<List<ProdutoFornecedor>>
+    +AddAsync(entity : ProdutoFornecedor) : Task
+    +DeleteAsync(produtoId : Guid, fornecedorId : Guid) : Task
+  }
+
+  class AppDbContext <<IdentityDbContext>> {
+    +Usuarios : DbSet<Usuario>
+    +Veiculos : DbSet<Veiculo>
+    +Motoristas : DbSet<Motorista>
+    +Produtos : DbSet<Produto>
+    +Fornecedores : DbSet<Fornecedor>
+    +Cargas : DbSet<Carga>
+    +UnidadesEntrega : DbSet<UnidadeEntrega>
+    +Grades : DbSet<Grade>
+    +Agendamentos : DbSet<Agendamento>
+    +Administradores : DbSet<Administrador>
+    +NotasFiscais : DbSet<NotaFiscal>
+    +Notificacoes : DbSet<Notificacao>
+    +LocaisDescarga : DbSet<LocalDescarga>
+    +NotaFiscalItems : DbSet<NotaFiscalItem>
+    +PlanejamentosRecebimento : DbSet<PlanejamentoRecebimento>
+    +ItensPlanejamento : DbSet<ItemPlanejamento>
+    +RecebimentoEventos : DbSet<RecebimentoEvento>
+    +Empresas : DbSet<Empresa>
+    +AuditLogs : DbSet<AuditLog>
+    +RefreshTokens : DbSet<RefreshToken>
+    +OutboxEvents : DbSet<OutboxEvent>
+    +NotificacaoEntregas : DbSet<NotificacaoEntrega>
+    +DispositivosUsuario : DbSet<DispositivoUsuario>
+    +CodigosVerificacaoEmail : DbSet<CodigoVerificacaoEmail>
+    +ProdutoFornecedores : DbSet<ProdutoFornecedor>
+    #OnModelCreating(builder : ModelBuilder) : void
+  }
+}
+
+' ═══════════════════════════════════════════════
+'  API — CONTROLLERS
+' ═══════════════════════════════════════════════
+package "TruckFlow (API) :: Controllers" as apiControllers #1a0a0a {
+
+  abstract class ApiControllerBase <<ControllerBase>> {
+    #CurrentUser : ICurrentUserService
+    #EmpresaId : Guid
+    #UserId : Guid
+  }
+
+  class AuthAdminController {
+    -_authService : IAuthService
+    +Login(dto : LoginAdminDto) : Task<IActionResult>
+    +Register(dto : RegisterAdminDto) : Task<IActionResult>
+    +RefreshToken(dto : RefreshTokenDto) : Task<IActionResult>
+    +Logout() : Task<IActionResult>
+  }
+
+  class AuthMotoristaController {
+    -_authService : IAuthService
+    +Login(dto : LoginMotoristaDto) : Task<IActionResult>
+    +RefreshToken(dto : RefreshTokenDto) : Task<IActionResult>
+    +Logout() : Task<IActionResult>
+  }
+
+  class AgendamentoAdminController {
+    -_service : IAgendamentoAdminService
+    +GetAll(filtros : AgendamentoFiltrosDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +CreateAvulso(dto : CreateAgendamentoAvulsoDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateAgendamentoDto) : Task<IActionResult>
+    +RegistrarChegada(id : Guid) : Task<IActionResult>
+    +FinalizarAgendamento(id : Guid) : Task<IActionResult>
+    +FinalizarOperacao(id : Guid) : Task<IActionResult>
+    +Cancelar(id : Guid, dto : CancelarDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+  }
+
+  class AgendamentoMotoristaController {
+    -_service : IAgendamentoMotoristaService
+    +GetDisponiveis(query : QueryDto) : Task<IActionResult>
+    +GetMeusAgendamentos(query : QueryDto) : Task<IActionResult>
+    +Reservar(dto : BookAppointmentDto) : Task<IActionResult>
+  }
+
+  class EmpresaController {
+    -_service : IEmpresaService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateEmpresaDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateEmpresaDto) : Task<IActionResult>
+    +Desativar(id : Guid) : Task<IActionResult>
+  }
+
+  class ProdutoController {
+    -_service : IProdutoService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateProdutoDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateProdutoDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+  }
+
+  class FornecedorController {
+    -_service : IFornecedorService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateFornecedorDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateFornecedorDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+  }
+
+  class GradeController {
+    -_service : IGradeService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateGradeDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateGradeDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+    +GenerateSlots(id : Guid) : Task<IActionResult>
+  }
+
+  class UnidadeEntregaController {
+    -_service : IUnidadeEntregaService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateUnidadeEntregaDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateUnidadeEntregaDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+  }
+
+  class LocalDescargaController {
+    -_service : ILocalDescargaService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateLocalDescargaDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateLocalDescargaDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+  }
+
+  class MotoristaController {
+    -_service : IMotoristaService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateMotoristaDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateMotoristaDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+  }
+
+  class VeiculoController {
+    -_service : IVeiculoService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateVeiculoDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateVeiculoDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+  }
+
+  class NotaFiscalController {
+    -_service : INotaFiscalService
+    +ParseXml(file : IFormFile) : Task<IActionResult>
+    +Save(dto : SaveNotaFiscalDto) : Task<IActionResult>
+    +GetByChave(chave : string) : Task<IActionResult>
+    +ValidarSefaz(chave : string) : Task<IActionResult>
+  }
+
+  class PlanejamentoRecebimentoController {
+    -_service : IPlanejamentoRecebimentoService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreatePlanejamentoDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdatePlanejamentoDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+    +GetDashboard() : Task<IActionResult>
+    +GetRelatorio(id : Guid) : Task<IActionResult>
+    +Encerrar(id : Guid) : Task<IActionResult>
+  }
+
+  class ItemPlanejamentoController {
+    -_service : IItemPlanejamentoService
+    +GetAll(planejamentoId : Guid) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateItemPlanejamentoDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateItemPlanejamentoDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+  }
+
+  class RecebimentoController {
+    -_service : IRecebimentoEventoService
+    +GetByItem(itemId : Guid) : Task<IActionResult>
+    +Create(dto : CreateRecebimentoEventoDto) : Task<IActionResult>
+    +Estornar(id : Guid) : Task<IActionResult>
+  }
+
+  class UsuarioController {
+    -_service : IUsuarioService
+    +GetAll(query : QueryDto) : Task<IActionResult>
+    +GetById(id : Guid) : Task<IActionResult>
+    +Create(dto : CreateUsuarioDto) : Task<IActionResult>
+    +Update(id : Guid, dto : UpdateUsuarioDto) : Task<IActionResult>
+    +Delete(id : Guid) : Task<IActionResult>
+    +AlterarSenha(id : Guid, dto : AlterarSenhaDto) : Task<IActionResult>
+  }
+
+  class NotificationsController {
+    -_service : INotificacaoService
+    +ListarMinhas(query : QueryDto) : Task<IActionResult>
+    +ContarNaoLidas() : Task<IActionResult>
+    +MarcarComoLida(id : Guid) : Task<IActionResult>
+  }
+
+  class NotificationsStreamController {
+    -_service : INotificacaoService
+    +Stream(token : CancellationToken) : Task<IActionResult>
+  }
+
+  class DashboardController {
+    -_service : IDashboardService
+    +GetOperacional() : Task<IActionResult>
+    +GetRelatorio(filtros : RelatorioFiltrosDto) : Task<IActionResult>
+  }
+
+  class AuditLogController {
+    -_service : IAuditLogService
+    +GetByEntity(entityName : string, entityId : string) : Task<IActionResult>
+  }
+
+  class DispositivosController {
+    -_service : IDispositivoUsuarioService
+    +Register(dto : RegisterDispositivoDto) : Task<IActionResult>
+    +Unregister(token : string) : Task<IActionResult>
+  }
+
+  class ConferenciaController {
+    -_service : IConferenciaService
+    +ConferirNota(notaId : Guid) : Task<IActionResult>
+    +MatchItemManual(itemId : Guid, dto : MatchItemDto) : Task<IActionResult>
+  }
+
+  class SaaSRegistrationController {
+    -_service : ISaaSRegistrationService
+    +Register(dto : SaaSRegistrationDto) : Task<IActionResult>
+  }
+}
+
+' ═══════════════════════════════════════════════
+'  RELATIONSHIPS
+' ═══════════════════════════════════════════════
+
+' Herança EntidadeBase
+EntidadeBase <|-- Empresa
+EntidadeBase <|-- UnidadeEntrega
+EntidadeBase <|-- LocalDescarga
+EntidadeBase <|-- Produto
+EntidadeBase <|-- ProdutoFornecedor
+EntidadeBase <|-- Fornecedor
+EntidadeBase <|-- Grade
+EntidadeBase <|-- Agendamento
+EntidadeBase <|-- Carga
+EntidadeBase <|-- NotaFiscal
+EntidadeBase <|-- NotaFiscalItem
+EntidadeBase <|-- PlanejamentoRecebimento
+EntidadeBase <|-- ItemPlanejamento
+EntidadeBase <|-- RecebimentoEvento
+EntidadeBase <|-- Notificacao
+EntidadeBase <|-- NotificacaoEntrega
+EntidadeBase <|-- AuditLog
+EntidadeBase <|-- OutboxEvent
+EntidadeBase <|-- RefreshToken
+EntidadeBase <|-- CodigoVerificacaoEmail
+EntidadeBase <|-- DispositivoUsuario
+EntidadeBase <|-- Motorista
+EntidadeBase <|-- Administrador
+EntidadeBase <|-- Veiculo
+
+' IEmpresaScoped
+IEmpresaScoped <|.. UnidadeEntrega
+IEmpresaScoped <|.. LocalDescarga
+IEmpresaScoped <|.. Produto
+IEmpresaScoped <|.. ProdutoFornecedor
+IEmpresaScoped <|.. Fornecedor
+IEmpresaScoped <|.. Grade
+IEmpresaScoped <|.. Agendamento
+IEmpresaScoped <|.. NotaFiscal
+IEmpresaScoped <|.. NotaFiscalItem
+IEmpresaScoped <|.. PlanejamentoRecebimento
+IEmpresaScoped <|.. ItemPlanejamento
+IEmpresaScoped <|.. RecebimentoEvento
+IEmpresaScoped <|.. Notificacao
+IEmpresaScoped <|.. NotificacaoEntrega
+IEmpresaScoped <|.. AuditLog
+
+' Domain Events
+IDomainEvent <|.. AgendamentoCanceladoEvent
+IDomainEvent <|.. MotoristaChegouEvent
+IDomainEvent <|.. AgendamentoReagendadoEvent
+
+' Associações de domínio (cardinalidades)
+Empresa "1" *-- "0..*" UnidadeEntrega : possui
+UnidadeEntrega "1" *-- "0..*" LocalDescarga : contém
+LocalDescarga "1" o-- "0..*" Produto : armazena
+Produto "1" *-- "0..*" ProdutoFornecedor : tem
+Fornecedor "1" *-- "0..*" ProdutoFornecedor : fornece
+Produto "1" *-- "0..*" Grade : tem
+Grade "1" *-- "0..*" Agendamento : gera
+Fornecedor "1" o-- "0..*" Agendamento : agenda
+Motorista "1" *-- "0..*" Veiculo : possui
+Motorista "1" o-- "0..*" Agendamento : realiza
+Agendamento "0..1" --> "0..1" NotaFiscal : vincula
+NotaFiscal "1" *-- "1..*" NotaFiscalItem : possui
+Fornecedor "1" *-- "0..*" PlanejamentoRecebimento : tem
+PlanejamentoRecebimento "1" *-- "1..*" ItemPlanejamento : contém
+ItemPlanejamento "1" *-- "0..*" RecebimentoEvento : registra
+Notificacao "1" *-- "1..*" NotificacaoEntrega : entrega
+Agendamento "0..*" --> "0..1" RecebimentoEvento : origina
+
+' Controllers -> Serviços
+AgendamentoAdminController ..> IAgendamentoAdminService : usa
+AgendamentoMotoristaController ..> IAgendamentoMotoristaService : usa
+AuthAdminController ..> IAuthService : usa
+AuthMotoristaController ..> IAuthService : usa
+EmpresaController ..> IEmpresaService : usa
+ProdutoController ..> IProdutoService : usa
+FornecedorController ..> IFornecedorService : usa
+GradeController ..> IGradeService : usa
+UnidadeEntregaController ..> IUnidadeEntregaService : usa
+LocalDescargaController ..> ILocalDescargaService : usa
+MotoristaController ..> IMotoristaService : usa
+VeiculoController ..> IVeiculoService : usa
+NotaFiscalController ..> INotaFiscalService : usa
+PlanejamentoRecebimentoController ..> IPlanejamentoRecebimentoService : usa
+ItemPlanejamentoController ..> IItemPlanejamentoService : usa
+RecebimentoController ..> IRecebimentoEventoService : usa
+UsuarioController ..> IUsuarioService : usa
+NotificationsController ..> INotificacaoService : usa
+DashboardController ..> IDashboardService : usa
+AuditLogController ..> IAuditLogService : usa
+DispositivosController ..> IDispositivoUsuarioService : usa
+ConferenciaController ..> IConferenciaService : usa
+SaaSRegistrationController ..> ISaaSRegistrationService : usa
+
+' Herança controllers
+ApiControllerBase <|-- AgendamentoAdminController
+ApiControllerBase <|-- AgendamentoMotoristaController
+ApiControllerBase <|-- AuthAdminController
+ApiControllerBase <|-- AuthMotoristaController
+ApiControllerBase <|-- EmpresaController
+ApiControllerBase <|-- ProdutoController
+ApiControllerBase <|-- FornecedorController
+ApiControllerBase <|-- GradeController
+ApiControllerBase <|-- UnidadeEntregaController
+ApiControllerBase <|-- LocalDescargaController
+ApiControllerBase <|-- MotoristaController
+ApiControllerBase <|-- VeiculoController
+ApiControllerBase <|-- NotaFiscalController
+ApiControllerBase <|-- PlanejamentoRecebimentoController
+ApiControllerBase <|-- ItemPlanejamentoController
+ApiControllerBase <|-- RecebimentoController
+ApiControllerBase <|-- UsuarioController
+ApiControllerBase <|-- NotificationsController
+ApiControllerBase <|-- NotificationsStreamController
+ApiControllerBase <|-- DashboardController
+ApiControllerBase <|-- AuditLogController
+ApiControllerBase <|-- DispositivosController
+ApiControllerBase <|-- ConferenciaController
+ApiControllerBase <|-- SaaSRegistrationController
+
+' DbContext registra entidades
+AppDbContext ..> Agendamento
+AppDbContext ..> Grade
+AppDbContext ..> Produto
+AppDbContext ..> Fornecedor
+AppDbContext ..> NotaFiscal
+AppDbContext ..> PlanejamentoRecebimento
+AppDbContext ..> Notificacao
+AppDbContext ..> OutboxEvent
+
+' Repos usam entidades
+IAgendamentoRepositorio ..> Agendamento
+IGradeRepositorio ..> Grade
+IProdutoRepositorio ..> Produto
+IFornecedorRepositorio ..> Fornecedor
+INotaFiscalRepositorio ..> NotaFiscal
+IPlanejamentoRecebimentoRepositorio ..> PlanejamentoRecebimento
+IItemPlanejamentoRepositorio ..> ItemPlanejamento
+IRecebimentoEventoRepositorio ..> RecebimentoEvento
+INotificacaoRepositorio ..> Notificacao
+IOutboxEventRepositorio ..> OutboxEvent
+IEmpresaRepositorio ..> Empresa
+IMotoristaRepositorio ..> Motorista
+IVeiculoRepositorio ..> Veiculo
+IUnidadeEntregaRepositorio ..> UnidadeEntrega
+ILocalDescargaRepositorio ..> LocalDescarga
+
+@enduml

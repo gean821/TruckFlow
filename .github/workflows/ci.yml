@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+
+  push:
+    branches:
+      - develop
+      - master
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore src/TruckFlowApi/TruckFlowApi.sln
+
+      - name: Build
+        run: dotnet build src/TruckFlowApi/TruckFlowApi.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test src/TruckFlowApi/TruckFlowApi.sln --no-build --configuration Release
+
+  format:
+    name: Format (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore src/TruckFlowApi/TruckFlowApi.sln
+
+      - name: Verify formatting
+        run: dotnet format src/TruckFlowApi/TruckFlowApi.sln --verify-no-changes --no-restore
+  docker-build:
+    name: Docker image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/TruckFlowApi/TruckFlow/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

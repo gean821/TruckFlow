@@ -1,0 +1,32 @@
+# O Dockerfile faz COPY . . a partir da raiz do repo. Sem este arquivo vao pro
+# contexto (e pras camadas intermediarias do estagio build): o .env com as
+# credenciais do Postgres, o .git (61MB) e os bin/obj do build local (500MB+).
+
+# Segredos
+.env
+.env.*
+**/appsettings.Development.json
+
+# Controle de versao / CI
+.git
+.gitignore
+.github
+
+# IDE
+.vs
+**/.vs
+.vscode
+**/.idea
+
+# Saida de build local
+**/bin
+**/obj
+**/TestResults
+
+# Infra local e documentacao (nao entram na imagem)
+docker-compose.yml
+Docs
+out
+*.md
+project_tree.txt
+diagrama-classes.puml

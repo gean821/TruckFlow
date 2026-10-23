@@ -8,5 +8,8 @@ namespace TruckFlow.Domain.Dto.Notificacao
         public bool? UnreadOnly { get; set; }
         public int? Tipo { get; set; }
         public int? Prioridade { get; set; }
+        public string? Search { get; set; }
+        public DateTime? DataInicio { get; set; }
+        public DateTime? DataFim { get; set; }
     }
 }

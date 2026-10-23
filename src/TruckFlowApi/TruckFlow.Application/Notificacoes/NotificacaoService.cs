@@ -36,6 +36,9 @@ namespace TruckFlow.Application.Notificacoes
                 UnreadOnly = query.UnreadOnly,
                 Tipo = query.Tipo,
                 Prioridade = query.Prioridade,
+                Search = query.Search,
+                DataInicio = query.DataInicio,
+                DataFim = query.DataFim,
             };
 
             var (items, totalCount) = _user.IsMotorista
@@ -104,6 +107,11 @@ namespace TruckFlow.Application.Notificacoes
 
             return true;
         }
+
+        public Task<int> MarcarTodasComoLidasAsync(CancellationToken ct) =>
+            _user.IsMotorista
+                ? _repo.MarkAllAsReadByUserAcrossTenantsAsync(_user.UserId, ct)
+                : _repo.MarkAllAsReadByUserAsync(_user.UserId, ct);
 
         public async Task<IReadOnlyList<NotificacaoListItemDto>> ListarPorAgendamentoAsync(
             Guid agendamentoId,

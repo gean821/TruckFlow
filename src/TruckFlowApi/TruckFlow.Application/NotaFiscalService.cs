@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Application.NotaFiscais;
 using TruckFlow.Application.Sefaz;
 using TruckFlow.Application.Validators.NotaFiscal;
 using TruckFlow.Domain.Contracts;
@@ -74,7 +75,6 @@ namespace TruckFlow.Application
             using var sr = new StreamReader(xmlStream);
             var xml = (await sr.ReadToEndAsync(token)).Trim();
 
-
             Console.WriteLine("=================================");
             if (string.IsNullOrEmpty(xml))
             {
@@ -85,32 +85,12 @@ namespace TruckFlow.Application
                 Console.WriteLine($"✅ XML RECEBIDO ({xml.Length} chars)");
                 Console.WriteLine(xml.Substring(0, Math.Min(200, xml.Length)));
             }
-
             Console.WriteLine("=================================");
-            NFe.Classes.NFe nfe;
 
+            NFe.Classes.NFe nfe;
             try
             {
-                if (xml.Contains("<nfeProc"))
-                {
-                    var proc = FuncoesXml.XmlStringParaClasse<NFe.Classes.nfeProc>(xml);
-
-                    if (proc?.NFe?.infNFe == null)
-                        throw new BusinessException("XML nfeProc inválido.");
-
-                    nfe = proc.NFe;
-                }
-                else if (xml.Contains("<NFe"))
-                {
-                    nfe = FuncoesXml.XmlStringParaClasse<NFe.Classes.NFe>(xml);
-
-                    if (nfe?.infNFe == null)
-                        throw new BusinessException("XML NFe inválido.");
-                }
-                else
-                {
-                    throw new BusinessException("XML não é uma NF-e válida.");
-                }
+                nfe = NotaFiscalXmlExtractor.ParseXml(xml);
             }
             catch (Exception ex)
             {
@@ -121,15 +101,60 @@ namespace TruckFlow.Application
                 throw;
             }
 
-            var infNFe = nfe.infNFe;
+            var extraida = NotaFiscalXmlExtractor.Extrair(nfe);
 
-            if (infNFe.det == null || infNFe.det.Count == 0)
+            if (extraida.Itens.Count == 0)
             {
                 _logger.LogWarning("Nota fiscal sem itens.");
             }
 
-            var cnpjDestinatarioRaw = infNFe.dest?.CNPJ ?? infNFe.dest?.CPF ?? string.Empty;
-            var cnpjDestinatario = new string(cnpjDestinatarioRaw.Where(char.IsDigit).ToArray());
+            return await EnriquecerComMatchingAsync(extraida, token);
+        }
+
+        /// <summary>
+        /// Busca a NF-e completa direto na SEFAZ (NFeDistribuicaoDFe) por chave de acesso,
+        /// pro fluxo real de produção em que o motorista não tem o XML em mãos (só a chave,
+        /// via câmera ou digitada) e a nota nunca passou pelo TruckFlow antes.
+        /// Reaproveita o mesmo parser/matching do upload manual (ParseXmlAsync), a única
+        /// diferença é de onde o XML vem.
+        /// </summary>
+        public async Task<NotaFiscalParsedDto> ParseFromSefazAsync(
+            string chaveAcesso,
+            CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(chaveAcesso) || chaveAcesso.Length != 44)
+            {
+                throw new BusinessException("Chave de acesso inválida (deve ter 44 dígitos).");
+            }
+
+            var resultado = await _sefazClient.ConsultarDistribuicaoAsync(chaveAcesso, token);
+
+            if (!resultado.Disponivel)
+            {
+                _logger.LogWarning(
+                    "Nota fiscal não disponível na SEFAZ. Chave={Chave} cStat={CStat} xMotivo={XMotivo}",
+                    chaveAcesso, resultado.CStat, resultado.XMotivo);
+
+                throw new BusinessException(
+                    $"Nota fiscal não disponível na SEFAZ. Motivo: {resultado.XMotivo} (cStat={resultado.CStat})");
+            }
+
+            var nfe = NotaFiscalXmlExtractor.ParseXml(resultado.XmlNfe!);
+            var extraida = NotaFiscalXmlExtractor.Extrair(nfe);
+
+            return await EnriquecerComMatchingAsync(extraida, token);
+        }
+
+        /// <summary>
+        /// Enriquecimento com dados do banco (matching fornecedor/produto), compartilhado
+        /// entre ParseXmlAsync (upload manual) e ParseFromSefazAsync (busca direta na SEFAZ).
+        /// A extração pura do XML já aconteceu antes disso (NotaFiscalXmlExtractor).
+        /// </summary>
+        private async Task<NotaFiscalParsedDto> EnriquecerComMatchingAsync(
+            NotaFiscalXmlExtraidaDto extraida,
+            CancellationToken token)
+        {
+            var cnpjDestinatario = new string(extraida.DestinatarioCpfCnpj.Where(char.IsDigit).ToArray());
 
             Empresa? empresaDestinataria = null;
             if (!string.IsNullOrEmpty(cnpjDestinatario))
@@ -146,38 +171,28 @@ namespace TruckFlow.Application
                 var produtosDoSistema = await _produtoRepositorio.GetAll(token);
 
                 Fornecedor? fornecedor = null;
-                var cnpjEmitenteRaw = infNFe.emit?.CNPJ ?? string.Empty;
-                var cnpjEmitente = new string(cnpjEmitenteRaw.Where(char.IsDigit).ToArray());
+                var cnpjEmitente = new string(extraida.EmitenteCnpj.Where(char.IsDigit).ToArray());
                 if (!string.IsNullOrEmpty(cnpjEmitente))
                 {
                     fornecedor = await _fornecedorRepo.GetByCnpj(cnpjEmitente, token);
                 }
 
-                foreach (var det in infNFe.det!)
+                foreach (var itemExtraido in extraida.Itens)
                 {
-                    if (det.prod == null)
-                    {
-                        _logger.LogWarning("Item da NF-e sem bloco <prod>. Ignorado.");
-                        continue;
-                    }
-
-                    var eanDaNota = det.prod.cEAN;
-                    var codigoFornecedor = det.prod.cProd ?? string.Empty;
-
                     var (produto, origem) = await TryMatchProdutoAsync(
-                        produtosDoSistema, fornecedor, eanDaNota, codigoFornecedor, token);
+                        produtosDoSistema, fornecedor, itemExtraido.Ean, itemExtraido.Codigo, token);
 
                     itensDto.Add(new NotaFiscalItemDto
                     {
-                        Codigo = codigoFornecedor,
-                        Ean = eanDaNota,
-                        Descricao = det.prod.xProd ?? string.Empty,
+                        Codigo = itemExtraido.Codigo,
+                        Ean = itemExtraido.Ean,
+                        Descricao = itemExtraido.Descricao,
                         ProdutoSistemaId = produto?.Id,
                         ProdutoSistemaNome = produto?.Nome,
-                        Quantidade = det.prod.qCom,
-                        Unidade = det.prod.uCom ?? string.Empty,
-                        ValorTotal = det.prod.vProd,
-                        ValorUnitario = det.prod.vUnCom,
+                        Quantidade = itemExtraido.Quantidade,
+                        Unidade = itemExtraido.Unidade,
+                        ValorTotal = itemExtraido.ValorTotal,
+                        ValorUnitario = itemExtraido.ValorUnitario,
                         Status = produto != null
                             ? NotaFiscalItemStatus.Matched
                             : NotaFiscalItemStatus.PendenteRevisao,
@@ -188,62 +203,45 @@ namespace TruckFlow.Application
             else
             {
                 // Empresa destinatária não cadastrada — itens vão pendentes sem matching.
-                foreach (var det in infNFe.det!)
+                foreach (var itemExtraido in extraida.Itens)
                 {
-                    if (det.prod == null) continue;
                     itensDto.Add(new NotaFiscalItemDto
                     {
-                        Codigo = det.prod.cProd ?? string.Empty,
-                        Ean = det.prod.cEAN,
-                        Descricao = det.prod.xProd ?? string.Empty,
-                        Quantidade = det.prod.qCom,
-                        Unidade = det.prod.uCom ?? string.Empty,
-                        ValorTotal = det.prod.vProd,
-                        ValorUnitario = det.prod.vUnCom,
+                        Codigo = itemExtraido.Codigo,
+                        Ean = itemExtraido.Ean,
+                        Descricao = itemExtraido.Descricao,
+                        Quantidade = itemExtraido.Quantidade,
+                        Unidade = itemExtraido.Unidade,
+                        ValorTotal = itemExtraido.ValorTotal,
+                        ValorUnitario = itemExtraido.ValorUnitario,
                         Status = NotaFiscalItemStatus.PendenteRevisao
                     });
                 }
             }
 
-            DateTime dataEmissao;
-
-            if (infNFe.ide.dhEmi != DateTimeOffset.MinValue)
-            {
-                dataEmissao = infNFe.ide.dhEmi.UtcDateTime;
-            }
-            else if (infNFe.ide.dEmi != DateTime.MinValue)
-            {
-                dataEmissao = DateTime.SpecifyKind(infNFe.ide.dEmi, DateTimeKind.Utc);
-            }
-            else
-            {
-                throw new ApplicationException("Data de emissão não encontrada na NF-e.");
-            }
-
             var notaFiscalDto = new NotaFiscalParsedDto
             {
-                ChaveAcesso = infNFe.Id?.Replace("NFe", "") ?? string.Empty,
-                Numero = infNFe.ide.nNF,
+                ChaveAcesso = extraida.ChaveAcesso,
+                Numero = extraida.Numero,
                 TipoCarga = TipoCarga.Indefinido,
-                Serie = infNFe.ide.serie.ToString(),
-                DataEmissao = dataEmissao,
-                EmitenteNome = infNFe.emit?.xNome ?? string.Empty,
-                EmitenteCnpj = infNFe.emit?.CNPJ ?? string.Empty,
-                Fornecedor = infNFe.emit?.xNome ?? string.Empty,
-                DestinatarioNome = infNFe.dest?.xNome ?? string.Empty,
-                DestinatarioCpfCnpj = infNFe.dest?.CNPJ ?? infNFe.dest?.CPF ?? string.Empty,
-                ValorTotal = infNFe.total?.ICMSTot?.vNF ?? 0,
-                PesoBruto = infNFe.transp?.vol?.FirstOrDefault()?.pesoB,
-                VolumeQuantidade = (int?)infNFe.transp?.vol?.FirstOrDefault()?.qVol,
-                PlacaVeiculo = infNFe.transp?.veicTransp?.placa ?? string.Empty,
+                Serie = extraida.Serie,
+                DataEmissao = extraida.DataEmissao,
+                EmitenteNome = extraida.EmitenteNome,
+                EmitenteCnpj = extraida.EmitenteCnpj,
+                Fornecedor = extraida.EmitenteNome,
+                DestinatarioNome = extraida.DestinatarioNome,
+                DestinatarioCpfCnpj = extraida.DestinatarioCpfCnpj,
+                ValorTotal = extraida.ValorTotal,
+                PesoBruto = extraida.PesoBruto,
+                VolumeQuantidade = extraida.VolumeQuantidade,
+                PlacaVeiculo = extraida.PlacaVeiculo,
                 Itens = itensDto,
                 ValidationWarnings = []
             };
 
             Console.WriteLine("=================================");
-            Console.WriteLine($"EMIT CNPJ: {infNFe.emit?.CNPJ}");
-            Console.WriteLine($"DEST CNPJ: {infNFe.dest?.CNPJ}");
-            Console.WriteLine($"DEST CPF: {infNFe.dest?.CPF}");
+            Console.WriteLine($"EMIT CNPJ: {extraida.EmitenteCnpj}");
+            Console.WriteLine($"DEST CNPJ/CPF: {extraida.DestinatarioCpfCnpj}");
             Console.WriteLine("=================================");
 
             return notaFiscalDto;

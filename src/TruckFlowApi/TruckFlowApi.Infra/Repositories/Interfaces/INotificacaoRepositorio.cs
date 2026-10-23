@@ -54,5 +54,13 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         Task AddRangeAsync(
             IEnumerable<Notificacao> notificacoes,
             CancellationToken token = default);
+
+        Task<int> MarkAllAsReadByUserAsync(
+            Guid userId,
+            CancellationToken token = default);
+
+        Task<int> MarkAllAsReadByUserAcrossTenantsAsync(
+            Guid userId,
+            CancellationToken token = default);
     }
 }

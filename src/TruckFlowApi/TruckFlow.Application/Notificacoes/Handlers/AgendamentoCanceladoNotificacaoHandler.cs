@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlow.Domain.Events;
@@ -17,14 +18,14 @@ namespace TruckFlow.Application.Notificacoes.Handlers
             _db = db;
         }
 
-        public Task HandleAsync(
+        public async Task HandleAsync(
             AgendamentoCanceladoEvent domainEvent,
             CancellationToken cancellationToken
             )
         {
             if (domainEvent.MotoristaUsuarioId is null)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             var now = DateTime.UtcNow;
@@ -33,10 +34,26 @@ namespace TruckFlow.Application.Notificacoes.Handlers
                 ? "Seu agendamento foi cancelado."
                 : $"Seu agendamento foi cancelado. Motivo: {domainEvent.MotivoCancelamento}";
 
+            var agendamentoInfo = await _db.Agendamento
+                .AsNoTracking()
+                .Where(a => a.Id == domainEvent.AgendamentoId)
+                .Select(a => new
+                {
+                    a.DataInicio,
+                    UnidadeEntregaNome = a.UnidadeEntrega != null ? a.UnidadeEntrega.Nome : null,
+                    LocalDescargaNome = a.LocalDescarga != null ? a.LocalDescarga.Nome : null,
+                    EmpresaNome = a.Empresa != null ? a.Empresa.NomeFantasia : null,
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
             var payload = JsonSerializer.Serialize(new
             {
                 agendamentoId = domainEvent.AgendamentoId,
                 motivo = domainEvent.MotivoCancelamento,
+                unidadeEntregaNome = agendamentoInfo?.UnidadeEntregaNome,
+                localDescargaNome = agendamentoInfo?.LocalDescargaNome,
+                dataAgendamentoIso = agendamentoInfo?.DataInicio,
+                empresaNome = agendamentoInfo?.EmpresaNome,
             }, OutboxEventSerializer.Options);
 
             var notificacao = new Notificacao
@@ -69,8 +86,6 @@ namespace TruckFlow.Application.Notificacoes.Handlers
             });
 
             _db.Notificacao.Add(notificacao);
-
-            return Task.CompletedTask;
         }
     }
 }

@@ -23,6 +23,12 @@
         public double Longitude { get; set; }
         public bool Ativa { get; set; } = false;
 
+        /// <summary>
+        /// Configuração livre por empresa (jsonb), ex.: {"authMethods":["Local","EntraId"]}.
+        /// Ver <see cref="EmpresaAuthMethods"/> para o acesso tipado ao campo authMethods.
+        /// </summary>
+        public string? Configuracoes { get; set; }
+
         public ICollection<UnidadeEntrega> Unidades { get; set; } = [];
         public ICollection<Fornecedor> Fornecedores { get; set; } = [];
         public ICollection<Produto> Produtos { get; set; } = [];

@@ -70,6 +70,9 @@ namespace TruckFlowApi.Infra.Database.EntitiesMapping
             builder.Property(x => x.Ativa)
                 .IsRequired();
 
+            builder.Property(x => x.Configuracoes)
+                .HasColumnType("jsonb");
+
             builder.HasIndex(x => x.Cnpj)
                 .IsUnique();
 

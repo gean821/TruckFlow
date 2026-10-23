@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>TruckFlow.Benchmarks.Benchmarks.DominioBenchmarks-20260628-145240</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26200.8655/25H2/2025Update/HudsonValley2)
+AMD Ryzen 5 5500 3.60GHz, 1 CPU, 12 logical and 6 physical cores
+.NET SDK 9.0.304
+  [Host]     : .NET 8.0.19 (8.0.19, 8.0.1925.36514), X64 RyuJIT x86-64-v3
+  Job-CNUJVU : .NET 8.0.19 (8.0.19, 8.0.1925.36514), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>InvocationCount=1  UnrollFactor=1  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                            </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Agendamento_Reservar</td><td>3,219.4 ns</td><td>137.83 ns</td><td>391.00 ns</td><td>3,100.0 ns</td><td>104 B</td>
+</tr><tr><td>StatusAgendamento_PodeTransitar_Valido</td><td>141.0 ns</td><td>18.10 ns</td><td>53.36 ns</td><td>100.0 ns</td><td>-</td>
+</tr><tr><td>StatusAgendamento_PodeTransitar_Invalido</td><td>128.0 ns</td><td>17.43 ns</td><td>51.40 ns</td><td>100.0 ns</td><td>-</td>
+</tr><tr><td>EanValidator_Ean13_Valido</td><td>3,853.5 ns</td><td>547.57 ns</td><td>1,605.94 ns</td><td>3,300.0 ns</td><td>-</td>
+</tr><tr><td>EanValidator_Ean13_Invalido</td><td>2,943.9 ns</td><td>118.15 ns</td><td>344.64 ns</td><td>2,900.0 ns</td><td>-</td>
+</tr><tr><td>EanValidator_Ean8_Valido</td><td>2,527.0 ns</td><td>123.73 ns</td><td>364.83 ns</td><td>2,500.0 ns</td><td>-</td>
+</tr><tr><td>ChaveAcesso_ExtrairUf_SP</td><td>2,417.9 ns</td><td>140.61 ns</td><td>403.44 ns</td><td>2,400.0 ns</td><td>224 B</td>
+</tr><tr><td>ChaveAcesso_ExtrairUf_CodigoInexistente</td><td>1,852.0 ns</td><td>121.77 ns</td><td>355.22 ns</td><td>1,850.0 ns</td><td>224 B</td>
+</tr><tr><td>Agendamento_PodeExpirar_Disponivel</td><td>636.2 ns</td><td>31.62 ns</td><td>90.22 ns</td><td>600.0 ns</td><td>-</td>
+</tr></tbody></table>
+</body>
+</html>

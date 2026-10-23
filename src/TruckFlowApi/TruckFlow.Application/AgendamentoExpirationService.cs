@@ -24,13 +24,27 @@ namespace TruckFlow.Application
             _logger = logger;
         }
 
-        public async Task<int> ExpirarVencidosAsync(CancellationToken cancellationToken = default)
+        public async Task<int> ExpirarVencidosAsync(
+            Guid empresaId,
+            CancellationToken cancellationToken = default)
         {
             var totalExpirados = 0;
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 var referencia = DateTime.UtcNow;
+
+                await using var tx = await _repo.BeginTransactionAsync(cancellationToken);
+
+                var lockAdquirido = await _repo.TryAdvisoryLockEmpresaAsync(empresaId, cancellationToken);
+                if (!lockAdquirido)
+                {
+                    _logger.LogInformation(
+                        "Empresa {EmpresaId} já está sendo processada por outra instância neste ciclo — pulando.",
+                        empresaId);
+                    await tx.CommitAsync(cancellationToken);
+                    break;
+                }
 
                 var candidatos = await _repo.GetExpiradosCandidatos(
                     referencia,
@@ -39,6 +53,7 @@ namespace TruckFlow.Application
 
                 if (candidatos.Count == 0)
                 {
+                    await tx.CommitAsync(cancellationToken);
                     break;
                 }
 
@@ -73,9 +88,11 @@ namespace TruckFlow.Application
                 try
                 {
                     await _repo.SaveChangesAsync(cancellationToken);
+                    await tx.CommitAsync(cancellationToken);
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
+                    await tx.RollbackAsync(cancellationToken);
                     _logger.LogWarning(ex,
                         "Conflito de concorrência ao expirar agendamentos. " +
                         "Algum(ns) registro(s) foram modificados em paralelo " +

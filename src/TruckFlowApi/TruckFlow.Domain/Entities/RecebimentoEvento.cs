@@ -39,7 +39,8 @@ namespace TruckFlow.Domain.Entities
             decimal quantidade,
             Guid? agendamentoId,
             string? observacao,
-            Guid? empresaId
+            Guid? empresaId,
+            TipoMovimentoRecebimento tipo = TipoMovimentoRecebimento.Reserva
         )
         {
             if (quantidade <= 0)
@@ -53,7 +54,7 @@ namespace TruckFlow.Domain.Entities
                 Quantidade = quantidade,
                 AgendamentoId = agendamentoId,
                 Observacao = observacao,
-                Tipo = TipoMovimentoRecebimento.Reserva,
+                Tipo = tipo,
                 DataRecebimento = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow,
                 EmpresaId = empresaId ?? Guid.Empty

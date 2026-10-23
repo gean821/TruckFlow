@@ -26,6 +26,7 @@ namespace TruckFlow.Application
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly AppDbContext _db;
+        private readonly CurrentUserGuard _currentUser;
         private readonly ILogger<UsuarioService> _logger;
 
         public UsuarioService(
@@ -35,6 +36,7 @@ namespace TruckFlow.Application
             IRefreshTokenService refreshTokenService,
             IEmpresaRepositorio empresaRepo,
             AppDbContext db,
+            CurrentUserGuard currentUser,
             ILogger<UsuarioService> logger
         )
         {
@@ -43,6 +45,7 @@ namespace TruckFlow.Application
             _authService = authService;
             _refreshTokenService = refreshTokenService;
             _db = db;
+            _currentUser = currentUser;
             _empresaRepo = empresaRepo;
             _logger = logger;
         }
@@ -71,7 +74,7 @@ namespace TruckFlow.Application
                 _logger.LogWarning(
                     "Falha ao registrar admin: {Errors}",
                     string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
-                throw new Exception(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
+                throw new BusinessException(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
             }
 
             var role = string.IsNullOrWhiteSpace(dto.Role) ? Roles.Admin : dto.Role.Trim();
@@ -132,13 +135,50 @@ namespace TruckFlow.Application
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
+            if (usuario.EmpresaId.HasValue)
+            {
+                var configuracoes = await _db.Empresa
+                    .Where(e => e.Id == usuario.EmpresaId.Value)
+                    .Select(e => e.Configuracoes)
+                    .FirstOrDefaultAsync(ct);
+
+                if (!EmpresaAuthMethods.Permite(configuracoes, EmpresaAuthMethods.Local))
+                {
+                    _logger.LogWarning(
+                        "Falha de login admin: Empresa {EmpresaId} não permite login Local (usuário {UsuarioId}).",
+                        usuario.EmpresaId, usuario.Id);
+                    throw new BusinessException("Esta empresa exige login corporativo (SSO). Use o botão \"Entrar com Microsoft\".");
+                }
+            }
+
+            if (await _userManager.IsLockedOutAsync(usuario))
+            {
+                var minutos = Math.Max(1, (int)Math.Ceiling((usuario.LockoutEnd!.Value - DateTimeOffset.UtcNow).TotalMinutes));
+                _logger.LogWarning(
+                    "Falha de login admin: conta bloqueada por tentativas (usuário {UsuarioId}).",
+                    usuario.Id);
+                throw new UnauthorizedAccessException($"Conta bloqueada por tentativas incorretas. Tente novamente em {minutos} minuto(s).");
+            }
+
             if (!await _userManager.CheckPasswordAsync(usuario, dto.Password))
             {
+                await _userManager.AccessFailedAsync(usuario);
+
+                if (await _userManager.IsLockedOutAsync(usuario))
+                {
+                    _logger.LogWarning(
+                        "Login admin bloqueado após exceder tentativas (usuário {UsuarioId}).",
+                        usuario.Id);
+                    throw new UnauthorizedAccessException("Conta bloqueada por tentativas incorretas. Tente novamente em 15 minutos.");
+                }
+
                 _logger.LogWarning(
                     "Falha de login admin: senha inválida para {UsuarioId}",
                     usuario.Id);
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
+
+            await _userManager.ResetAccessFailedCountAsync(usuario);
 
             var usuarioComAdmin = await _db.Users
                 .Include(u => u.Administrador)
@@ -241,8 +281,9 @@ namespace TruckFlow.Application
             bool ativo,
             CancellationToken token = default)
         {
-            var usuario = await _userManager.FindByIdAsync(id.ToString())
-                ?? throw new NotFoundException("Usuário não encontrado.");
+            var usuario = await FindUsuarioDaEmpresaAsync(id, token);
+
+            GarantirNaoEntraId(usuario);
 
             usuario.DeletedAt = ativo ? null : DateTime.UtcNow;
             usuario.UpdatedAt = DateTime.UtcNow;
@@ -275,8 +316,7 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            var usuario = await _userManager.FindByIdAsync(id.ToString())
-                            ?? throw new NotFoundException("Usuário não encontrado.");
+            var usuario = await FindUsuarioDaEmpresaAsync(id, token);
 
             return await MapUsuarioAsync(usuario);
         }
@@ -286,8 +326,9 @@ namespace TruckFlow.Application
             CancellationToken token = default
         )
         {
-            var usuario = await _userManager.FindByIdAsync(id.ToString())
-                ?? throw new NotFoundException("Usuário não encontrado.");
+            var usuario = await FindUsuarioDaEmpresaAsync(id, token);
+
+            GarantirNaoEntraId(usuario);
 
             var adm = await _db.Administrador
                 .FirstOrDefaultAsync(a => a.UsuarioId == id, token);
@@ -325,8 +366,9 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
-            var usuario = await _userManager.FindByIdAsync(id.ToString())
-                ?? throw new NotFoundException("Usuario não encontrado.");
+            var usuario = await FindUsuarioDaEmpresaAsync(id, token);
+
+            GarantirNaoEntraId(usuario);
 
             usuario.DeletedAt = DateTime.UtcNow;
 
@@ -360,7 +402,7 @@ namespace TruckFlow.Application
                 _logger.LogWarning(
                     "Falha ao registrar motorista: {Errors}",
                     string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
-                throw new Exception(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
+                throw new BusinessException(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
             }
 
             if (!await _roleManager.RoleExistsAsync(Roles.Motorista))
@@ -417,13 +459,34 @@ namespace TruckFlow.Application
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
+            if (await _userManager.IsLockedOutAsync(usuario))
+            {
+                var minutos = Math.Max(1, (int)Math.Ceiling((usuario.LockoutEnd!.Value - DateTimeOffset.UtcNow).TotalMinutes));
+                _logger.LogWarning(
+                    "Falha de login motorista: conta bloqueada por tentativas (usuário {UsuarioId}).",
+                    usuario.Id);
+                throw new UnauthorizedAccessException($"Conta bloqueada por tentativas incorretas. Tente novamente em {minutos} minuto(s).");
+            }
+
             if (!await _userManager.CheckPasswordAsync(usuario, dto.Password))
             {
+                await _userManager.AccessFailedAsync(usuario);
+
+                if (await _userManager.IsLockedOutAsync(usuario))
+                {
+                    _logger.LogWarning(
+                        "Login motorista bloqueado após exceder tentativas (usuário {UsuarioId}).",
+                        usuario.Id);
+                    throw new UnauthorizedAccessException("Conta bloqueada por tentativas incorretas. Tente novamente em 15 minutos.");
+                }
+
                 _logger.LogWarning(
                     "Falha de login motorista: senha inválida para {UsuarioId}",
                     usuario.Id);
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
+
+            await _userManager.ResetAccessFailedCountAsync(usuario);
 
             var usuarioComMotorista = await _db.Users
                 .Include(u => u.Motorista)
@@ -695,8 +758,38 @@ namespace TruckFlow.Application
                 DeletedAt = usuario.DeletedAt,
                 NomeReal = usuario?.Administrador?.Nome,
                 Empresa = usuario?.Empresa?.NomeFantasia,
-                EmpresaId = usuario?.EmpresaId
+                EmpresaId = usuario?.EmpresaId,
+                IsEntraId = usuario?.Origem == OrigemUsuario.EntraId,
+                UltimoSyncEntraEm = usuario?.UltimoSyncEntraEm
             };
+        }
+
+        /// <summary>
+        /// Usuários provisionados via Entra ID (SSO) são geridos pelo diretório da empresa
+        /// (grupo → Role/Empresa), não por CRUD manual — editar/desativar aqui seria desfeito
+        /// no próximo login/sync, então bloqueamos na origem em vez de deixar a UI confundir.
+        /// Ver Docs/entra-id-integracao-backlog.md (ENTRA-08).
+        /// </summary>
+        // Usuario não é IEmpresaScoped (herda IdentityUser), então o filtro global de tenant
+        // não se aplica: a busca por id precisa restringir à empresa do usuário logado.
+        // Usuário de outra empresa responde como inexistente (404), sem revelar que existe.
+        private async Task<Usuario> FindUsuarioDaEmpresaAsync(Guid id, CancellationToken token)
+        {
+            var empresaId = _currentUser.GetEmpresaId();
+
+            return await _userManager.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.EmpresaId == empresaId, token)
+                ?? throw new NotFoundException("Usuário não encontrado.");
+        }
+
+        private static void GarantirNaoEntraId(Usuario usuario)
+        {
+            if (usuario.Origem == OrigemUsuario.EntraId)
+            {
+                throw new BusinessException(
+                    "Este usuário é provisionado automaticamente via Entra ID (SSO). " +
+                    "Acesso e papel são controlados pelo grupo no diretório da empresa, não editáveis manualmente aqui.");
+            }
         }
 
             private static UserMotoristaResponseDto MapMotoristaAsync(Usuario usuario)

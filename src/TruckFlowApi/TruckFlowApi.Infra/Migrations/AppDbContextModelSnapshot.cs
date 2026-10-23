@@ -518,6 +518,9 @@ namespace TruckFlowApi.Infra.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("Configuracoes")
+                        .HasColumnType("jsonb");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -589,6 +592,49 @@ namespace TruckFlowApi.Infra.Migrations
                     b.HasIndex("Email");
 
                     b.ToTable("Empresa", (string)null);
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.EntraGroupRoleMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntraGroupId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("EntraGroupNome")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
+
+                    b.HasIndex("EntraGroupId")
+                        .IsUnique();
+
+                    b.ToTable("EntraGroupRoleMapping", (string)null);
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.Fornecedor", b =>
@@ -1706,6 +1752,13 @@ namespace TruckFlowApi.Infra.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<string>("Origem")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Local");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
@@ -1720,6 +1773,9 @@ namespace TruckFlowApi.Infra.Migrations
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UltimoSyncEntraEm")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1941,6 +1997,17 @@ namespace TruckFlowApi.Infra.Migrations
                         .IsRequired();
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("TruckFlow.Domain.Entities.EntraGroupRoleMapping", b =>
+                {
+                    b.HasOne("TruckFlow.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
                 });
 
             modelBuilder.Entity("TruckFlow.Domain.Entities.Fornecedor", b =>

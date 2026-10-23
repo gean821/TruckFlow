@@ -42,6 +42,18 @@ namespace TruckFlow.Application.Notificacoes.Handlers
                 .Select(u => new { u.Motorista!.NomeReal })
                 .FirstOrDefaultAsync(cancellationToken);
 
+            var agendamentoInfo = await _db.Agendamento
+                .AsNoTracking()
+                .Where(a => a.Id == domainEvent.AgendamentoId)
+                .Select(a => new
+                {
+                    a.DataInicio,
+                    UnidadeEntregaNome = a.UnidadeEntrega != null ? a.UnidadeEntrega.Nome : null,
+                    LocalDescargaNome = a.LocalDescarga != null ? a.LocalDescarga.Nome : null,
+                    EmpresaNome = a.Empresa != null ? a.Empresa.NomeFantasia : null,
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
             var nomeMotorista = motorista?.NomeReal ?? "Motorista";
             var now = DateTime.UtcNow;
 
@@ -49,6 +61,10 @@ namespace TruckFlow.Application.Notificacoes.Handlers
             {
                 agendamentoId = domainEvent.AgendamentoId,
                 motoristaUsuarioId = domainEvent.MotoristaUsuarioId,
+                unidadeEntregaNome = agendamentoInfo?.UnidadeEntregaNome,
+                localDescargaNome = agendamentoInfo?.LocalDescargaNome,
+                dataAgendamentoIso = agendamentoInfo?.DataInicio,
+                empresaNome = agendamentoInfo?.EmpresaNome,
             }, OutboxEventSerializer.Options);
 
             foreach (var admin in adminsDaEmpresa)
