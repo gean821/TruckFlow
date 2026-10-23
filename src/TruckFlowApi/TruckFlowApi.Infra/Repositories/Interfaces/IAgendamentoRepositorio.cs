@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
 using TruckFlow.Domain.Dto.Agendamento;
 using TruckFlow.Domain.Dto.Shared;
+using TruckFlow.Domain.Dto.Relatorio;
 using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Repositories.Interfaces
@@ -43,6 +44,19 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             AgendamentoFilterDto filtros,
             CancellationToken cancellationToken = default
         );
+
+        Task<int> CountLinhasRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            CancellationToken cancellationToken = default);
+
+        Task<List<AgendamentoRelatorioLinha>> GetLinhasRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            int limite,
+            CancellationToken cancellationToken = default);
+
+        IAsyncEnumerable<AgendamentoRelatorioLinha> StreamLinhasRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            int limite);
 
         public Task<List<Agendamento>> GetByMotoristaId(
             Guid motoristaId,
@@ -108,5 +122,6 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
 
         Task DeleteTodosPorGrade(Guid gradeId, CancellationToken cancellationToken = default);
         Task DeleteDisponiveisPorGrade(Guid gradeId, CancellationToken cancellationToken = default);
+        
     }
 }

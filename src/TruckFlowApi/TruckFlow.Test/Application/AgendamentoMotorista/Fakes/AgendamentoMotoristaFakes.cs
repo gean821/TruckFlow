@@ -4,6 +4,7 @@ using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Dto.Agendamento;
 using TruckFlow.Domain.Dto.Recebimento;
 using TruckFlow.Domain.Dto.Shared;
+using TruckFlow.Domain.Dto.Relatorio;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 using AgendamentoEntity = TruckFlow.Domain.Entities.Agendamento;
@@ -56,6 +57,18 @@ internal sealed class FakeAgendamentoRepositorioParaMotorista : IAgendamentoRepo
 
     public Task<PagedResponse<AgendamentoAdminResponse>> GetAdminViewAsync(
         AgendamentoFilterDto filtros, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
+    public Task<int> CountLinhasRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
+    public Task<List<AgendamentoRelatorioLinha>> GetLinhasRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, int limite, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
+    public IAsyncEnumerable<AgendamentoRelatorioLinha> StreamLinhasRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, int limite) =>
         throw new NotImplementedException();
 
     public Task<List<AgendamentoEntity>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default) =>

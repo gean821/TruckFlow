@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using TruckFlow.Domain.Dto.Agendamento;
 using TruckFlow.Domain.Dto.Shared;
+using TruckFlow.Domain.Dto.Relatorio;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
@@ -31,6 +32,18 @@ internal sealed class ThrowingOnAddRangeAgendamentoRepositorio(IAgendamentoRepos
     public Task<PagedResponse<AgendamentoAdminResponse>> GetAdminViewAsync(
         AgendamentoFilterDto filtros, CancellationToken cancellationToken = default) =>
         inner.GetAdminViewAsync(filtros, cancellationToken);
+
+    public Task<int> CountLinhasRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, CancellationToken cancellationToken = default) =>
+        inner.CountLinhasRelatorioAsync(criteria, cancellationToken);
+
+    public Task<List<AgendamentoRelatorioLinha>> GetLinhasRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, int limite, CancellationToken cancellationToken = default) =>
+        inner.GetLinhasRelatorioAsync(criteria, limite, cancellationToken);
+
+    public IAsyncEnumerable<AgendamentoRelatorioLinha> StreamLinhasRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, int limite) =>
+        inner.StreamLinhasRelatorioAsync(criteria, limite);
 
     public Task<List<Agendamento>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default) =>
         inner.GetByMotoristaId(motoristaId, token);
