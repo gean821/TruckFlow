@@ -7,6 +7,7 @@ namespace TruckFlow.Domain.Contracts
         Guid? EmpresaId { get; }
         bool IsAdmin { get; }
         bool IsMotorista { get; }
+        bool IsDesenvolvedor { get; }
         Guid? MotoristaId { get; }
 
         string? NomeAutor { get;}

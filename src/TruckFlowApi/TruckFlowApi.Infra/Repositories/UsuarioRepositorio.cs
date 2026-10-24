@@ -18,6 +18,7 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(u => u.Motorista)
                 .Include(u => u.Administrador)
                 .FirstOrDefaultAsync(u => u.Id == userId
-                    && u.DeletedAt == null, token);
+                    && u.DeletedAt == null
+                    && (u.EmpresaId == null || u.Empresa!.Ativa), token);
     }
 }

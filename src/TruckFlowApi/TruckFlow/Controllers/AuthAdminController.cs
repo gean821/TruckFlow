@@ -27,6 +27,7 @@ namespace TruckFlow.Controllers
             _userManager = userManager;
         }
 
+        [Authorize(Roles = Roles.Desenvolvedor)]
         [HttpPost("register")]
         public async Task<IActionResult> Register(
             [FromBody] UserAdminRegisterDto dto,

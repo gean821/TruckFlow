@@ -87,7 +87,7 @@ namespace TruckFlow.Application
             if (usuario is null)
             {
                 _logger.LogWarning(
-                    "Refresh válido mas usuário não encontrado/inativo. UserId={UserId}",
+                    "Refresh válido mas usuário não encontrado/inativo ou empresa desativada. UserId={UserId}",
                     rotate.UserId.Value);
                 return RefreshAccessResult.Fail();
             }

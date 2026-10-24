@@ -58,6 +58,9 @@ src/TruckFlowApi/
 - Mobile: refresh no body → `POST /v1/Auth/refresh-mobile`, `POST /v1/Auth/logout-mobile`; `POST /v1/Auth/logout-all` revoga todas as sessões
 - Claims: `Name`, `Email`, `UserId`, `EmpresaId` (multi-tenant), `MotoristaId` se for motorista, Roles do Identity
 - Papéis: `Admin`, `Gerente`, `Monitor`, `Portaria`, `Motorista` — grupos em `Domain/Entities/Roles.cs` (`RoleGroups`)
+- Papel de plataforma `Desenvolvedor` (time TruckFlow, fora do tenant): nunca atribuível pela UI/API; vem só de `Plataforma:DesenvolvedorEmails` (array de e-mails de usuários já existentes), sincronizado no startup pelo `RoleSeeder` (quem sai da lista perde o papel)
+- `POST /v1/AuthAdmin/register` (bootstrap do 1º admin de uma empresa) exige `Desenvolvedor`; `Role` só aceita `Roles.AdminLevel` e a empresa precisa existir. `EmpresaController`: Admin/Gerente só leem/editam a própria empresa (outra → 404); criar/desativar empresa é só `Desenvolvedor`. `POST /v1/registro` (self-signup de empresa nova) continua público
+- `Empresa.Ativa = false` bloqueia login local (401 "Empresa desativada"), refresh (web e mobile) e provisionamento SSO (`ssoErro=EmpresaDesativada`); access token já emitido vale até expirar (≤15 min)
 - Setup do middleware: `TruckFlow/Extensions/Auth/AuthInjection.cs` — `ClockSkew=0`, valida Issuer/Audience/Key
 - Senha/lockout do login local (10+ caracteres, 1 não-alfanumérico, 5 tentativas → bloqueio de 15min) e rate limiting dos dois endpoints de login (por IP e por conta, Sliding Window, `429 RATE_LIMITED`) documentados em `SECURITY.md`
 

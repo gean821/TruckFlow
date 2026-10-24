@@ -13,6 +13,7 @@ namespace TruckFlow.Domain.Entities
         public const string Gerente = nameof(Gerente);
         public const string Monitor = nameof(Monitor);
         public const string Portaria = nameof(Portaria);
+        public const string Desenvolvedor = nameof(Desenvolvedor);
 
         public static readonly IReadOnlyList<string> All =
         [
@@ -21,6 +22,7 @@ namespace TruckFlow.Domain.Entities
             Gerente,
             Monitor,
             Portaria,
+            Desenvolvedor,
         ];
 
         public static readonly IReadOnlyList<string> AdminLevel =
@@ -61,5 +63,8 @@ namespace TruckFlow.Domain.Entities
         // Auditoria (ler logs)
         public const string CanViewAuditLogs =
             $"{Roles.Admin},{Roles.Gerente}";
+
+        public const string CanManageEmpresa =
+            $"{Roles.Admin},{Roles.Gerente},{Roles.Desenvolvedor}";
     }
 }

@@ -174,7 +174,7 @@ internal static class TestDataSeeder
         CreatedAt = DateTime.UtcNow,
     };
 
-    private static string NovoCnpj() =>
+    public static string NovoCnpj() =>
         Random.Shared.NextInt64(10_000_000_000_000, 99_999_999_999_999).ToString();
 
     private static string NovaChaveAcesso() =>

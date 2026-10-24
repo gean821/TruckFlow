@@ -39,6 +39,9 @@ namespace TruckFlow.Application
         public bool IsMotorista =>
             _http.HttpContext!.User.IsInRole("Motorista");
 
+        public bool IsDesenvolvedor =>
+            _http.HttpContext?.User.IsInRole("Desenvolvedor") ?? false;
+
         public Guid? MotoristaId =>
           _http.HttpContext!.User.FindFirst("MotoristaId") != null
         ? Guid.Parse(_http.HttpContext!.User.FindFirst("MotoristaId")!.Value)

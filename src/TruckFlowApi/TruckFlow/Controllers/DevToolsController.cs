@@ -57,6 +57,7 @@ namespace TruckFlow.Controllers
                         "SemGrupoMapeado" => "Nenhum EntraGroupRoleMapping ativo bate com os EntraGroupIds enviados.",
                         "GruposAmbiguos" => "Os grupos enviados resolvem para mais de uma Empresa.",
                         "EmpresaNaoPermiteEntraId" => "A Empresa resolvida não tem \"EntraId\" em Configuracoes.authMethods.",
+                        "EmpresaDesativada" => "A Empresa resolvida está desativada (Ativa = false).",
                         _ => null
                     }
                 });

@@ -8,11 +8,12 @@ namespace TruckFlow.Controllers
 {
     [ApiController]
     [Route("v1/[Controller]")]
-    [Authorize(Roles = RoleGroups.CanManageMasterData)]
+    [Authorize(Roles = RoleGroups.CanManageEmpresa)]
     public class EmpresaController(IEmpresaService empresaService) : ControllerBase
     {
         private readonly IEmpresaService _empresaService = empresaService;
 
+        [Authorize(Roles = Roles.Desenvolvedor)]
         [HttpPost]
         public async Task<IActionResult> Create(
        [FromBody] EmpresaCreateDto dto,
@@ -53,6 +54,7 @@ namespace TruckFlow.Controllers
             return Ok(empresa);
         }
 
+        [Authorize(Roles = Roles.Desenvolvedor)]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(
             [FromRoute] Guid id,

@@ -12,6 +12,8 @@ namespace TruckFlow.Domain.Dto.Auth
 
         /// <summary>A Empresa resolvida não tem "EntraId" em Configuracoes.authMethods (ENTRA-06).</summary>
         EmpresaNaoPermiteEntraId,
+
+        EmpresaDesativada,
     }
 
     public sealed record JitProvisioningResult

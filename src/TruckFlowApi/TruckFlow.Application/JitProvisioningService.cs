@@ -87,6 +87,15 @@ namespace TruckFlow.Application
                 return JitProvisioningResult.Fail(JitProvisioningFailure.EmpresaNaoPermiteEntraId);
             }
 
+            if (!empresa.Ativa)
+            {
+                _logger.LogWarning(
+                    "Login Entra ID rejeitado: Empresa {EmpresaId} desativada.",
+                    empresaId);
+
+                return JitProvisioningResult.Fail(JitProvisioningFailure.EmpresaDesativada);
+            }
+
             var roleNames = mapeamentos
                 .Select(m => m.RoleName)
                 .Where(r => Roles.AdminLevel.Contains(r))

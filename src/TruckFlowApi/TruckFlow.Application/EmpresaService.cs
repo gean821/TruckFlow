@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Dto.Empresa;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -19,17 +20,20 @@ namespace TruckFlow.Application
         private readonly IEmpresaRepositorio _repo;
         private readonly IValidator<EmpresaCreateDto> _createValidator;
         private readonly IValidator<EmpresaUpdateDto> _updateValidator;
+        private readonly ICurrentUserService _currentUser;
         private readonly ILogger<EmpresaService> _logger;
 
         public EmpresaService(
             IEmpresaRepositorio repo,
             IValidator<EmpresaCreateDto> createValidator,
             IValidator<EmpresaUpdateDto> updateValidator,
+            ICurrentUserService currentUser,
             ILogger<EmpresaService> logger)
         {
             _repo = repo;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
+            _currentUser = currentUser;
             _logger = logger;
         }
 
@@ -38,6 +42,8 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
+            GarantirDesenvolvedor();
+
             var validation = await _createValidator.ValidateAsync(dto, token);
 
             if (!validation.IsValid)
@@ -69,6 +75,8 @@ namespace TruckFlow.Application
             Guid id,
             CancellationToken token = default)
         {
+            GarantirAcessoEmpresa(id);
+
             var empresa = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Empresa não encontrada.");
 
@@ -78,6 +86,16 @@ namespace TruckFlow.Application
         public async Task<List<EmpresaResponseDto>> GetAll(
             CancellationToken token = default)
         {
+            if (!_currentUser.IsDesenvolvedor)
+            {
+                var empresaId = _currentUser.EmpresaId
+                    ?? throw new UnauthorizedAccessException("Usuário não vinculado a empresa.");
+
+                var propria = await _repo.GetById(empresaId, token);
+
+                return propria is null ? [] : [MapToResponse(propria)];
+            }
+
             var empresas = await _repo.GetAll(token);
 
             return empresas
@@ -91,6 +109,8 @@ namespace TruckFlow.Application
             CancellationToken token = default
             )
         {
+            GarantirAcessoEmpresa(id);
+
             var validation = await _updateValidator.ValidateAsync(dto, token);
 
             if (!validation.IsValid)
@@ -121,6 +141,8 @@ namespace TruckFlow.Application
             Guid id,
             CancellationToken token = default)
         {
+            GarantirDesenvolvedor();
+
             var empresa = await _repo.GetById(id, token)
                 ?? throw new NotFoundException("Empresa não encontrada.");
 
@@ -132,6 +154,27 @@ namespace TruckFlow.Application
             _logger.LogInformation(
                 "Empresa desativada: {EmpresaId}",
                 id);
+        }
+
+        private void GarantirDesenvolvedor()
+        {
+            if (!_currentUser.IsDesenvolvedor)
+            {
+                throw new UnauthorizedAccessException("Operação restrita à equipe do TruckFlow.");
+            }
+        }
+
+        private void GarantirAcessoEmpresa(Guid empresaId)
+        {
+            if (_currentUser.IsDesenvolvedor)
+            {
+                return;
+            }
+
+            if (_currentUser.EmpresaId != empresaId)
+            {
+                throw new NotFoundException("Empresa não encontrada.");
+            }
         }
 
         private static void ApplyPatch(

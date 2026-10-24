@@ -20,6 +20,8 @@ namespace TruckFlow.Application
 {
     public class UsuarioService : IUsuarioService
     {
+        public const string EmpresaDesativadaMensagem = "Empresa desativada. Entre em contato com o suporte do TruckFlow.";
+
         private readonly UserManager<Usuario> _userManager;
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly IAuthService _authService;
@@ -55,7 +57,13 @@ namespace TruckFlow.Application
                 CancellationToken token = default
             )
         {
-            var empresa = await _empresaRepo.GetById(dto.EmpresaId, token);
+            var role = string.IsNullOrWhiteSpace(dto.Role)
+                ? Roles.Admin
+                : Roles.AdminLevel.FirstOrDefault(r => string.Equals(r, dto.Role.Trim(), StringComparison.OrdinalIgnoreCase))
+                    ?? throw new BusinessException($"Papel inválido. Use um destes: {string.Join(", ", Roles.AdminLevel)}.");
+
+            _ = await _empresaRepo.GetById(dto.EmpresaId, token)
+                ?? throw new NotFoundException("Empresa não encontrada.");
 
             var usuario = new Usuario
             {
@@ -76,8 +84,6 @@ namespace TruckFlow.Application
                     string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
                 throw new BusinessException(string.Join(" | ", usuarioCriado.Errors.Select(e => e.Description)));
             }
-
-            var role = string.IsNullOrWhiteSpace(dto.Role) ? Roles.Admin : dto.Role.Trim();
 
             if (!await _roleManager.RoleExistsAsync(role))
             {
@@ -135,14 +141,18 @@ namespace TruckFlow.Application
                 throw new UnauthorizedAccessException("Usuário ou senha inválidos");
             }
 
+            var empresaAtiva = true;
+
             if (usuario.EmpresaId.HasValue)
             {
-                var configuracoes = await _db.Empresa
+                var empresa = await _db.Empresa
                     .Where(e => e.Id == usuario.EmpresaId.Value)
-                    .Select(e => e.Configuracoes)
+                    .Select(e => new { e.Configuracoes, e.Ativa })
                     .FirstOrDefaultAsync(ct);
 
-                if (!EmpresaAuthMethods.Permite(configuracoes, EmpresaAuthMethods.Local))
+                empresaAtiva = empresa?.Ativa == true;
+
+                if (!EmpresaAuthMethods.Permite(empresa?.Configuracoes, EmpresaAuthMethods.Local))
                 {
                     _logger.LogWarning(
                         "Falha de login admin: Empresa {EmpresaId} não permite login Local (usuário {UsuarioId}).",
@@ -179,6 +189,14 @@ namespace TruckFlow.Application
             }
 
             await _userManager.ResetAccessFailedCountAsync(usuario);
+
+            if (!empresaAtiva)
+            {
+                _logger.LogWarning(
+                    "Falha de login admin: Empresa {EmpresaId} desativada (usuário {UsuarioId}).",
+                    usuario.EmpresaId, usuario.Id);
+                throw new UnauthorizedAccessException(EmpresaDesativadaMensagem);
+            }
 
             var usuarioComAdmin = await _db.Users
                 .Include(u => u.Administrador)
@@ -270,7 +288,7 @@ namespace TruckFlow.Application
         {
             return await _roleManager.Roles
                 .AsNoTracking()
-                .Where(r => r.Name != null)
+                .Where(r => r.Name != null && Roles.AdminLevel.Contains(r.Name))
                 .Select(r => r.Name!)
                 .OrderBy(r => r)
                 .ToListAsync(token);
@@ -752,7 +770,7 @@ namespace TruckFlow.Application
                 Id = usuario.Id,
                 Username = usuario.UserName!,
                 Email = usuario.Email!,
-                Role = roles.First() ?? "User",
+                Role = roles.FirstOrDefault(r => Roles.AdminLevel.Contains(r)) ?? roles.FirstOrDefault() ?? "User",
                 CreatedAt = usuario.CreatedAt,
                 UpdatedAt = usuario.UpdatedAt,
                 DeletedAt = usuario.DeletedAt,
