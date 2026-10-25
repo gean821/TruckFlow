@@ -655,15 +655,58 @@ namespace TruckFlow.Application
             Guid id,
             CancellationToken token = default)
         {
-            var usuario = await _userManager.FindByIdAsync(id.ToString())
+            await using var transaction = await _db.Database.BeginTransactionAsync(token);
+
+            var usuario = await _db.Users
+                .Include(u => u.Motorista)
+                    .ThenInclude(m => m!.Veiculos)
+                .FirstOrDefaultAsync(u => u.Id == id, token)
                 ?? throw new NotFoundException("Usuario não encontrado.");
 
-            usuario.DeletedAt = DateTime.UtcNow;
+            var agora = DateTime.UtcNow;
+            var anonimo = $"excluido-{usuario.Id:N}";
 
-            await _userManager.UpdateAsync(usuario);
+            usuario.UserName = anonimo;
+            usuario.NormalizedUserName = anonimo.ToUpperInvariant();
+            usuario.Email = $"{anonimo}@anonimizado.truckflow";
+            usuario.NormalizedEmail = usuario.Email.ToUpperInvariant();
+            usuario.EmailConfirmed = false;
+            usuario.PhoneNumber = null;
+            usuario.PhoneNumberConfirmed = false;
+            usuario.PasswordHash = null;
+            usuario.SecurityStamp = Guid.NewGuid().ToString("N");
+            usuario.DeletedAt = agora;
+            usuario.UpdatedAt = agora;
+
+            if (usuario.Motorista is not null)
+            {
+                usuario.Motorista.Username = anonimo;
+                usuario.Motorista.NomeReal = "Motorista excluído";
+                usuario.Motorista.Telefone = string.Empty;
+                usuario.Motorista.UpdatedAt = agora;
+
+                if (usuario.Motorista.Veiculos is not null)
+                {
+                    _db.Veiculo.RemoveRange(usuario.Motorista.Veiculos);
+                }
+            }
+
+            var dispositivos = await _db.DispositivoUsuario
+                .Where(d => d.UsuarioId == id && d.Ativo)
+                .ToListAsync(token);
+
+            foreach (var dispositivo in dispositivos)
+            {
+                dispositivo.Desativar();
+            }
+
+            await _db.SaveChangesAsync(token);
+            await transaction.CommitAsync(token);
+
+            await _refreshTokenService.RevokeAllForUserAsync(id, "conta-excluida", token);
 
             _logger.LogInformation(
-                "Motorista excluído: {UsuarioId}",
+                "Motorista excluído e anonimizado: {UsuarioId}",
                 id);
         }
 
