@@ -8,6 +8,7 @@ using TruckFlow.Configuration;
 using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Extensions.Agendamento;
+using TruckFlow.Extensions.AppMobile;
 using TruckFlow.Extensions.Audit;
 using TruckFlow.Extensions.Auth;
 using TruckFlow.Extensions.Conferencia;
@@ -94,6 +95,7 @@ namespace TruckFlow
             builder.Services.AddHealthDependency();
             builder.Services.AddEmail(builder.Configuration);
             builder.Services.AddRateLimitingDependency();
+            builder.Services.AddAppMobile(builder.Configuration);
 
             builder.Services.AddEndpointsApiExplorer();
 
