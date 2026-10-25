@@ -70,7 +70,8 @@ export const useAgendamento = () => {
   return { reservar: reservar.mutateAsync, isReserving: reservar.isPending };
 };
 ```
-- Telas **não** chamam `XService` direto (`login.tsx`, `register.tsx`, `editar-perfil.tsx`, `AlterarEmailModal` são legado com `isLoading` manual).
+- Tela, componente e modal **nunca** chamam `XService` direto: sempre service → queries/hooks → tela, igual ao web (`login.tsx`, `register.tsx`, `editar-perfil.tsx`, `AlterarSenhaModal`, `AlterarEmailModal` são legado com `isLoading` manual a migrar; não copie esse padrão).
+- **Nunca** `Alert.alert` do React Native. Sucesso/erro = toast do projeto no `onSuccess/onError` do hook; confirmação de ação destrutiva = modal bottom-sheet em `src/components/modals/` (referência: `ExcluirContaModal` + `useMotorista`).
 - `error: any` → `AxiosError<{ message?: string }>`.
 - Zustand: **sempre com seletor** (`useAuthStore(s => s.token)`) — `useAuthStore()` inteiro re-renderiza a tela a cada mudança. Store só para sessão e wizard (`useNotaFiscalStore` carrega a nota entre agendar → conferencia → horarios → ticket); dado de servidor fica no React Query.
 - Rotas: use `router.replace` para trocas de "modo" (login↔app), `push` para navegação; params com o **mesmo nome** dos dois lados (bug atual: push manda `{ id }`, `ticketAgendamento` lê `agendamentoId`).

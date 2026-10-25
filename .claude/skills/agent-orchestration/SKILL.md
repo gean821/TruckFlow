@@ -92,6 +92,7 @@ truckflow-core (ADR: push/tracking/LGPD)                               [seq]
   → risk-manager (se dado pessoal: localização, telefone)               [condicional]
 ```
 Contrato aditivo — build mobile publicado não atualiza junto com a API.
+No mobile (e no admin), mesma cadeia do front-web: types/Dtos → service → queries/hooks → tela; tela/componente nunca chama service direto, feedback só pelo toast do projeto (nada de `Alert.alert` no RN), confirmação destrutiva em modal. Revisar isso antes de dar a task como pronta.
 
 ## Referências
 
