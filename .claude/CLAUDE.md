@@ -114,7 +114,7 @@ Em `Docs/adr/`:
 - Services retornam DTOs, nunca entidades EF — mapeamento manual com `private static MapToResponse(...)`.
 - Controllers magros: chamada de service + retorno (validação FluentValidation fica no service).
 - Async/await em tudo que toca BD; `CancellationToken` como último parâmetro.
-- Regras completas: `.claude/RULES.md`. Agentes e skills do projeto em `.claude/agents/` e `.claude/skills/`.
+- Regras completas: `.claude/RULES.md`. Agentes e skills do projeto em `.claude/agents/` e `.claude/skills/`; para valerem também no admin e no mobile, cada dev roda uma vez `.claude/setup-agents.ps1` (junções em `~/.claude`, atualizam com `git pull`).
 
 ## Manter este arquivo vivo
 
