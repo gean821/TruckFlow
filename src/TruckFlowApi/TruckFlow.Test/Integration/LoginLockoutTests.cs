@@ -104,7 +104,7 @@ public class LoginLockoutTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task RegisterAdminAsync_SenhaFraca_LancaBusinessExceptionComMensagemDoIdentity()
+    public async Task RegisterAdminAsync_SenhaFraca_LancaBusinessExceptionEmPortugues()
     {
         var (db, provider, service, empresaId) = await SetupServicoSemUsuarioAsync();
         using (db)
@@ -124,7 +124,75 @@ public class LoginLockoutTests : IntegrationTestBase
                 service.RegisterAdminAsync(dto)
             );
 
-            Assert.Contains("least", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(
+                "A senha precisa ter: pelo menos 10 caracteres, uma letra maiúscula, uma letra minúscula, um caractere especial (ex.: @, #, !).",
+                ex.Message
+            );
+        }
+    }
+
+    [Fact]
+    public async Task RegisterAdminAsync_UsuarioOuEmailRepetido_LancaBusinessExceptionEmPortugues()
+    {
+        var (db, provider, service, empresaId, usuario) = await SetupComAdminRegistradoAsync();
+        using (db)
+        await using (provider)
+        {
+            var mesmoUsuario = await Assert.ThrowsAsync<BusinessException>(() =>
+                service.RegisterAdminAsync(
+                    new UserAdminRegisterDto
+                    {
+                        Email = "outro@teste.com",
+                        Password = SenhaCorreta,
+                        Username = usuario.UserName!,
+                        NomeReal = "Outro",
+                        Telefone = "41999999999",
+                        EmpresaId = empresaId,
+                    }
+                )
+            );
+            Assert.Equal("Este usuário já está em uso. Escolha outro.", mesmoUsuario.Message);
+
+            var mesmoEmail = await Assert.ThrowsAsync<BusinessException>(() =>
+                service.RegisterAdminAsync(
+                    new UserAdminRegisterDto
+                    {
+                        Email = usuario.Email!,
+                        Password = SenhaCorreta,
+                        Username = "usuario-novo",
+                        NomeReal = "Outro",
+                        Telefone = "41999999999",
+                        EmpresaId = empresaId,
+                    }
+                )
+            );
+            Assert.Equal("Este e-mail já está cadastrado.", mesmoEmail.Message);
+        }
+    }
+
+    [Fact]
+    public async Task TrocaDeSenha_SenhaFraca_LancaBusinessExceptionEmPortuguesEMantemSenhaAntiga()
+    {
+        var (db, provider, service, _, usuario) = await SetupComAdminRegistradoAsync();
+        using (db)
+        await using (provider)
+        {
+            var naEdicao = await Assert.ThrowsAsync<BusinessException>(() =>
+                service.UpdateAdminAsync(usuario.Id, new UserAdminEditDto { Password = "fraca" })
+            );
+            Assert.StartsWith("A senha precisa ter:", naEdicao.Message);
+
+            var porCodigo = await Assert.ThrowsAsync<BusinessException>(() =>
+                service.AlterarSenhaComCodigoAsync(usuario.Id, "semnumero@Abc")
+            );
+            Assert.Equal("A senha precisa ter: um número.", porCodigo.Message);
+
+            var login = await service.LoginAdminAsync(
+                new UserAdminLoginDto { Login = usuario.UserName!, Password = SenhaCorreta },
+                deviceInfo: null,
+                ipAddress: null
+            );
+            Assert.NotNull(login.Token);
         }
     }
 

@@ -65,6 +65,9 @@ namespace TruckFlow.Application
             _ = await _empresaRepo.GetById(dto.EmpresaId, token)
                 ?? throw new NotFoundException("Empresa não encontrada.");
 
+            await CadastroUsuarioRegras.GarantirUsuarioEEmailLivresAsync(_userManager, dto.Username, dto.Email);
+            CadastroUsuarioRegras.GarantirSenhaForte(dto.Password);
+
             var usuario = new Usuario
             {
                 Id = Guid.NewGuid(),
@@ -403,12 +406,17 @@ namespace TruckFlow.Application
                 CancellationToken token = default
             )
         {
+            var telefone = NormalizarTelefoneMotorista(dto.Telefone);
+
+            await CadastroUsuarioRegras.GarantirUsuarioEEmailLivresAsync(_userManager, dto.UserName, dto.Email);
+            CadastroUsuarioRegras.GarantirSenhaForte(dto.Password);
+
             var usuario = new Usuario
             {
                 Id = Guid.NewGuid(),
                 UserName = dto.UserName,
                 Email = dto.Email,
-                PhoneNumber = dto.Telefone,
+                PhoneNumber = telefone,
                 EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -593,6 +601,8 @@ namespace TruckFlow.Application
 
             if (dto.Password is not null)
             {
+                CadastroUsuarioRegras.GarantirSenhaForte(dto.Password);
+
                 var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var result = await _userManager.ResetPasswordAsync(user, resetToken, dto.Password);
 
@@ -632,12 +642,15 @@ namespace TruckFlow.Application
 
             if (dto.Telefone is not null)
             {
-                motorista.Telefone = dto.Telefone;
-                usuario.PhoneNumber = dto.Telefone;
+                var telefone = NormalizarTelefoneMotorista(dto.Telefone);
+                motorista.Telefone = telefone;
+                usuario.PhoneNumber = telefone;
             }
 
             if (dto.Password is not null)
             {
+                CadastroUsuarioRegras.GarantirSenhaForte(dto.Password);
+
                 var resetToken = await _userManager.GeneratePasswordResetTokenAsync(usuario);
                 var result = await _userManager.ResetPasswordAsync(usuario, resetToken, dto.Password);
                 if (!result.Succeeded)
@@ -718,6 +731,8 @@ namespace TruckFlow.Application
             var usuario = await _userManager.FindByIdAsync(userId.ToString())
                 ?? throw new NotFoundException("Usuário não encontrado");
 
+            CadastroUsuarioRegras.GarantirSenhaForte(newPassword);
+
             var result = await _userManager.ChangePasswordAsync(
                 usuario,
                 currentPassword,
@@ -729,7 +744,7 @@ namespace TruckFlow.Application
                 _logger.LogWarning(
                     "Falha ao alterar senha do usuário {UsuarioId}: {Errors}",
                     userId, string.Join(" | ", result.Errors.Select(e => e.Description)));
-                throw new Exception(string.Join(" | ", result.Errors.Select(e => e.Description)));
+                throw new BusinessException(string.Join(" | ", result.Errors.Select(e => e.Description)));
             }
 
             _logger.LogInformation(
@@ -744,6 +759,8 @@ namespace TruckFlow.Application
         {
             var usuario = await _userManager.FindByIdAsync(usuarioId.ToString())
                 ?? throw new NotFoundException("Usuário não encontrado.");
+
+            CadastroUsuarioRegras.GarantirSenhaForte(novaSenha);
 
             var resetToken = await _userManager.GeneratePasswordResetTokenAsync(usuario);
             var result = await _userManager.ResetPasswordAsync(usuario, resetToken, novaSenha);
@@ -841,6 +858,18 @@ namespace TruckFlow.Application
             return await _userManager.Users
                 .FirstOrDefaultAsync(u => u.Id == id && u.EmpresaId == empresaId, token)
                 ?? throw new NotFoundException("Usuário não encontrado.");
+        }
+
+        private static string NormalizarTelefoneMotorista(string telefone)
+        {
+            var digitos = new string(telefone.Where(char.IsDigit).ToArray());
+
+            if (digitos.Length is < 10 or > 11)
+            {
+                throw new BusinessException("Telefone inválido. Informe DDD + número, ex.: (41) 99999-9999.");
+            }
+
+            return digitos;
         }
 
         private static void GarantirNaoEntraId(Usuario usuario)

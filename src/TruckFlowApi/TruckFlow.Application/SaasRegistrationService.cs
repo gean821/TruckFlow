@@ -62,6 +62,9 @@ namespace TruckFlow.Application
                     throw new BusinessException("Empresa já cadastrada.");
                 }
 
+                await CadastroUsuarioRegras.GarantirUsuarioEEmailLivresAsync(_userManager, dto.Username, dto.EmailAdmin);
+                CadastroUsuarioRegras.GarantirSenhaForte(dto.Password);
+
                 var empresa = new Empresa
                 {
                     Id = Guid.NewGuid(),
@@ -98,7 +101,7 @@ namespace TruckFlow.Application
                     _logger.LogWarning(
                         "Falha ao registrar SaaS (usuário admin): {Errors}",
                         string.Join(" | ", result.Errors.Select(e => e.Description)));
-                    throw new Exception(string.Join(" | ", result.Errors.Select(e => e.Description)));
+                    throw new BusinessException(string.Join(" | ", result.Errors.Select(e => e.Description)));
                 }
 
                 if (!await _roleManager.RoleExistsAsync(Roles.Admin))
