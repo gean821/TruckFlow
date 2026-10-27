@@ -7,5 +7,7 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         Task<List<RelatorioBiLinha>> ListarLinhasAsync(RelatorioBiCriteria criteria, CancellationToken token = default);
 
         Task<int> ContarDocasAtivasAsync(Guid? unidadeEntregaId, Guid? localDescargaId, CancellationToken token = default);
+
+        Task<List<RelatorioBiDoca>> ListarDocasAtivasAsync(Guid? unidadeEntregaId, CancellationToken token = default);
     }
 }

@@ -11,8 +11,19 @@ namespace TruckFlow.Controllers
     public class DashboardController: ControllerBase
     {
         private readonly IDashboardService _service;
+        private readonly IRelatorioBiService _biService;
 
-        public DashboardController(IDashboardService service) => _service = service;
+        public DashboardController(IDashboardService service, IRelatorioBiService biService)
+        {
+            _service = service;
+            _biService = biService;
+        }
+
+        [HttpGet("hoje")]
+        public async Task<IActionResult> GetHoje([FromQuery] Guid? unidadeEntregaId, CancellationToken token)
+        {
+            return Ok(await _biService.DashboardHojeAsync(unidadeEntregaId, token));
+        }
 
         [HttpGet("summary")]
         public async Task<IActionResult> GetSummary(CancellationToken token)

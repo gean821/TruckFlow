@@ -58,7 +58,25 @@ namespace TruckFlowApi.Infra.Repositories
                     a.ChegouEm,
                     a.InicioDescargaEm,
                     a.FimDescargaEm,
-                    a.SaiuEm))
+                    a.SaiuEm,
+                    a.PlacaVeiculo ?? (a.NotaFiscal != null ? a.NotaFiscal.PlacaVeiculo : null),
+                    a.Usuario != null && a.Usuario.Motorista != null ? a.Usuario.Motorista.NomeReal : null))
+                .ToListAsync(token);
+        }
+
+        public async Task<List<RelatorioBiDoca>> ListarDocasAtivasAsync(
+            Guid? unidadeEntregaId,
+            CancellationToken token = default)
+        {
+            var query = _db.LocalDescarga.AsNoTracking().Where(l => l.Ativa != false);
+
+            if (unidadeEntregaId.HasValue)
+                query = query.Where(l => l.UnidadeEntregaId == unidadeEntregaId);
+
+            return await query
+                .OrderBy(l => l.UnidadeEntrega.Nome)
+                .ThenBy(l => l.Nome)
+                .Select(l => new RelatorioBiDoca(l.Id, l.Nome, l.UnidadeEntrega.Nome))
                 .ToListAsync(token);
         }
 

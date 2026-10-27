@@ -1,4 +1,5 @@
 using TruckFlow.Application.Interfaces;
+using TruckFlow.Domain.Dto.Dashboard;
 using TruckFlow.Domain.Dto.RelatorioBi;
 using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
@@ -41,6 +42,29 @@ namespace TruckFlow.Application.RelatoriosBi
             var meta = filtrado ? null : EmpresaMetaDiaria.ResolveKg(empresa?.Configuracoes);
 
             return VisaoGeralCalculo.Montar(linhas, periodo, meta, docas);
+        }
+
+        public async Task<DashboardHojeResponseDto> DashboardHojeAsync(
+            Guid? unidadeEntregaId,
+            CancellationToken token = default)
+        {
+            var agoraUtc = _timeProvider.GetUtcNow().UtcDateTime;
+            var hoje = RelatorioBiPeriodo.DiaLocal(agoraUtc);
+
+            var criteria = new RelatorioBiCriteria(
+                RelatorioBiPeriodo.InicioDoDiaUtc(hoje.AddDays(-7 * DashboardHojeCalculo.SemanasReferencia)),
+                RelatorioBiPeriodo.InicioDoDiaUtc(hoje.AddDays(1)),
+                unidadeEntregaId,
+                null,
+                null,
+                null);
+
+            var linhas = await _repo.ListarLinhasAsync(criteria, token);
+            var docas = await _repo.ListarDocasAtivasAsync(unidadeEntregaId, token);
+            var empresa = await _empresaRepo.GetById(_guard.GetEmpresaId(), token);
+            var meta = unidadeEntregaId.HasValue ? null : EmpresaMetaDiaria.ResolveKg(empresa?.Configuracoes);
+
+            return DashboardHojeCalculo.Montar(linhas, docas, agoraUtc, meta);
         }
     }
 }

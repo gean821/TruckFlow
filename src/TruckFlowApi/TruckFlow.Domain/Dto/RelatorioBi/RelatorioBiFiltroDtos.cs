@@ -37,7 +37,11 @@ namespace TruckFlow.Domain.Dto.RelatorioBi
         DateTime? ChegouEm,
         DateTime? InicioDescargaEm,
         DateTime? FimDescargaEm,
-        DateTime? SaiuEm);
+        DateTime? SaiuEm,
+        string? PlacaVeiculo = null,
+        string? MotoristaNome = null);
+
+    public sealed record RelatorioBiDoca(Guid Id, string Nome, string? UnidadeEntregaNome);
 
     public sealed class RelatorioBiPeriodoDto
     {
