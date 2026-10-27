@@ -213,6 +213,9 @@ namespace TruckFlow.Application
 
             if (!string.IsNullOrWhiteSpace(dto.Estado))
                 empresa.Estado = dto.Estado.Trim();
+
+            if (dto.MetaDiariaKg.HasValue)
+                empresa.Configuracoes = EmpresaMetaDiaria.Aplicar(empresa.Configuracoes, dto.MetaDiariaKg.Value);
         }
 
         private static EmpresaResponseDto MapToResponse(Empresa empresa)
@@ -232,6 +235,7 @@ namespace TruckFlow.Application
                 Bairro = empresa.Bairro,
                 Cidade = empresa.Cidade,
                 Estado = empresa.Estado,
+                MetaDiariaKg = EmpresaMetaDiaria.ResolveKg(empresa.Configuracoes),
                 Ativa = empresa.Ativa,
                 CreatedAt = empresa.CreatedAt
             };

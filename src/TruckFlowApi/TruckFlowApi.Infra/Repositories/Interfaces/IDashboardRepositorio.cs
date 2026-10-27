@@ -9,6 +9,10 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
 {
     public interface IDashboardRepositorio
     {
-        Task<DashboardResponseDto> GetDashboardSummaryAsync(CancellationToken token = default);
+        Task<DashboardResponseDto> GetDashboardSummaryAsync(
+            DateTime inicioDiaUtc,
+            DateTime fimDiaUtc,
+            DateTime agoraUtc,
+            CancellationToken token = default);
     }
 }

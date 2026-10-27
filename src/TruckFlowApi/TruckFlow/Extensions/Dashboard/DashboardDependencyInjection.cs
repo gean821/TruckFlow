@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Validators.AgendamentoMotorista;
@@ -12,6 +13,7 @@ namespace TruckFlow.Extensions.Dashboard
     {
         public static IServiceCollection AddDashboard(this IServiceCollection services)
         {
+            services.TryAddSingleton(TimeProvider.System);
             services.AddScoped<IDashboardRepositorio, DashboardRepositorio>();
             services.AddScoped<IDashboardService, DashboardService>();
             return services;

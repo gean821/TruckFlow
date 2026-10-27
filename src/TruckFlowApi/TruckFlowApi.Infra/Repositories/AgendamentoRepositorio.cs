@@ -119,6 +119,11 @@ namespace TruckFlowApi.Infra.Repositories
                 query = query.Where(x => x.TipoVeiculo == filtros.TipoVeiculo.Value);
             }
 
+            if (filtros.OcultarVagasLivres)
+            {
+                query = query.Where(x => x.StatusAgendamento != StatusAgendamento.Disponivel);
+            }
+
             if (!string.IsNullOrWhiteSpace(filtros.Search))
             {
                 var search = filtros.Search.Trim();

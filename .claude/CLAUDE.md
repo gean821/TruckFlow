@@ -70,7 +70,8 @@ src/TruckFlowApi/
 - `EmpresaId` vem da claim do JWT (`CurrentUserGuard.GetEmpresaId()`), **nunca do body**. Sem tenant no contexto, o filtro lança `UnauthorizedAccessException`.
 - Cross-tenant só em métodos `...AcrossTenants` (`IgnoreQueryFilters()`) + `IEmpresaContext.WithTenant(...)`; workers rodam cada empresa dentro de `WithTenant`.
 - `Usuario` **não** é `IEmpresaScoped` — leituras/escritas de usuário filtram `EmpresaId` manualmente.
-- Variação entre fábricas vai em `Empresa.Configuracoes` (jsonb), não em código condicional.
+- Variação entre fábricas vai em `Empresa.Configuracoes` (jsonb), não em código condicional. Chaves hoje: `authMethods` (`EmpresaAuthMethods`) e `metaDiariaKg` (`EmpresaMetaDiaria`, meta de descarga do dashboard; editada pela tela Empresa via `PATCH /v1/Empresa/{id}` com `metaDiariaKg`, `0` remove; sem ela o dashboard mostra "meta não configurada"). Ao gravar uma chave, preservar as demais do JSON.
+- "Hoje" em dashboard/relatórios é o dia de `Grade.OperationalTimeZone` (America/Sao_Paulo), nunca `DateTime.UtcNow.Date`.
 
 ## Erros
 

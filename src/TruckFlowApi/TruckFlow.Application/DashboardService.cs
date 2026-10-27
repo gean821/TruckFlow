@@ -1,6 +1,6 @@
 ﻿using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Dashboard;
-using TruckFlow.Domain.Dto.LocalDescarga;
+using TruckFlow.Domain.Entities;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 
 namespace TruckFlow.Application
@@ -8,38 +8,38 @@ namespace TruckFlow.Application
     public class DashboardService : IDashboardService
     {
         private readonly IDashboardRepositorio _repo;
-        private readonly ILocalDescargaRepositorio _localDescargaRepo;
+        private readonly IEmpresaRepositorio _empresaRepo;
+        private readonly CurrentUserGuard _guard;
+        private readonly TimeProvider _timeProvider;
 
         public DashboardService(
             IDashboardRepositorio repo,
-            ILocalDescargaRepositorio localDescargaRepo)
+            IEmpresaRepositorio empresaRepo,
+            CurrentUserGuard guard,
+            TimeProvider timeProvider)
         {
             _repo = repo;
-            _localDescargaRepo = localDescargaRepo;
+            _empresaRepo = empresaRepo;
+            _guard = guard;
+            _timeProvider = timeProvider;
         }
 
         public async Task<DashboardResponseDto> GetDashboardSummaryAsync(CancellationToken token = default)
         {
-            var data = await _repo.GetDashboardSummaryAsync(token);
+            var agoraUtc = _timeProvider.GetUtcNow().UtcDateTime;
+            var hojeLocal = TimeZoneInfo.ConvertTimeFromUtc(agoraUtc, Grade.OperationalTimeZone).Date;
+            var inicioDiaUtc = TimeZoneInfo.ConvertTimeToUtc(hojeLocal, Grade.OperationalTimeZone);
+            var fimDiaUtc = TimeZoneInfo.ConvertTimeToUtc(hojeLocal.AddDays(1), Grade.OperationalTimeZone);
 
-            var locais = await _localDescargaRepo.GetAll(new LocalDescargaListQueryDto(), token);
-            var total = locais.Count;
-            var livres = locais.Count(x => x.Ativa == true);
-            var ocupadas = locais.Count(x => x.Ativa != true);
+            var data = await _repo.GetDashboardSummaryAsync(inicioDiaUtc, fimDiaUtc, agoraUtc, token);
 
-            data.Docas.Total = total;
-            data.Docas.Livres = livres;
-            data.Docas.Ocupadas = ocupadas;
-            data.Docas.OcupacaoPorcentagem = total > 0
-                ? (int)Math.Round((double)ocupadas / total * 100)
+            var empresa = await _empresaRepo.GetById(_guard.GetEmpresaId(), token);
+            var metaDiariaKg = EmpresaMetaDiaria.ResolveKg(empresa?.Configuracoes);
+
+            data.Volume.MetaDiariaKg = metaDiariaKg;
+            data.Volume.ProgressoDiario = metaDiariaKg is > 0
+                ? Math.Min((int)(data.Volume.TotalKg / metaDiariaKg.Value * 100), 100)
                 : 0;
-
-            decimal metaDiaria = 500000;
-            if (metaDiaria > 0)
-            {
-                int progresso = (int)((data.Volume.TotalKg / metaDiaria) * 100);
-                data.Volume.ProgressoDiario = Math.Min(progresso, 100);
-            }
 
             return data;
         }

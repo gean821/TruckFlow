@@ -27,6 +27,7 @@ namespace TruckFlow.Domain.Dto.Dashboard
     public class DashboardVolumeDto
     {
         public decimal TotalKg { get; set; }
+        public decimal? MetaDiariaKg { get; set; }
         public int ProgressoDiario { get; set; }
     }
 

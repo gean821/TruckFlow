@@ -21,6 +21,7 @@ namespace TruckFlow.Domain.Dto.Empresa
         public string? Bairro { get; set; }        
         public string? Cidade { get; set; }
         public string? Estado { get; set; }
+        public decimal? MetaDiariaKg { get; set; }
         public bool Ativa { get; set; }
         public DateTime CreatedAt { get; set; }
     }

@@ -19,6 +19,11 @@ namespace TruckFlow.Application.Validators.Empresa
             RuleFor(x => x.Estado)
                 .Length(2)
                 .When(x => x.Estado != null);
+
+            RuleFor(x => x.MetaDiariaKg)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("A meta diária não pode ser negativa.")
+                .When(x => x.MetaDiariaKg.HasValue);
         }
     }
 
