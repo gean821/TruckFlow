@@ -200,6 +200,12 @@ namespace TruckFlowApi.Infra.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("ChamadoDocaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ChegouEm")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -218,11 +224,17 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<Guid>("EmpresaId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("FimDescargaEm")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("FornecedorId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("GradeId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("InicioDescargaEm")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("LembreteJanelaEnviadoEm")
                         .HasColumnType("timestamp with time zone");
@@ -238,6 +250,9 @@ namespace TruckFlowApi.Infra.Migrations
 
                     b.Property<Guid?>("ProdutoId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("SaiuEm")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("StatusAgendamento")
                         .HasColumnType("integer");

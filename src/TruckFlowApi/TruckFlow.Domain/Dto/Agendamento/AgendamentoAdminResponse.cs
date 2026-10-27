@@ -33,5 +33,9 @@ namespace TruckFlow.Domain.Dto.Agendamento
         public required DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
+
+        public DateTime? ChegouEm { get; set; }
+        public DateTime? FimDescargaEm { get; set; }
+        public DateTime? SaiuEm { get; set; }
     }
 }

@@ -240,11 +240,11 @@ namespace TruckFlow.Application
             var agendamento = await _repo.GetById(agendamentoId, token)
                 ?? throw new NotFoundException("Agendamento não encontrado");
 
-            agendamento.FinalizarOperacao();
+            agendamento.RegistrarSaida();
             await _repo.Update(agendamento, token);
 
             _logger.LogInformation(
-                "Operação finalizada no agendamento {AgendamentoId} (empresa {EmpresaId})",
+                "Saída registrada no agendamento {AgendamentoId} (empresa {EmpresaId})",
                 agendamentoId, agendamento.EmpresaId);
         }
 
@@ -474,6 +474,9 @@ namespace TruckFlow.Application
                 TipoVeiculo = agendamento.TipoVeiculo.ToString(),
                 UnidadeEntrega = agendamento.UnidadeEntrega?.Nome,
                 CreatedAt = agendamento.CreatedAt,
+                ChegouEm = agendamento.ChegouEm,
+                FimDescargaEm = agendamento.FimDescargaEm,
+                SaiuEm = agendamento.SaiuEm,
                 Status = agendamento.StatusAgendamento.ToString(),
                 UpdatedAt = agendamento.UpdatedAt,
                 DeletedAt = agendamento.DeletedAt

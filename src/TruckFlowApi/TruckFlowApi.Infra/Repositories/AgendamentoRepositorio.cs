@@ -179,6 +179,9 @@ namespace TruckFlowApi.Infra.Repositories
                     UnidadeEntrega = x.UnidadeEntrega != null ? x.UnidadeEntrega.Nome : null,
                     Status = x.StatusAgendamento.ToString(),
                     CreatedAt = x.CreatedAt,
+                    ChegouEm = x.ChegouEm,
+                    FimDescargaEm = x.FimDescargaEm,
+                    SaiuEm = x.SaiuEm,
                     UpdatedAt = x.UpdatedAt,
                     DeletedAt = x.DeletedAt
                 })

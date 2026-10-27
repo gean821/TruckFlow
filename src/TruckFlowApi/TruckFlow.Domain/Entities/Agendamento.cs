@@ -40,6 +40,12 @@ namespace TruckFlow.Domain.Entities
         public DateTime? LembreteJanelaEnviadoEm { get; set; }
         public TipoVeiculo? TipoVeiculo { get; set; }
 
+        public DateTime? ChegouEm { get; set; }
+        public DateTime? ChamadoDocaEm { get; set; }
+        public DateTime? InicioDescargaEm { get; set; }
+        public DateTime? FimDescargaEm { get; set; }
+        public DateTime? SaiuEm { get; set; }
+
         public void AlterarStatus(StatusAgendamento novoStatus)
         {
             if (!StatusAgendamento.PodeTransitarPara(novoStatus))
@@ -110,6 +116,7 @@ namespace TruckFlow.Domain.Entities
         public void RegistrarChegada()
         {
             AlterarStatus(StatusAgendamento.EmAndamento);
+            ChegouEm ??= UpdatedAt;
 
             if (UsuarioId.HasValue)
             {
@@ -122,7 +129,21 @@ namespace TruckFlow.Domain.Entities
         }
 
         public void FinalizarOperacao()
-         => AlterarStatus(StatusAgendamento.Finalizado);
+        {
+            AlterarStatus(StatusAgendamento.Finalizado);
+            FimDescargaEm ??= UpdatedAt;
+        }
+
+        public void RegistrarSaida()
+        {
+            if (StatusAgendamento != StatusAgendamento.Finalizado)
+            {
+                FinalizarOperacao();
+            }
+
+            SaiuEm ??= DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+        }
 
         public void Cancelar(string? motivo = null)
         {

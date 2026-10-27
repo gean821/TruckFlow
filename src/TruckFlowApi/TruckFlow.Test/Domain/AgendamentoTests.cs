@@ -379,6 +379,57 @@ public class AgendamentoTests
     }
 
     [Fact]
+    public void Ciclo_ChegadaFimESaida_SaoGravadosNasTransicoesSemSobrescrever()
+    {
+        var produtoId = Guid.NewGuid();
+        var agendamento = CriarAgendamentoDisponivel(produtoId: produtoId);
+        agendamento.Reservar(Guid.NewGuid(), CriarNotaFiscal(produtoId: produtoId), null, null);
+
+        agendamento.RegistrarChegada();
+        var chegou = agendamento.ChegouEm;
+        Assert.NotNull(chegou);
+        Assert.Null(agendamento.FimDescargaEm);
+
+        agendamento.FinalizarOperacao();
+        var fim = agendamento.FimDescargaEm;
+        Assert.NotNull(fim);
+        Assert.Null(agendamento.SaiuEm);
+
+        agendamento.RegistrarSaida();
+
+        Assert.Equal(chegou, agendamento.ChegouEm);
+        Assert.Equal(fim, agendamento.FimDescargaEm);
+        Assert.NotNull(agendamento.SaiuEm);
+        Assert.True(agendamento.ChegouEm <= agendamento.FimDescargaEm && agendamento.FimDescargaEm <= agendamento.SaiuEm);
+    }
+
+    [Fact]
+    public void RegistrarSaida_NoPatio_FinalizaEGravaFimESaida()
+    {
+        var produtoId = Guid.NewGuid();
+        var agendamento = CriarAgendamentoDisponivel(produtoId: produtoId);
+        agendamento.Reservar(Guid.NewGuid(), CriarNotaFiscal(produtoId: produtoId), null, null);
+        agendamento.RegistrarChegada();
+
+        agendamento.RegistrarSaida();
+
+        Assert.Equal(StatusAgendamento.Finalizado, agendamento.StatusAgendamento);
+        Assert.NotNull(agendamento.FimDescargaEm);
+        Assert.NotNull(agendamento.SaiuEm);
+    }
+
+    [Fact]
+    public void RegistrarSaida_SemCheckIn_ContinuaBloqueado()
+    {
+        var produtoId = Guid.NewGuid();
+        var agendamento = CriarAgendamentoDisponivel(produtoId: produtoId);
+        agendamento.Reservar(Guid.NewGuid(), CriarNotaFiscal(produtoId: produtoId), null, null);
+
+        Assert.Throws<DomainException>(() => agendamento.RegistrarSaida());
+        Assert.Null(agendamento.SaiuEm);
+    }
+
+    [Fact]
     public void ClearDomainEvents_LimpaTodosOsEventos()
     {
         var agendamento = CriarAgendamentoDisponivel();
