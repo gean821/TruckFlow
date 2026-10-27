@@ -1,3 +1,4 @@
+using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Dashboard;
 using TruckFlow.Domain.Dto.RelatorioBi;
@@ -59,6 +60,39 @@ namespace TruckFlow.Application.RelatoriosBi
             var fins = await FinsDaDocaAsync(linhas, token);
 
             return ProdutividadeCalculo.MontarPatio(linhas, fins, dia, agoraUtc);
+        }
+
+        public async Task<FornecedoresResponseDto> FornecedoresAsync(
+            FornecedoresFiltroDto filtro,
+            CancellationToken token = default)
+        {
+            var filtroBi = filtro.ParaFiltroBi();
+            var periodo = RelatorioBiPeriodo.Resolver(filtroBi, _timeProvider.GetUtcNow().UtcDateTime);
+            var agrupamento = RecebimentosCalculo.ResolverAgrupamento(filtro.Agrupamento, periodo.Dias);
+            var linhas = await _repo.ListarLinhasAsync(RelatorioBiPeriodo.Criteria(filtroBi, periodo), token);
+            var fins = await FinsDaDocaAsync(linhas, token);
+
+            return FornecedoresCalculo.Montar(linhas, fins, periodo, agrupamento);
+        }
+
+        public async Task<FornecedorDetalheDto> FornecedorDetalheAsync(
+            FornecedoresFiltroDto filtro,
+            CancellationToken token = default)
+        {
+            if (filtro.FornecedorId is not { } fornecedorId)
+                throw new BusinessException("Informe o fornecedor.");
+
+            var filtroBi = filtro.ParaFiltroBi(comFornecedor: false);
+            var periodo = RelatorioBiPeriodo.Resolver(filtroBi, _timeProvider.GetUtcNow().UtcDateTime);
+            var agrupamento = RecebimentosCalculo.ResolverAgrupamento(filtro.Agrupamento, periodo.Dias);
+            var linhas = await _repo.ListarLinhasAsync(RelatorioBiPeriodo.Criteria(filtroBi, periodo), token);
+
+            if (!linhas.Any(l => l.FornecedorId == fornecedorId))
+                throw new NotFoundException("Fornecedor sem agendamentos no período.");
+
+            var fins = await FinsDaDocaAsync(linhas, token);
+
+            return FornecedoresCalculo.Detalhe(linhas, fins, periodo, agrupamento, fornecedorId);
         }
 
         private async Task<IReadOnlyDictionary<Guid, List<DateTime>>> FinsDaDocaAsync(

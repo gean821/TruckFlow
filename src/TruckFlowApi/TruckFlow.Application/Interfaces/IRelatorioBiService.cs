@@ -16,5 +16,9 @@ namespace TruckFlow.Application.Interfaces
         Task<ProdutividadeResponseDto> ProdutividadeAsync(ProdutividadeFiltroDto filtro, CancellationToken token = default);
 
         Task<ProdutividadePatioDto> PatioAsync(ProdutividadePatioFiltroDto filtro, CancellationToken token = default);
+
+        Task<FornecedoresResponseDto> FornecedoresAsync(FornecedoresFiltroDto filtro, CancellationToken token = default);
+
+        Task<FornecedorDetalheDto> FornecedorDetalheAsync(FornecedoresFiltroDto filtro, CancellationToken token = default);
     }
 }
