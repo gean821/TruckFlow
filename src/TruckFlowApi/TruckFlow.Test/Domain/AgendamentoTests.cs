@@ -173,6 +173,7 @@ public class AgendamentoTests
         var produtoId = Guid.NewGuid();
         var agendamento = CriarAgendamentoDisponivel(produtoId: produtoId);
         agendamento.Reservar(Guid.NewGuid(), CriarNotaFiscal(produtoId: produtoId), null, null);
+        agendamento.ClearDomainEvents();
 
         agendamento.RegistrarChegada();
 
@@ -324,6 +325,57 @@ public class AgendamentoTests
         agendamento.Expirar();
 
         Assert.Equal(StatusAgendamento.Expirado, agendamento.StatusAgendamento);
+    }
+
+    [Fact]
+    public void Reservar_EmiteAgendamentoConfirmadoParaOMotorista()
+    {
+        var produtoId = Guid.NewGuid();
+        var usuarioId = Guid.NewGuid();
+        var agendamento = CriarAgendamentoDisponivel(produtoId: produtoId);
+
+        agendamento.Reservar(usuarioId, CriarNotaFiscal(produtoId: produtoId), null, null);
+
+        var evento = Assert.IsType<AgendamentoEvent.AgendamentoConfirmadoEvent>(Assert.Single(agendamento.DomainEvents));
+        Assert.Equal(usuarioId, evento.MotoristaUsuarioId);
+        Assert.Equal(agendamento.DataInicio, evento.DataInicio);
+    }
+
+    [Fact]
+    public void Expirar_AgendamentoReservado_EmiteAgendamentoExpirado()
+    {
+        var produtoId = Guid.NewGuid();
+        var usuarioId = Guid.NewGuid();
+        var agendamento = CriarAgendamentoDisponivel(produtoId: produtoId);
+        agendamento.Reservar(usuarioId, CriarNotaFiscal(produtoId: produtoId), null, null);
+        agendamento.ClearDomainEvents();
+
+        agendamento.Expirar();
+
+        var evento = Assert.IsType<AgendamentoEvent.AgendamentoExpiradoEvent>(Assert.Single(agendamento.DomainEvents));
+        Assert.Equal(usuarioId, evento.MotoristaUsuarioId);
+    }
+
+    [Fact]
+    public void Expirar_VagaVazia_NaoAvisaNinguem()
+    {
+        var agendamento = CriarAgendamentoDisponivel();
+
+        agendamento.Expirar();
+
+        Assert.Equal(StatusAgendamento.Expirado, agendamento.StatusAgendamento);
+        Assert.Empty(agendamento.DomainEvents);
+    }
+
+    [Fact]
+    public void Reagendar_ZeraOLembreteDeJanelaParaAvisarDeNovo()
+    {
+        var agendamento = CriarAgendamentoDisponivel();
+        agendamento.LembreteJanelaEnviadoEm = DateTime.UtcNow;
+
+        agendamento.Reagendar(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1));
+
+        Assert.Null(agendamento.LembreteJanelaEnviadoEm);
     }
 
     [Fact]

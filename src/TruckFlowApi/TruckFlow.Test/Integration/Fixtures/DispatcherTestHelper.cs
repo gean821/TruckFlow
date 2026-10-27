@@ -27,6 +27,8 @@ internal static class DispatcherTestHelper
         services.AddScoped<IDomainEventHandler<AgendamentoCanceladoEvent>, AgendamentoCanceladoNotificacaoHandler>();
         services.AddScoped<IDomainEventHandler<AgendamentoEvent.MotoristaChegouEvent>, MotoristaChegouNotificacaoHandler>();
         services.AddScoped<IDomainEventHandler<AgendamentoEvent.AgendamentoReagendadoEvent>, AgendamentoReagendadoNotificacaoHandler>();
+        services.AddScoped<IDomainEventHandler<AgendamentoEvent.AgendamentoConfirmadoEvent>, AgendamentoConfirmadoNotificacaoHandler>();
+        services.AddScoped<IDomainEventHandler<AgendamentoEvent.AgendamentoExpiradoEvent>, AgendamentoExpiradoNotificacaoHandler>();
 
         services.AddDbContext<AppDbContext>((sp, options) =>
             options

@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using TruckFlow.Domain.Entities;
@@ -12,8 +11,6 @@ namespace TruckFlow.Application.Notificacoes.Handlers
     public sealed class AgendamentoReagendadoNotificacaoHandler
         : IDomainEventHandler<AgendamentoEvent.AgendamentoReagendadoEvent>
     {
-        private static readonly CultureInfo PtBr = new("pt-BR");
-
         private readonly AppDbContext _db;
 
         public AgendamentoReagendadoNotificacaoHandler(AppDbContext db)
@@ -32,9 +29,7 @@ namespace TruckFlow.Application.Notificacoes.Handlers
 
             var now = DateTime.UtcNow;
 
-            var dataNovaTexto = domainEvent.DataInicioNova
-                .ToLocalTime()
-                .ToString("dd/MM 'às' HH:mm", PtBr);
+            var dataNovaTexto = NotificacaoMotorista.FormatarDataHora(domainEvent.DataInicioNova);
 
             var agendamentoInfo = await _db.Agendamento
                 .AsNoTracking()

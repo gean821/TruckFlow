@@ -224,6 +224,9 @@ namespace TruckFlowApi.Infra.Migrations
                     b.Property<Guid?>("GradeId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("LembreteJanelaEnviadoEm")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("LocalDescargaId")
                         .HasColumnType("uuid");
 

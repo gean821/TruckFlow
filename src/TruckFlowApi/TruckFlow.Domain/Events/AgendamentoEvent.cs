@@ -28,5 +28,27 @@ namespace TruckFlow.Domain.Events
             public string IdempotencyKey =>
                 $"agendamento-reagendado:{AgendamentoId}:{DataInicioNova:O}";
         }
+
+        public sealed record AgendamentoConfirmadoEvent(
+            Guid AgendamentoId,
+            Guid EmpresaId,
+            Guid MotoristaUsuarioId,
+            DateTime DataInicio,
+            DateTime OcorridoEm
+        ) : IDomainEvent
+        {
+            public string IdempotencyKey => $"agendamento-confirmado:{AgendamentoId}:{MotoristaUsuarioId}";
+        }
+
+        public sealed record AgendamentoExpiradoEvent(
+            Guid AgendamentoId,
+            Guid EmpresaId,
+            Guid MotoristaUsuarioId,
+            DateTime DataInicio,
+            DateTime OcorridoEm
+        ) : IDomainEvent
+        {
+            public string IdempotencyKey => $"agendamento-expirado:{AgendamentoId}";
+        }
     }
 }

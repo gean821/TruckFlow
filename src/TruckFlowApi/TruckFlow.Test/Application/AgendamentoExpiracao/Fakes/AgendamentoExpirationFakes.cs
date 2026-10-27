@@ -94,6 +94,14 @@ internal sealed class FakeAgendamentoRepositorioParaExpiracao : IAgendamentoRepo
     public Task<List<AgendamentoEntity>> GetByMotoristaIdAcrossTenants(Guid motoristaId, CancellationToken token = default) =>
         throw new NotImplementedException();
 
+    public Task<List<TruckFlow.Domain.Dto.RelatorioMotorista.RelatorioMotoristaLinha>> ListarParaRelatorioMotoristaAcrossTenants(
+        Guid motoristaId, DateTime desdeUtc, DateTime ateUtc, CancellationToken token = default) =>
+        throw new NotImplementedException();
+
+    public Task<TruckFlow.Domain.Dto.RelatorioMotorista.RelatorioMotoristaProximoDto?> ObterProximoAgendamentoMotoristaAcrossTenants(
+        Guid motoristaId, DateTime agoraUtc, CancellationToken token = default) =>
+        throw new NotImplementedException();
+
     public Task<AgendamentoEntity> Update(AgendamentoEntity agendamento, CancellationToken token = default) =>
         throw new NotImplementedException();
 

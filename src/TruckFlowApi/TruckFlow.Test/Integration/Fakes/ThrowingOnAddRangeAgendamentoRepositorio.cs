@@ -51,6 +51,14 @@ internal sealed class ThrowingOnAddRangeAgendamentoRepositorio(IAgendamentoRepos
     public Task<List<Agendamento>> GetByMotoristaIdAcrossTenants(Guid motoristaId, CancellationToken token = default) =>
         inner.GetByMotoristaIdAcrossTenants(motoristaId, token);
 
+    public Task<List<TruckFlow.Domain.Dto.RelatorioMotorista.RelatorioMotoristaLinha>> ListarParaRelatorioMotoristaAcrossTenants(
+        Guid motoristaId, DateTime desdeUtc, DateTime ateUtc, CancellationToken token = default) =>
+        inner.ListarParaRelatorioMotoristaAcrossTenants(motoristaId, desdeUtc, ateUtc, token);
+
+    public Task<TruckFlow.Domain.Dto.RelatorioMotorista.RelatorioMotoristaProximoDto?> ObterProximoAgendamentoMotoristaAcrossTenants(
+        Guid motoristaId, DateTime agoraUtc, CancellationToken token = default) =>
+        inner.ObterProximoAgendamentoMotoristaAcrossTenants(motoristaId, agoraUtc, token);
+
     public Task<Agendamento> Update(Agendamento agendamento, CancellationToken token = default) =>
         inner.Update(agendamento, token);
 

@@ -37,6 +37,7 @@ namespace TruckFlow.Domain.Entities
         public Empresa? Empresa { get; set; }
 
         public string? PlacaVeiculo { get; set; }
+        public DateTime? LembreteJanelaEnviadoEm { get; set; }
         public TipoVeiculo? TipoVeiculo { get; set; }
 
         public void AlterarStatus(StatusAgendamento novoStatus)
@@ -97,6 +98,13 @@ namespace TruckFlow.Domain.Entities
 
             TipoVeiculo = tipoVeiculo;
             UpdatedAt = DateTime.UtcNow;
+
+            AddDomainEvent(new AgendamentoEvent.AgendamentoConfirmadoEvent(
+                AgendamentoId: Id,
+                EmpresaId: EmpresaId,
+                MotoristaUsuarioId: usuarioId,
+                DataInicio: DataInicio,
+                OcorridoEm: DateTime.UtcNow));
         }
 
         public void RegistrarChegada()
@@ -142,6 +150,7 @@ namespace TruckFlow.Domain.Entities
 
             DataInicio = novaDataInicio;
             DataFim = novaDataFim;
+            LembreteJanelaEnviadoEm = null;
             UpdatedAt = DateTime.UtcNow;
 
             var motoristaReservou = UsuarioId.HasValue
@@ -171,6 +180,21 @@ namespace TruckFlow.Domain.Entities
                    || StatusAgendamento == StatusAgendamento.Agendado);
 
         public void Expirar()
-            => AlterarStatus(StatusAgendamento.Expirado);
+        {
+            var motoristaReservou = UsuarioId.HasValue
+                && StatusAgendamento == StatusAgendamento.Agendado;
+
+            AlterarStatus(StatusAgendamento.Expirado);
+
+            if (motoristaReservou)
+            {
+                AddDomainEvent(new AgendamentoEvent.AgendamentoExpiradoEvent(
+                    AgendamentoId: Id,
+                    EmpresaId: EmpresaId,
+                    MotoristaUsuarioId: UsuarioId!.Value,
+                    DataInicio: DataInicio,
+                    OcorridoEm: DateTime.UtcNow));
+            }
+        }
     }
 }

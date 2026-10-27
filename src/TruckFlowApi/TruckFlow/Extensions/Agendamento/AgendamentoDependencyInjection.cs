@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application;
 using TruckFlow.Application.Factories;
 using TruckFlow.Application.Interfaces;
@@ -20,6 +21,8 @@ namespace TruckFlow.Extensions.Agendamento
             services.AddTransient<IValidator<AgendamentoAdminUpdateDto>, AgendamentoAdminUpdateDtoValidator>();
             services.AddTransient<IAgendamentoExpirationService, AgendamentoExpirationService>();
             services.AddTransient<IAgendamentoRecebimentoLifecycleService, AgendamentoRecebimentoLifecycleService>();
+            services.TryAddSingleton(TimeProvider.System);
+            services.AddTransient<IRelatorioMotoristaService, RelatorioMotoristaService>();
 
             services.AddHostedService<AgendamentoExpirationWorker>();
 

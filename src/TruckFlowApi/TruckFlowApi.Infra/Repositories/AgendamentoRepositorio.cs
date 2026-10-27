@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.Agendamento;
 using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Dto.Relatorio;
+using TruckFlow.Domain.Dto.RelatorioMotorista;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Database;
@@ -369,6 +370,47 @@ namespace TruckFlowApi.Infra.Repositories
                 .Include(x => x.Grade)
                     .ThenInclude(g => g.Produto)
                 .ToListAsync(token);
+
+        public async Task<List<RelatorioMotoristaLinha>> ListarParaRelatorioMotoristaAcrossTenants(
+            Guid motoristaId,
+            DateTime desdeUtc,
+            DateTime ateUtc,
+            CancellationToken token = default) =>
+            await _db.Agendamento
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(x => x.Usuario != null && x.Usuario.Motorista != null && x.Usuario.Motorista.Id == motoristaId)
+                .Where(x => x.DataInicio >= desdeUtc && x.DataInicio < ateUtc)
+                .Select(x => new RelatorioMotoristaLinha(
+                    x.Id,
+                    x.StatusAgendamento,
+                    x.DataInicio,
+                    x.NotaFiscal != null ? (x.NotaFiscal.PesoBruto ?? x.VolumeCarga ?? 0m) : (x.VolumeCarga ?? 0m),
+                    x.Grade != null ? x.Grade.Produto.Nome : (x.Produto != null ? x.Produto.Nome : null),
+                    x.UnidadeEntrega != null ? x.UnidadeEntrega.Nome : null,
+                    x.LocalDescarga != null ? x.LocalDescarga.Nome : null,
+                    x.Empresa != null ? x.Empresa.NomeFantasia : null))
+                .ToListAsync(token);
+
+        public async Task<RelatorioMotoristaProximoDto?> ObterProximoAgendamentoMotoristaAcrossTenants(
+            Guid motoristaId,
+            DateTime agoraUtc,
+            CancellationToken token = default) =>
+            await _db.Agendamento
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(x => x.Usuario != null && x.Usuario.Motorista != null && x.Usuario.Motorista.Id == motoristaId)
+                .Where(x => x.StatusAgendamento == StatusAgendamento.Agendado && x.DataFim > agoraUtc)
+                .OrderBy(x => x.DataInicio)
+                .Select(x => new RelatorioMotoristaProximoDto
+                {
+                    Id = x.Id,
+                    DataInicio = x.DataInicio,
+                    UnidadeEntrega = x.UnidadeEntrega != null ? x.UnidadeEntrega.Nome : null,
+                    LocalDescarga = x.LocalDescarga != null ? x.LocalDescarga.Nome : null,
+                    Empresa = x.Empresa != null ? x.Empresa.NomeFantasia : null,
+                })
+                .FirstOrDefaultAsync(token);
 
         public async Task<IReadOnlyList<Agendamento>> ExisteAgendamentoBloqueantePorGrade(
             Guid gradeId,

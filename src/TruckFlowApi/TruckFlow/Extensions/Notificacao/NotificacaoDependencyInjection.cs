@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Application.Notificacoes;
 using TruckFlow.Application.Notificacoes.Handlers;
@@ -47,6 +48,19 @@ namespace TruckFlow.Extensions.Notificacao
             services.AddScoped<
                 IDomainEventHandler<AgendamentoEvent.AgendamentoReagendadoEvent>,
                 AgendamentoReagendadoNotificacaoHandler>();
+
+            services.AddScoped<
+                IDomainEventHandler<AgendamentoEvent.AgendamentoConfirmadoEvent>,
+                AgendamentoConfirmadoNotificacaoHandler>();
+
+            services.AddScoped<
+                IDomainEventHandler<AgendamentoEvent.AgendamentoExpiradoEvent>,
+                AgendamentoExpiradoNotificacaoHandler>();
+
+            services.TryAddSingleton(TimeProvider.System);
+            services.AddOptions<JanelaProximaOptions>().BindConfiguration(JanelaProximaOptions.SectionName);
+            services.AddTransient<IJanelaProximaNotificacaoService, JanelaProximaNotificacaoService>();
+            services.AddHostedService<JanelaProximaWorker>();
 
             services.AddHostedService<OutboxProcessorWorker>();
             services.AddHostedService<RealtimeNotificationListener>();

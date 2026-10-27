@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Agendamento;
+using TruckFlow.Domain.Dto.RelatorioMotorista;
 
 namespace TruckFlow.Controllers
 {
@@ -11,10 +12,14 @@ namespace TruckFlow.Controllers
     public class AgendamentoMotoristaController : ControllerBase
     {
         private readonly IAgendamentoMotoristaService _service;
+        private readonly IRelatorioMotoristaService _relatorioService;
 
-        public AgendamentoMotoristaController(IAgendamentoMotoristaService service)
+        public AgendamentoMotoristaController(
+            IAgendamentoMotoristaService service,
+            IRelatorioMotoristaService relatorioService)
         {
             _service = service;
+            _relatorioService = relatorioService;
         }
 
         /// <summary>
@@ -51,6 +56,16 @@ namespace TruckFlow.Controllers
         {
             var agendamentos = await _service.GetDriverAppointments(token);
             return Ok(agendamentos);
+        }
+
+        [HttpGet("relatorio")]
+        [ProducesResponseType(typeof(RelatorioMotoristaResponseDto), 200)]
+        public async Task<IActionResult> GetRelatorio(
+            [FromQuery] RelatorioMotoristaQueryDto query,
+            CancellationToken token = default)
+        {
+            var relatorio = await _relatorioService.GerarAsync(query, token);
+            return Ok(relatorio);
         }
 
 

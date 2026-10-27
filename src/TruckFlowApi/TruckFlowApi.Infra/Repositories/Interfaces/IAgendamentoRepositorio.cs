@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using TruckFlow.Domain.Dto.Agendamento;
 using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Dto.Relatorio;
+using TruckFlow.Domain.Dto.RelatorioMotorista;
 using TruckFlow.Domain.Entities;
 
 namespace TruckFlowApi.Infra.Repositories.Interfaces
@@ -69,6 +70,19 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
         /// </summary>
         Task<List<Agendamento>> GetByMotoristaIdAcrossTenants(
             Guid motoristaId,
+            CancellationToken token = default
+        );
+
+        Task<List<RelatorioMotoristaLinha>> ListarParaRelatorioMotoristaAcrossTenants(
+            Guid motoristaId,
+            DateTime desdeUtc,
+            DateTime ateUtc,
+            CancellationToken token = default
+        );
+
+        Task<RelatorioMotoristaProximoDto?> ObterProximoAgendamentoMotoristaAcrossTenants(
+            Guid motoristaId,
+            DateTime agoraUtc,
             CancellationToken token = default
         );
         public Task<Agendamento> Update(Agendamento Agendamento, CancellationToken token = default);
