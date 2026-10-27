@@ -12,17 +12,75 @@ namespace TruckFlow.Application.RelatoriosBi
         private readonly IEmpresaRepositorio _empresaRepo;
         private readonly CurrentUserGuard _guard;
         private readonly TimeProvider _timeProvider;
+        private readonly IAgendamentoRepositorio _agendamentoRepo;
 
         public RelatorioBiService(
             IRelatorioBiRepositorio repo,
             IEmpresaRepositorio empresaRepo,
             CurrentUserGuard guard,
-            TimeProvider timeProvider)
+            TimeProvider timeProvider,
+            IAgendamentoRepositorio agendamentoRepo)
         {
             _repo = repo;
             _empresaRepo = empresaRepo;
             _guard = guard;
             _timeProvider = timeProvider;
+            _agendamentoRepo = agendamentoRepo;
+        }
+
+        public async Task<ProdutividadeResponseDto> ProdutividadeAsync(
+            ProdutividadeFiltroDto filtro,
+            CancellationToken token = default)
+        {
+            var filtroBi = filtro.ParaFiltroBi();
+            var periodo = RelatorioBiPeriodo.Resolver(filtroBi, _timeProvider.GetUtcNow().UtcDateTime);
+            var linhas = await _repo.ListarLinhasAsync(RelatorioBiPeriodo.Criteria(filtroBi, periodo), token);
+            var fins = await FinsDaDocaAsync(linhas, token);
+
+            return ProdutividadeCalculo.Montar(linhas, fins, periodo, ProdutividadeCalculo.ResolverLimite(filtro.LimiteEsperaMin));
+        }
+
+        public async Task<ProdutividadePatioDto> PatioAsync(
+            ProdutividadePatioFiltroDto filtro,
+            CancellationToken token = default)
+        {
+            var agoraUtc = _timeProvider.GetUtcNow().UtcDateTime;
+            var dia = filtro.Dia ?? RelatorioBiPeriodo.DiaLocal(agoraUtc);
+
+            var criteria = new RelatorioBiCriteria(
+                RelatorioBiPeriodo.InicioDoDiaUtc(dia),
+                RelatorioBiPeriodo.InicioDoDiaUtc(dia.AddDays(1)),
+                filtro.UnidadeEntregaId,
+                filtro.LocalDescargaId,
+                filtro.FornecedorId,
+                filtro.ProdutoId);
+
+            var linhas = await _repo.ListarLinhasAsync(criteria, token);
+            var fins = await FinsDaDocaAsync(linhas, token);
+
+            return ProdutividadeCalculo.MontarPatio(linhas, fins, dia, agoraUtc);
+        }
+
+        private async Task<IReadOnlyDictionary<Guid, List<DateTime>>> FinsDaDocaAsync(
+            IReadOnlyCollection<RelatorioBiLinha> linhas,
+            CancellationToken token)
+        {
+            var estimaveis = linhas
+                .Where(l => l.InicioDescargaEm is null && l.ChegouEm.HasValue && l.FimDescargaEm.HasValue && l.LocalDescargaId.HasValue)
+                .ToList();
+
+            if (estimaveis.Count == 0)
+            {
+                return Relatorios.RelatorioDetalhadoCalculo.FinsPorDoca([]);
+            }
+
+            var fins = await _agendamentoRepo.ListarFinsDescargaAsync(
+                estimaveis.Min(l => l.ChegouEm!.Value),
+                estimaveis.Max(l => l.FimDescargaEm!.Value),
+                estimaveis.Select(l => l.LocalDescargaId!.Value).Distinct().ToList(),
+                token);
+
+            return Relatorios.RelatorioDetalhadoCalculo.FinsPorDoca(fins);
         }
 
         public async Task<VisaoGeralResponseDto> VisaoGeralAsync(
