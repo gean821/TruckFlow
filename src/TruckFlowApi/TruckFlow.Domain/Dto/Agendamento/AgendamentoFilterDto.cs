@@ -11,6 +11,7 @@ namespace TruckFlow.Domain.Dto.Agendamento
         public Guid? FornecedorId { get; set; }
         public Guid? UnidadeEntregaId { get; set; }
         public Guid? ProdutoId { get; set; }
+        public Guid? LocalDescargaId { get; set; }
 
         public StatusAgendamento? Status { get; set; }
         public TipoVeiculo? TipoVeiculo { get; set; }

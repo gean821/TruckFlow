@@ -10,5 +10,7 @@ namespace TruckFlow.Application.Interfaces
         Task<DashboardHojeResponseDto> DashboardHojeAsync(Guid? unidadeEntregaId, CancellationToken token = default);
 
         Task<RecebimentosResponseDto> RecebimentosAsync(RecebimentosFiltroDto filtro, CancellationToken token = default);
+
+        Task<CapacidadeDocasResponseDto> CapacidadeDocasAsync(RelatorioBiFiltroDto filtro, CancellationToken token = default);
     }
 }

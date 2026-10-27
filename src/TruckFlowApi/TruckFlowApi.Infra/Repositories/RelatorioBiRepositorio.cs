@@ -112,6 +112,29 @@ namespace TruckFlowApi.Infra.Repositories
                 .ToListAsync(token);
         }
 
+        public async Task<List<CapacidadeVagaLinha>> ListarVagasAsync(
+            RelatorioBiCriteria criteria,
+            CancellationToken token = default)
+        {
+            return await FiltrarPeriodo(_db.Agendamento.AsNoTracking(), criteria with { FornecedorId = null })
+                .Select(a => new CapacidadeVagaLinha(
+                    a.Id,
+                    a.StatusAgendamento,
+                    a.DataInicio,
+                    a.DataFim,
+                    a.UsuarioId != null || a.PlacaVeiculo != null,
+                    a.GradeId != null,
+                    a.LocalDescargaId ?? (a.Grade != null ? a.Grade.LocalDescargaId : null),
+                    a.LocalDescarga != null
+                        ? a.LocalDescarga.Nome
+                        : (a.Grade != null && a.Grade.LocalDescarga != null ? a.Grade.LocalDescarga.Nome : null),
+                    a.UnidadeEntrega != null ? a.UnidadeEntrega.Nome : null,
+                    a.ChegouEm,
+                    a.InicioDescargaEm,
+                    a.FimDescargaEm))
+                .ToListAsync(token);
+        }
+
         public async Task<(int Quantidade, decimal Kg)> ResumirOrfaosAsync(
             RelatorioBiCriteria criteria,
             DateTime periodoInicioUtc,
@@ -138,11 +161,12 @@ namespace TruckFlowApi.Infra.Repositories
             return resumo is null ? (0, 0m) : (resumo.Quantidade, resumo.Kg);
         }
 
-        private IQueryable<Agendamento> Filtrar(IQueryable<Agendamento> query, RelatorioBiCriteria criteria)
+        private IQueryable<Agendamento> Filtrar(IQueryable<Agendamento> query, RelatorioBiCriteria criteria) =>
+            FiltrarPeriodo(query.Where(Agendamento.TemReserva), criteria);
+
+        private IQueryable<Agendamento> FiltrarPeriodo(IQueryable<Agendamento> query, RelatorioBiCriteria criteria)
         {
-            query = query
-                .Where(Agendamento.TemReserva)
-                .Where(a => a.DataInicio >= criteria.DesdeUtc && a.DataInicio < criteria.AteUtc);
+            query = query.Where(a => a.DataInicio >= criteria.DesdeUtc && a.DataInicio < criteria.AteUtc);
 
             if (criteria.UnidadeEntregaId.HasValue)
                 query = query.Where(a => a.UnidadeEntregaId == criteria.UnidadeEntregaId);
