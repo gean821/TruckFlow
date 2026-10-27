@@ -214,19 +214,20 @@ namespace TruckFlowApi.Infra.Repositories
            RelatorioAgendamentoCriteria criteria,
            int limite,
            CancellationToken cancellationToken = default) =>
-           ProjetarRelatorio(FiltrarRelatorio(criteria), limite)
+           ProjetarRelatorio(FiltrarRelatorio(criteria), criteria, limite)
                .ToListAsync(cancellationToken);
 
         public IAsyncEnumerable<AgendamentoRelatorioLinha> StreamLinhasRelatorioAsync(
             RelatorioAgendamentoCriteria criteria,
             int limite) =>
-            ProjetarRelatorio(FiltrarRelatorio(criteria), limite)
+            ProjetarRelatorio(FiltrarRelatorio(criteria), criteria, limite)
                 .AsAsyncEnumerable();
 
         private IQueryable<Agendamento> FiltrarRelatorio(RelatorioAgendamentoCriteria criteria)
         {
             var query = _db.Agendamento
                 .AsNoTracking()
+                .Where(Agendamento.TemReserva)
                 .Where(x => x.DataInicio >= criteria.DataInicioUtc
                          && x.DataInicio <= criteria.DataFimUtc);
 
@@ -247,7 +248,60 @@ namespace TruckFlowApi.Infra.Repositories
             if (criteria.FornecedorId.HasValue)
             {
                 var fornecedorId = criteria.FornecedorId.Value;
-                query = query.Where(x => x.FornecedorId == fornecedorId);
+                query = query.Where(x =>
+                    x.FornecedorId == fornecedorId ||
+                    (x.FornecedorId == null && x.NotaFiscal != null && x.NotaFiscal.FornecedorId == fornecedorId));
+            }
+
+            if (criteria.UnidadeEntregaId.HasValue)
+            {
+                var unidadeId = criteria.UnidadeEntregaId.Value;
+                query = query.Where(x => x.UnidadeEntregaId == unidadeId);
+            }
+
+            if (criteria.LocalDescargaId.HasValue)
+            {
+                var docaId = criteria.LocalDescargaId.Value;
+                query = query.Where(x =>
+                    x.LocalDescargaId == docaId ||
+                    (x.LocalDescargaId == null && x.Grade != null && x.Grade.LocalDescargaId == docaId));
+            }
+
+            if (criteria.Status.Count > 0)
+            {
+                var status = criteria.Status;
+                query = query.Where(x => status.Contains(x.StatusAgendamento));
+            }
+
+            if (criteria.Origem == OrigemAgendamento.Grade)
+            {
+                query = query.Where(x => x.GradeId != null);
+            }
+            else if (criteria.Origem == OrigemAgendamento.Avulso)
+            {
+                query = query.Where(x => x.GradeId == null);
+            }
+
+            query = criteria.Chegada switch
+            {
+                SituacaoChegada.Adiantado => query.Where(x => x.ChegouEm != null && x.ChegouEm < x.DataInicio),
+                SituacaoChegada.NoHorario => query.Where(x => x.ChegouEm != null && x.ChegouEm >= x.DataInicio && x.ChegouEm <= x.DataFim),
+                SituacaoChegada.Atrasado => query.Where(x => x.ChegouEm != null && x.ChegouEm > x.DataFim),
+                SituacaoChegada.NaoCompareceu => query.Where(x => x.ChegouEm == null && x.StatusAgendamento == StatusAgendamento.Expirado),
+                _ => query
+            };
+
+            if (!string.IsNullOrWhiteSpace(criteria.Busca))
+            {
+                var padrao = PadraoContem(criteria.Busca);
+                query = query.Where(x =>
+                    EF.Functions.ILike(x.PlacaVeiculo!, padrao, "\\") ||
+                    (x.Usuario != null && x.Usuario.Motorista != null && EF.Functions.ILike(x.Usuario.Motorista.NomeReal!, padrao, "\\")) ||
+                    (x.Fornecedor != null && EF.Functions.ILike(x.Fornecedor.Nome, padrao, "\\")) ||
+                    (x.NotaFiscal != null && (
+                        EF.Functions.ILike(x.NotaFiscal.PlacaVeiculo!, padrao, "\\") ||
+                        EF.Functions.ILike(x.NotaFiscal.Numero.ToString(), padrao, "\\") ||
+                        (x.NotaFiscal.Fornecedor != null && EF.Functions.ILike(x.NotaFiscal.Fornecedor.Nome, padrao, "\\")))));
             }
 
             if (criteria.ProdutoId.HasValue)
@@ -277,15 +331,146 @@ namespace TruckFlowApi.Infra.Repositories
             return query;
         }
 
+        public async Task<PagedResponse<AgendamentoRelatorioLinha>> GetPaginaRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            var filtrada = FiltrarRelatorio(criteria);
+            var total = await filtrada.CountAsync(cancellationToken);
+
+            var itens = await Projetar(Ordenar(filtrada, criteria)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize))
+                .ToListAsync(cancellationToken);
+
+            return new PagedResponse<AgendamentoRelatorioLinha>
+            {
+                Items = itens,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = total,
+                TotalPages = (int)Math.Ceiling(total / (double)pageSize)
+            };
+        }
+
+        public Task<List<RelatorioResumoLinha>> ListarResumoRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            CancellationToken cancellationToken = default) =>
+            FiltrarRelatorio(criteria)
+                .Select(x => new RelatorioResumoLinha(
+                    x.Id,
+                    x.StatusAgendamento,
+                    x.DataInicio,
+                    x.DataFim,
+                    x.LocalDescargaId ?? (x.Grade != null ? x.Grade.LocalDescargaId : null),
+                    x.ChegouEm,
+                    x.InicioDescargaEm,
+                    x.FimDescargaEm,
+                    x.SaiuEm,
+                    (x.NotaFiscal != null ? x.NotaFiscal.PesoBruto : null) ?? x.VolumeCarga ?? 0m))
+                .ToListAsync(cancellationToken);
+
+        public async Task<List<FimDescargaDoca>> ListarFinsDescargaAsync(
+            DateTime deUtc,
+            DateTime ateUtc,
+            IReadOnlyCollection<Guid>? docas = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _db.Agendamento
+                .AsNoTracking()
+                .Where(Agendamento.TemReserva)
+                .Where(x => x.FimDescargaEm != null && x.FimDescargaEm >= deUtc && x.FimDescargaEm <= ateUtc)
+                .Select(x => new
+                {
+                    Doca = x.LocalDescargaId ?? (x.Grade != null ? x.Grade.LocalDescargaId : null),
+                    Fim = x.FimDescargaEm!.Value
+                })
+                .Where(x => x.Doca != null);
+
+            if (docas is { Count: > 0 })
+            {
+                query = query.Where(x => docas.Contains(x.Doca!.Value));
+            }
+
+            return await query
+                .Select(x => new FimDescargaDoca(x.Doca!.Value, x.Fim))
+                .ToListAsync(cancellationToken);
+        }
+
+        private static IQueryable<Agendamento> Ordenar(IQueryable<Agendamento> query, RelatorioAgendamentoCriteria criteria)
+        {
+            var desc = criteria.Desc;
+            IOrderedQueryable<Agendamento> ordenada = criteria.OrdenarPor switch
+            {
+                RelatorioOrdenacao.Status => Por(query, x => x.StatusAgendamento, desc),
+                RelatorioOrdenacao.Motorista => Por(query, x => x.Usuario != null && x.Usuario.Motorista != null ? x.Usuario.Motorista.NomeReal : null, desc),
+                RelatorioOrdenacao.Placa => Por(query, x => x.PlacaVeiculo ?? (x.NotaFiscal != null ? x.NotaFiscal.PlacaVeiculo : null), desc),
+                RelatorioOrdenacao.Fornecedor => Por(query, x => x.Fornecedor != null
+                    ? x.Fornecedor.Nome
+                    : (x.NotaFiscal != null && x.NotaFiscal.Fornecedor != null ? x.NotaFiscal.Fornecedor.Nome : null), desc),
+                RelatorioOrdenacao.Produto => Por(query, x => x.Grade != null
+                    ? x.Grade.Produto.Nome
+                    : (x.Produto != null ? x.Produto.Nome : null), desc),
+                RelatorioOrdenacao.Unidade => Por(query, x => x.UnidadeEntrega != null ? x.UnidadeEntrega.Nome : null, desc),
+                RelatorioOrdenacao.Doca => Por(query, x => x.LocalDescarga != null
+                    ? x.LocalDescarga.Nome
+                    : (x.Grade != null && x.Grade.LocalDescarga != null ? x.Grade.LocalDescarga.Nome : null), desc),
+                RelatorioOrdenacao.Peso => Por(query, x => (x.NotaFiscal != null ? x.NotaFiscal.PesoBruto : null) ?? x.VolumeCarga, desc),
+                RelatorioOrdenacao.Chegada => Por(query, x => x.ChegouEm, desc),
+                RelatorioOrdenacao.FimDescarga => Por(query, x => x.FimDescargaEm, desc),
+                _ => Por(query, x => x.DataInicio, desc),
+            };
+
+            return desc
+                ? ordenada.ThenByDescending(x => x.DataInicio).ThenBy(x => x.Id)
+                : ordenada.ThenBy(x => x.DataInicio).ThenBy(x => x.Id);
+        }
+
+        private static IOrderedQueryable<Agendamento> Por<TChave>(
+            IQueryable<Agendamento> query,
+            System.Linq.Expressions.Expression<Func<Agendamento, TChave>> chave,
+            bool desc)
+        {
+            var tipo = typeof(TChave);
+            if (tipo.IsValueType && Nullable.GetUnderlyingType(tipo) is null)
+            {
+                return desc ? query.OrderByDescending(chave) : query.OrderBy(chave);
+            }
+
+            var vazioPorUltimo = System.Linq.Expressions.Expression.Lambda<Func<Agendamento, bool>>(
+                System.Linq.Expressions.Expression.Equal(chave.Body, System.Linq.Expressions.Expression.Constant(null, tipo)),
+                chave.Parameters);
+
+            var ordenada = query.OrderBy(vazioPorUltimo);
+            return desc ? ordenada.ThenByDescending(chave) : ordenada.ThenBy(chave);
+        }
+
         private static IQueryable<AgendamentoRelatorioLinha> ProjetarRelatorio(
             IQueryable<Agendamento> query,
+            RelatorioAgendamentoCriteria criteria,
             int limite) =>
+            Projetar(Ordenar(query, criteria).Take(limite));
+
+        private static IQueryable<AgendamentoRelatorioLinha> Projetar(IQueryable<Agendamento> query) =>
             query
-                .OrderBy(x => x.DataInicio)
-                .Take(limite)
                 .Select(x => new AgendamentoRelatorioLinha
                 {
-                    FornecedorNome = x.Fornecedor != null ? x.Fornecedor.Nome : null,
+                    Id = x.Id,
+                    LocalDescargaId = x.LocalDescargaId ?? (x.Grade != null ? x.Grade.LocalDescargaId : null),
+                    DaGrade = x.GradeId != null,
+                    NotaFiscalNumero = x.NotaFiscal != null ? x.NotaFiscal.Numero : null,
+                    MotoristaTelefone = x.Usuario != null && x.Usuario.Motorista != null
+                        ? x.Usuario.Motorista.Telefone
+                        : null,
+                    ChegouEm = x.ChegouEm,
+                    InicioDescargaEm = x.InicioDescargaEm,
+                    FimDescargaEm = x.FimDescargaEm,
+                    SaiuEm = x.SaiuEm,
+                    FornecedorNome = x.Fornecedor != null
+                        ? x.Fornecedor.Nome
+                        : (x.NotaFiscal != null && x.NotaFiscal.Fornecedor != null ? x.NotaFiscal.Fornecedor.Nome : null),
                     ProdutoNome = x.Grade != null
                         ? x.Grade.Produto.Nome
                         : (x.Produto != null ? x.Produto.Nome : null),
@@ -295,7 +480,9 @@ namespace TruckFlowApi.Infra.Repositories
                         ? x.Usuario.Motorista.NomeReal
                         : null,
                     UnidadeEntrega = x.UnidadeEntrega != null ? x.UnidadeEntrega.Nome : null,
-                    LocalDescarga = x.LocalDescarga != null ? x.LocalDescarga.Nome : null,
+                    LocalDescarga = x.LocalDescarga != null
+                        ? x.LocalDescarga.Nome
+                        : (x.Grade != null && x.Grade.LocalDescarga != null ? x.Grade.LocalDescarga.Nome : null),
                     TipoVeiculo = x.TipoVeiculo,
                     PesoCarga = (x.NotaFiscal != null ? x.NotaFiscal.PesoBruto : null) ?? x.VolumeCarga,
                     Status = x.StatusAgendamento,

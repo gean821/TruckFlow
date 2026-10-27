@@ -60,6 +60,12 @@ namespace TruckFlow.Application.Relatorios
                             .FontSize(9).Bold().FontColor(CorMarca);
 
                         column.Item().Element(c => TabelaAgendamentos(c, linhas));
+
+                        if (linhas.Any(l => l.Ciclo?.InicioEstimado == true))
+                        {
+                            column.Item().Text("* Início da descarga estimado pela chegada e pelo caminhão anterior na doca.")
+                                .FontSize(7.5f).FontColor(Colors.Grey.Darken1);
+                        }
                     });
 
                     page.Footer().Row(row =>
@@ -90,6 +96,10 @@ namespace TruckFlow.Application.Relatorios
             if (criteria.HoraFim.HasValue) itens.Add($"Até as: {criteria.HoraFim.Value:hh\\:mm}");
             if (criteria.PlacaVeiculo is not null) itens.Add($"Placa: {criteria.PlacaVeiculo}");
             if (criteria.Motorista is not null) itens.Add($"Motorista: {criteria.Motorista}");
+            if (criteria.Busca is not null) itens.Add($"Busca: {criteria.Busca}");
+            if (criteria.Status.Count > 0) itens.Add($"Status: {string.Join(", ", criteria.Status.Select(RelatorioDetalhadoCalculo.StatusRotulo))}");
+            if (criteria.Origem.HasValue) itens.Add($"Origem: {criteria.Origem}");
+            if (criteria.Chegada.HasValue) itens.Add($"Chegada: {RelatorioDetalhadoCalculo.SituacaoRotulo(criteria.Chegada)}");
 
             container.Background(Colors.Grey.Lighten4).Padding(8).Column(column =>
             {
@@ -104,14 +114,16 @@ namespace TruckFlow.Application.Relatorios
             {
                 table.ColumnsDefinition(c =>
                 {
-                    c.RelativeColumn(2.2f);
-                    c.RelativeColumn(2f);
-                    c.RelativeColumn(1.1f);
                     c.RelativeColumn(2f);
                     c.RelativeColumn(1.6f);
-                    c.RelativeColumn(1.3f);
-                    c.RelativeColumn(1.4f);
+                    c.RelativeColumn(1f);
                     c.RelativeColumn(1.8f);
+                    c.RelativeColumn(1.3f);
+                    c.RelativeColumn(1.1f);
+                    c.RelativeColumn(1.3f);
+                    c.RelativeColumn(1.5f);
+                    c.RelativeColumn(1.5f);
+                    c.RelativeColumn(1f);
                 });
 
                 table.Header(header =>
@@ -124,10 +136,12 @@ namespace TruckFlow.Application.Relatorios
                     CelulaHeader("Produto");
                     CelulaHeader("Placa");
                     CelulaHeader("Motorista");
-                    CelulaHeader("Unidade");
+                    CelulaHeader("Doca");
                     CelulaHeader("Peso (kg)");
                     CelulaHeader("Status");
-                    CelulaHeader("Data Início");
+                    CelulaHeader("Janela");
+                    CelulaHeader("Chegada");
+                    CelulaHeader("Descarga");
                 });
 
                 for (var i = 0; i < linhas.Count; i++)
@@ -143,10 +157,14 @@ namespace TruckFlow.Application.Relatorios
                     Celula(a.Produto);
                     Celula(a.PlacaVeiculo ?? "-");
                     Celula(a.MotoristaNome ?? "-");
-                    Celula(a.UnidadeEntrega ?? "-");
+                    Celula(a.LocalDescarga ?? "-");
                     Celula(a.PesoCarga?.ToString("N0", RelatorioFormatacao.PtBr) ?? "-");
-                    Celula(a.Status.ToString());
+                    Celula(RelatorioDetalhadoCalculo.StatusRotulo(a.Status));
                     Celula(RelatorioFormatacao.DataHoraLocal(a.DataInicio));
+                    Celula(a.ChegouEm.HasValue ? RelatorioFormatacao.DataHoraLocal(a.ChegouEm.Value) : "-");
+                    Celula(a.Ciclo?.DescargaMinutos is { } descarga
+                        ? $"{Math.Round(descarga).ToString("0", RelatorioFormatacao.PtBr)} min{(a.Ciclo.InicioEstimado ? "*" : "")}"
+                        : "-");
                 }
             });
         }

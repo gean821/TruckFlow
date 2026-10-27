@@ -24,15 +24,19 @@ namespace TruckFlow.Domain.Rules
         {
             var lista = agendamentos.ToList();
 
-            var finsPorDoca = lista
+            var finsPorDoca = FinsPorDoca(lista
                 .Where(a => a.LocalDescargaId.HasValue && a.FimDescargaEm.HasValue)
-                .GroupBy(a => a.LocalDescargaId!.Value)
-                .ToDictionary(g => g.Key, g => g.Select(a => a.FimDescargaEm!.Value).OrderBy(f => f).ToList());
+                .Select(a => (a.LocalDescargaId!.Value, a.FimDescargaEm!.Value)));
 
             return lista.Select(a => Calcular(a, finsPorDoca)).ToList();
         }
 
-        private static CicloCaminhaoResultado Calcular(
+        public static IReadOnlyDictionary<Guid, List<DateTime>> FinsPorDoca(IEnumerable<(Guid Doca, DateTime Fim)> fins) =>
+            fins
+                .GroupBy(f => f.Doca)
+                .ToDictionary(g => g.Key, g => g.Select(f => f.Fim).OrderBy(f => f).ToList());
+
+        public static CicloCaminhaoResultado Calcular(
             CicloCaminhaoEntrada a,
             IReadOnlyDictionary<Guid, List<DateTime>> finsPorDoca)
         {
@@ -74,18 +78,20 @@ namespace TruckFlow.Domain.Rules
                 return null;
             }
 
-            DateTime? anterior = null;
-            foreach (var fim in fins)
-            {
-                if (fim >= a.FimDescargaEm)
-                {
-                    break;
-                }
+            var indice = fins.BinarySearch(a.FimDescargaEm!.Value);
+            var primeiroMaiorOuIgual = indice >= 0 ? PrimeiraOcorrencia(fins, indice) : ~indice;
 
-                anterior = fim;
+            return primeiroMaiorOuIgual > 0 ? fins[primeiroMaiorOuIgual - 1] : null;
+        }
+
+        private static int PrimeiraOcorrencia(List<DateTime> fins, int indice)
+        {
+            while (indice > 0 && fins[indice - 1] == fins[indice])
+            {
+                indice--;
             }
 
-            return anterior;
+            return indice;
         }
 
         private static DateTime Maior(DateTime a, DateTime? b) => b.HasValue && b.Value > a ? b.Value : a;

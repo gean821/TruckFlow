@@ -4,11 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Enums;
+using TruckFlow.Domain.Rules;
 
 namespace TruckFlow.Domain.Dto.Relatorio
 {
     public sealed class AgendamentoRelatorioLinha
     {
+        public Guid Id { get; init; }
+        public Guid? LocalDescargaId { get; init; }
+        public bool DaGrade { get; init; }
+        public long? NotaFiscalNumero { get; init; }
+        public string? MotoristaTelefone { get; init; }
+        public DateTime? ChegouEm { get; init; }
+        public DateTime? InicioDescargaEm { get; init; }
+        public DateTime? FimDescargaEm { get; init; }
+        public DateTime? SaiuEm { get; init; }
+        public CicloCaminhaoResultado? Ciclo { get; set; }
         public string? FornecedorNome { get; init; }
         public string? ProdutoNome { get; init; }
         public TipoCarga TipoCarga { get; init; }

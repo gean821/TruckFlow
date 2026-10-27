@@ -59,6 +59,22 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
             RelatorioAgendamentoCriteria criteria,
             int limite);
 
+        Task<PagedResponse<AgendamentoRelatorioLinha>> GetPaginaRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default);
+
+        Task<List<RelatorioResumoLinha>> ListarResumoRelatorioAsync(
+            RelatorioAgendamentoCriteria criteria,
+            CancellationToken cancellationToken = default);
+
+        Task<List<FimDescargaDoca>> ListarFinsDescargaAsync(
+            DateTime deUtc,
+            DateTime ateUtc,
+            IReadOnlyCollection<Guid>? docas = null,
+            CancellationToken cancellationToken = default);
+
         public Task<List<Agendamento>> GetByMotoristaId(
             Guid motoristaId,
             CancellationToken token = default

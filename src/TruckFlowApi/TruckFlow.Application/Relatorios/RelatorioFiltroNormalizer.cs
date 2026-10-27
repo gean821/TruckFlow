@@ -42,8 +42,32 @@ namespace TruckFlow.Application.Relatorios
                 throw new BusinessException("A hora início não pode ser maior que a hora fim.");
             }
 
+            var ordenarPor = string.IsNullOrWhiteSpace(filtros.OrdenarPor)
+                ? RelatorioOrdenacao.Janela
+                : filtros.OrdenarPor.Trim();
+
+            if (!RelatorioOrdenacao.Todas.TryGetValue(ordenarPor, out var ordenacao))
+            {
+                throw new BusinessException("Ordenação inválida.");
+            }
+
+            if (filtros.Status?.Any(s => !Enum.IsDefined(s)) == true
+                || (filtros.Origem.HasValue && !Enum.IsDefined(filtros.Origem.Value))
+                || (filtros.Chegada.HasValue && !Enum.IsDefined(filtros.Chegada.Value)))
+            {
+                throw new BusinessException("Filtro inválido.");
+            }
+
             return new RelatorioAgendamentoCriteria
             {
+                UnidadeEntregaId = filtros.UnidadeEntregaId,
+                LocalDescargaId = filtros.LocalDescargaId,
+                Status = filtros.Status?.Distinct().ToList() ?? [],
+                Origem = filtros.Origem,
+                Chegada = filtros.Chegada,
+                Busca = Limpar(filtros.Busca),
+                OrdenarPor = ordenacao,
+                Desc = filtros.Desc,
                 DataInicioUtc = ParaUtc(diaInicio),
                 DataFimUtc = ParaUtc(diaFim.AddDays(1).AddTicks(-1)),
                 HoraInicio = filtros.HoraInicio,
