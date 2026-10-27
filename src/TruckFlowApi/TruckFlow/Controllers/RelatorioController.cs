@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Relatorio;
+using TruckFlow.Domain.Dto.RelatorioBi;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 
@@ -14,10 +15,21 @@ namespace TruckFlow.Controllers
     public sealed class RelatorioController : ControllerBase
     {
         private readonly IRelatorioService _service;
+        private readonly IRelatorioBiService _biService;
 
-        public RelatorioController(IRelatorioService service)
+        public RelatorioController(IRelatorioService service, IRelatorioBiService biService)
         {
             _service = service;
+            _biService = biService;
+        }
+
+        [HttpGet("visao-geral")]
+        [ProducesResponseType(typeof(VisaoGeralResponseDto), 200)]
+        public async Task<IActionResult> VisaoGeral(
+            [FromQuery] RelatorioBiFiltroDto filtro,
+            CancellationToken token)
+        {
+            return Ok(await _biService.VisaoGeralAsync(filtro, token));
         }
 
         [HttpGet("agendamentos")]
