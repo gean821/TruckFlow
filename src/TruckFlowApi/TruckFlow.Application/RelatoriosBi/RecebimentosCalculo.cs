@@ -114,7 +114,14 @@ namespace TruckFlow.Application.RelatoriosBi
             };
         }
 
-        private static List<(DateOnly Inicio, DateOnly Fim)> Baldes(RelatorioBiPeriodoDto periodo, string agrupamento)
+        public static string RotuloBalde((DateOnly Inicio, DateOnly Fim) balde) =>
+            balde.Inicio == balde.Fim
+                ? balde.Inicio.ToString("dd/MM", PtBr)
+                : balde.Inicio.Day == 1 && balde.Fim.AddDays(1).Day == 1
+                    ? balde.Inicio.ToString("MMM/yy", PtBr).Replace(".", "")
+                    : $"{balde.Inicio:dd/MM}–{balde.Fim:dd/MM}";
+
+        public static List<(DateOnly Inicio, DateOnly Fim)> Baldes(RelatorioBiPeriodoDto periodo, string agrupamento)
         {
             var baldes = new List<(DateOnly, DateOnly)>();
             var cursor = periodo.Inicio;
@@ -155,11 +162,7 @@ namespace TruckFlow.Application.RelatoriosBi
             {
                 Inicio = balde.Inicio,
                 Fim = balde.Fim,
-                Rotulo = balde.Inicio == balde.Fim
-                    ? balde.Inicio.ToString("dd/MM", PtBr)
-                    : balde.Inicio.Day == 1 && balde.Fim.AddDays(1).Day == 1
-                        ? balde.Inicio.ToString("MMM/yy", PtBr).Replace(".", "")
-                        : $"{balde.Inicio:dd/MM}–{balde.Fim:dd/MM}",
+                Rotulo = RotuloBalde(balde),
                 TotalKg = doBalde.Sum(r => r.PesoNotaKg),
                 Descargas = doBalde.Count,
                 PorProduto = porProduto,

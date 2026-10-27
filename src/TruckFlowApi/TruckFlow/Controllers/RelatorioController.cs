@@ -69,6 +69,24 @@ namespace TruckFlow.Controllers
             return Ok(await _biService.PatioAsync(filtro, token));
         }
 
+        [HttpGet("fornecedores")]
+        [ProducesResponseType(typeof(FornecedoresResponseDto), 200)]
+        public async Task<IActionResult> Fornecedores(
+            [FromQuery] FornecedoresFiltroDto filtro,
+            CancellationToken token)
+        {
+            return Ok(await _biService.FornecedoresAsync(filtro, token));
+        }
+
+        [HttpGet("fornecedores/detalhe")]
+        [ProducesResponseType(typeof(FornecedorDetalheDto), 200)]
+        public async Task<IActionResult> FornecedorDetalhe(
+            [FromQuery] FornecedoresFiltroDto filtro,
+            CancellationToken token)
+        {
+            return Ok(await _biService.FornecedorDetalheAsync(filtro, token));
+        }
+
         [HttpGet("agendamentos/detalhado")]
         [ProducesResponseType(typeof(PagedResponse<AgendamentoDetalhadoDto>), 200)]
         public async Task<IActionResult> AgendamentosDetalhado(
