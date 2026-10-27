@@ -32,6 +32,15 @@ namespace TruckFlow.Controllers
             return Ok(await _biService.VisaoGeralAsync(filtro, token));
         }
 
+        [HttpGet("recebimentos")]
+        [ProducesResponseType(typeof(RecebimentosResponseDto), 200)]
+        public async Task<IActionResult> Recebimentos(
+            [FromQuery] RecebimentosFiltroDto filtro,
+            CancellationToken token)
+        {
+            return Ok(await _biService.RecebimentosAsync(filtro, token));
+        }
+
         [HttpGet("agendamentos")]
         public async Task GerarRelatorioAgendamentos(
             [FromQuery] FormatoRelatorio formato,

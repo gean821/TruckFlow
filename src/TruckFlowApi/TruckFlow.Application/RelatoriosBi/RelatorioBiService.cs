@@ -32,16 +32,47 @@ namespace TruckFlow.Application.RelatoriosBi
             var periodo = RelatorioBiPeriodo.Resolver(filtro, _timeProvider.GetUtcNow().UtcDateTime);
             var linhas = await _repo.ListarLinhasAsync(RelatorioBiPeriodo.Criteria(filtro, periodo), token);
             var docas = await _repo.ContarDocasAtivasAsync(filtro.UnidadeEntregaId, filtro.LocalDescargaId, token);
-            var empresa = await _empresaRepo.GetById(_guard.GetEmpresaId(), token);
-
-            var filtrado = filtro.UnidadeEntregaId.HasValue
-                || filtro.LocalDescargaId.HasValue
-                || filtro.FornecedorId.HasValue
-                || filtro.ProdutoId.HasValue;
-
-            var meta = filtrado ? null : EmpresaMetaDiaria.ResolveKg(empresa?.Configuracoes);
+            var meta = await MetaSemFiltroAsync(filtro, token);
 
             return VisaoGeralCalculo.Montar(linhas, periodo, meta, docas);
+        }
+
+        public async Task<RecebimentosResponseDto> RecebimentosAsync(
+            RecebimentosFiltroDto filtro,
+            CancellationToken token = default)
+        {
+            var agoraUtc = _timeProvider.GetUtcNow().UtcDateTime;
+            var filtroBi = filtro.ParaFiltroBi();
+            var periodo = RelatorioBiPeriodo.Resolver(filtroBi, agoraUtc);
+            var agrupamento = RecebimentosCalculo.ResolverAgrupamento(filtro.Agrupamento, periodo.Dias);
+            var criteria = RelatorioBiPeriodo.Criteria(filtroBi, periodo);
+            var inicioPeriodoUtc = RelatorioBiPeriodo.InicioDoDiaUtc(periodo.Inicio);
+
+            var recebimentos = await _repo.ListarRecebimentosAsync(criteria, token);
+            var planejamento = await _repo.ListarPlanejamentoAsync(criteria, inicioPeriodoUtc, token);
+            var orfaos = await _repo.ResumirOrfaosAsync(criteria, inicioPeriodoUtc, token);
+            var meta = await MetaSemFiltroAsync(filtroBi, token);
+
+            return RecebimentosCalculo.Montar(
+                recebimentos,
+                planejamento,
+                orfaos,
+                periodo,
+                agrupamento,
+                meta,
+                RelatorioBiPeriodo.DiaLocal(agoraUtc));
+        }
+
+        private async Task<decimal?> MetaSemFiltroAsync(RelatorioBiFiltroDto filtro, CancellationToken token)
+        {
+            if (filtro.UnidadeEntregaId.HasValue || filtro.LocalDescargaId.HasValue
+                || filtro.FornecedorId.HasValue || filtro.ProdutoId.HasValue)
+            {
+                return null;
+            }
+
+            var empresa = await _empresaRepo.GetById(_guard.GetEmpresaId(), token);
+            return EmpresaMetaDiaria.ResolveKg(empresa?.Configuracoes);
         }
 
         public async Task<DashboardHojeResponseDto> DashboardHojeAsync(
