@@ -72,6 +72,7 @@ src/TruckFlowApi/
 - `Usuario` **não** é `IEmpresaScoped` — leituras/escritas de usuário filtram `EmpresaId` manualmente.
 - Variação entre fábricas vai em `Empresa.Configuracoes` (jsonb), não em código condicional. Chaves hoje: `authMethods` (`EmpresaAuthMethods`) e `metaDiariaKg` (`EmpresaMetaDiaria`, meta de descarga do dashboard; editada pela tela Empresa via `PATCH /v1/Empresa/{id}` com `metaDiariaKg`, `0` remove; sem ela o dashboard mostra "meta não configurada"). Ao gravar uma chave, preservar as demais do JSON.
 - "Hoje" em dashboard/relatórios é o dia de `Grade.OperationalTimeZone` (America/Sao_Paulo), nunca `DateTime.UtcNow.Date`.
+- Agendamento "de verdade" em contagens é `Agendamento.TemReserva` (tem motorista ou placa). Vaga vazia da grade não conta, nem quando o worker a marca como `Expirado` ou o admin a cancela — filtrar por status não basta.
 
 ## Erros
 

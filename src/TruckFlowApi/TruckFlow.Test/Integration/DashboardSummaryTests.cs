@@ -62,12 +62,21 @@ public class DashboardSummaryTests : IntegrationTestBase
             TestDataSeeder.NovoAgendamentoAtivoNaDoca(empresaId, docaA.Id, unidade.Id, produtoId,
                 new DateTime(2026, 10, 19, 15, 0, 0, DateTimeKind.Utc), new DateTime(2026, 10, 19, 16, 0, 0, DateTimeKind.Utc)),
             TestDataSeeder.NovaVagaDisponivel(empresaId, unidade.Id, produtoId, new DateTime(2026, 10, 19, 17, 0, 0, DateTimeKind.Utc)),
-            TestDataSeeder.NovaVagaDisponivel(empresaId, unidade.Id, produtoId, new DateTime(2026, 10, 19, 19, 0, 0, DateTimeKind.Utc)),
+            VagaVazia(TestDataSeeder.NovaVagaDisponivel(empresaId, unidade.Id, produtoId, new DateTime(2026, 10, 19, 13, 0, 0, DateTimeKind.Utc)), StatusAgendamento.Expirado),
+            VagaVazia(TestDataSeeder.NovaVagaDisponivel(empresaId, unidade.Id, produtoId, new DateTime(2026, 10, 19, 11, 0, 0, DateTimeKind.Utc)), StatusAgendamento.Cancelado),
         ]);
 
         var resumo = await cenario();
 
         Assert.Equal(1, resumo.Stats.TotalAgendamentos);
+        Assert.Equal(0, resumo.Stats.Expirados);
+        Assert.Equal(0, resumo.Stats.Cancelados);
+    }
+
+    private static Agendamento VagaVazia(Agendamento vaga, StatusAgendamento status)
+    {
+        vaga.StatusAgendamento = status;
+        return vaga;
     }
 
     [Fact]
@@ -140,7 +149,11 @@ public class DashboardSummaryTests : IntegrationTestBase
             setupDb.Produto.Add(produto);
             await setupDb.SaveChangesAsync();
 
-            setupDb.Agendamento.AddRange(agendamentos(empresa.Id, unidade, docaA, docaB, docaInativa, produto.Id));
+            var lista = agendamentos(empresa.Id, unidade, docaA, docaB, docaInativa, produto.Id);
+            foreach (var reservado in lista.Where(a => a.LocalDescargaId != null))
+                reservado.PlacaVeiculo = "ABC1D23";
+
+            setupDb.Agendamento.AddRange(lista);
             await setupDb.SaveChangesAsync();
         }
 

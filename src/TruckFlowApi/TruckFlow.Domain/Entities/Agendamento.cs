@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using TruckFlow.Domain.Contracts;
 using TruckFlow.Domain.Enums;
 using TruckFlow.Domain.Events;
@@ -9,6 +10,8 @@ namespace TruckFlow.Domain.Entities
 {
     public class Agendamento : EntidadeBase, IEmpresaScoped
     {
+        public static readonly Expression<Func<Agendamento, bool>> TemReserva =
+            a => a.UsuarioId != null || a.PlacaVeiculo != null;
 
         public Produto? Produto { get; set; }
         public Guid? ProdutoId { get; set; }

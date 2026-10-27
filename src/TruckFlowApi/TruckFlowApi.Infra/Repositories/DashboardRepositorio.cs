@@ -24,10 +24,10 @@ namespace TruckFlowApi.Infra.Repositories
             CancellationToken token = default)
         {
             var doDia = _db.Agendamento
-                .Where(x => x.DataInicio >= inicioDiaUtc && x.DataInicio < fimDiaUtc);
+                .Where(x => x.DataInicio >= inicioDiaUtc && x.DataInicio < fimDiaUtc)
+                .Where(Agendamento.TemReserva);
 
-            var totalAgendamentosHoje = await doDia
-                .CountAsync(x => x.StatusAgendamento != StatusAgendamento.Disponivel, token);
+            var totalAgendamentosHoje = await doDia.CountAsync(token);
 
             var emAndamento = await _db.Agendamento
                 .CountAsync(x => x.StatusAgendamento == StatusAgendamento.EmAndamento, token);

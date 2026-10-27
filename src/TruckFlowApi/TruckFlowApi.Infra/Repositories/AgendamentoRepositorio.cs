@@ -121,7 +121,7 @@ namespace TruckFlowApi.Infra.Repositories
 
             if (filtros.OcultarVagasLivres)
             {
-                query = query.Where(x => x.StatusAgendamento != StatusAgendamento.Disponivel);
+                query = query.Where(Agendamento.TemReserva);
             }
 
             if (!string.IsNullOrWhiteSpace(filtros.Search))

@@ -74,16 +74,22 @@ public class DashboardHttpTests : IntegrationTestBase
             db.Produto.Add(produto);
             await db.SaveChangesAsync();
 
+            var reservado = TestDataSeeder.NovoAgendamentoAtivoNaDoca(empresaId, doca.Id, unidade.Id, produto.Id, amanha, amanha.AddHours(1));
+            reservado.PlacaVeiculo = "ABC1D23";
+            var vagaExpirada = TestDataSeeder.NovaVagaDisponivel(empresaId, unidade.Id, produto.Id, amanha.AddHours(4));
+            vagaExpirada.StatusAgendamento = StatusAgendamento.Expirado;
+
             db.Agendamento.AddRange(
-                TestDataSeeder.NovoAgendamentoAtivoNaDoca(empresaId, doca.Id, unidade.Id, produto.Id, amanha, amanha.AddHours(1)),
-                TestDataSeeder.NovaVagaDisponivel(empresaId, unidade.Id, produto.Id, amanha.AddHours(2)));
+                reservado,
+                TestDataSeeder.NovaVagaDisponivel(empresaId, unidade.Id, produto.Id, amanha.AddHours(2)),
+                vagaExpirada);
             await db.SaveChangesAsync();
         }
 
         var dia = amanha.ToString("yyyy-MM-dd");
 
         var todas = await Listar(client, token, $"dataInicio={dia}&dataFim={dia}");
-        Assert.Equal(2, todas.GetProperty("totalCount").GetInt32());
+        Assert.Equal(3, todas.GetProperty("totalCount").GetInt32());
 
         var semVagas = await Listar(client, token, $"dataInicio={dia}&dataFim={dia}&ocultarVagasLivres=true");
         Assert.Equal(1, semVagas.GetProperty("totalCount").GetInt32());
