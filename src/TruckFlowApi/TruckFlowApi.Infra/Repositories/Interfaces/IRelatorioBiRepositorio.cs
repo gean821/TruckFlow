@@ -14,6 +14,8 @@ namespace TruckFlowApi.Infra.Repositories.Interfaces
 
         Task<List<PlanejamentoItemLinha>> ListarPlanejamentoAsync(RelatorioBiCriteria criteria, DateTime periodoInicioUtc, CancellationToken token = default);
 
+        Task<List<CapacidadeVagaLinha>> ListarVagasAsync(RelatorioBiCriteria criteria, CancellationToken token = default);
+
         Task<(int Quantidade, decimal Kg)> ResumirOrfaosAsync(RelatorioBiCriteria criteria, DateTime periodoInicioUtc, CancellationToken token = default);
     }
 }

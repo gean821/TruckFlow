@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using TruckFlow.Application.Interfaces;
@@ -39,6 +39,15 @@ namespace TruckFlow.Controllers
             CancellationToken token)
         {
             return Ok(await _biService.RecebimentosAsync(filtro, token));
+        }
+
+        [HttpGet("capacidade-docas")]
+        [ProducesResponseType(typeof(CapacidadeDocasResponseDto), 200)]
+        public async Task<IActionResult> CapacidadeDocas(
+            [FromQuery] RelatorioBiFiltroDto filtro,
+            CancellationToken token)
+        {
+            return Ok(await _biService.CapacidadeDocasAsync(filtro, token));
         }
 
         [HttpGet("agendamentos")]

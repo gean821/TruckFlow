@@ -63,6 +63,23 @@ namespace TruckFlow.Application.RelatoriosBi
                 RelatorioBiPeriodo.DiaLocal(agoraUtc));
         }
 
+        public async Task<CapacidadeDocasResponseDto> CapacidadeDocasAsync(
+            RelatorioBiFiltroDto filtro,
+            CancellationToken token = default)
+        {
+            var periodo = RelatorioBiPeriodo.Resolver(filtro, _timeProvider.GetUtcNow().UtcDateTime);
+            var vagas = await _repo.ListarVagasAsync(RelatorioBiPeriodo.Criteria(filtro, periodo), token);
+            var docas = await _repo.ListarDocasAtivasAsync(filtro.UnidadeEntregaId, token);
+
+            if (filtro.LocalDescargaId.HasValue)
+                docas = docas.Where(d => d.Id == filtro.LocalDescargaId).ToList();
+
+            if (filtro.ProdutoId.HasValue)
+                docas = docas.Where(d => vagas.Any(v => v.LocalDescargaId == d.Id)).ToList();
+
+            return CapacidadeDocasCalculo.Montar(vagas, docas, periodo);
+        }
+
         private async Task<decimal?> MetaSemFiltroAsync(RelatorioBiFiltroDto filtro, CancellationToken token)
         {
             if (filtro.UnidadeEntregaId.HasValue || filtro.LocalDescargaId.HasValue

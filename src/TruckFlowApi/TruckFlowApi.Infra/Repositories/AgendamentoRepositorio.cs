@@ -102,6 +102,12 @@ namespace TruckFlowApi.Infra.Repositories
                 query = query.Where(x => x.UnidadeEntregaId == filtros.UnidadeEntregaId.Value);
             }
 
+            if (filtros.LocalDescargaId.HasValue)
+            {
+                query = query.Where(x => x.LocalDescargaId == filtros.LocalDescargaId.Value
+                    || (x.LocalDescargaId == null && x.Grade != null && x.Grade.LocalDescargaId == filtros.LocalDescargaId.Value));
+            }
+
             if (filtros.ProdutoId.HasValue)
             {
                 var produtoId = filtros.ProdutoId.Value;
