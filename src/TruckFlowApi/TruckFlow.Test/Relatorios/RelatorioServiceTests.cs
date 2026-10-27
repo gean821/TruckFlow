@@ -6,6 +6,7 @@ using TruckFlow.Application;
 using TruckFlow.Application.Exceptions;
 using TruckFlow.Application.Relatorios;
 using TruckFlow.Domain.Dto.Relatorio;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Enums;
 using TruckFlowApi.Infra.Repositories.Interfaces;
 using static TruckFlow.Test.Relatorios.RelatorioTestData;
@@ -29,6 +30,8 @@ namespace TruckFlow.Test.Relatorios
         public RelatorioServiceTests()
         {
             _service = new RelatorioService(_repo, _relogio);
+            _repo.ListarFinsDescargaAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<IReadOnlyCollection<Guid>?>(), Arg.Any<CancellationToken>())
+                .Returns(new List<FimDescargaDoca>());
         }
 
         private static RelatorioAgendamentoFilterDto FiltroValido() => new()
@@ -198,6 +201,112 @@ namespace TruckFlow.Test.Relatorios
             var bytes = await Executar(arquivo);
 
             Assert.Equal("%PDF", Encoding.ASCII.GetString(bytes, 0, 4));
+        }
+
+        private static readonly Guid Doca = Guid.NewGuid();
+
+        private static AgendamentoRelatorioLinha ComDescarga(DateTime chegou, DateTime fim) => new()
+        {
+            Id = Guid.NewGuid(),
+            LocalDescargaId = Doca,
+            DaGrade = true,
+            TipoCarga = TipoCarga.Milho,
+            PlacaVeiculo = "ABC1D23",
+            Status = StatusAgendamento.Finalizado,
+            DataInicio = chegou,
+            DataFim = chegou.AddHours(1),
+            ChegouEm = chegou,
+            FimDescargaEm = fim
+        };
+
+        [Fact]
+        public async Task Xlsx_gera_planilha_com_o_ciclo_estimado_pelo_caminhao_anterior()
+        {
+            var chegou = LocalParaUtc(2026, 10, 1, 8, 0);
+            BancoRetornaTotal(1);
+            _repo.GetLinhasRelatorioAsync(Arg.Any<RelatorioAgendamentoCriteria>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+                .Returns(new List<AgendamentoRelatorioLinha> { ComDescarga(chegou, chegou.AddMinutes(60)) });
+            _repo.ListarFinsDescargaAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<IReadOnlyCollection<Guid>?>(), Arg.Any<CancellationToken>())
+                .Returns(new List<FimDescargaDoca> { new(Doca, chegou.AddMinutes(25)) });
+
+            var arquivo = await _service.GerarRelatorioAgendamentos(FiltroValido(), FormatoRelatorio.Xlsx);
+            var bytes = await Executar(arquivo);
+
+            Assert.Equal("relatorio-agendamentos-20261019-1030.xlsx", arquivo.NomeArquivo);
+            Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", arquivo.ContentType);
+            await _repo.Received(1).GetLinhasRelatorioAsync(
+                Arg.Any<RelatorioAgendamentoCriteria>(), RelatorioLimites.MaxLinhasXlsx, Arg.Any<CancellationToken>());
+
+            var linhas = MiniExcelLibs.MiniExcel.Query(new MemoryStream(bytes), useHeaderRow: true)
+                .Cast<IDictionary<string, object>>()
+                .ToList();
+            var linha = Assert.Single(linhas);
+            Assert.Equal("Concluído", linha["Status"]);
+            Assert.Equal("ABC1D23", linha["Placa"]);
+            Assert.Equal("Sim", linha["Início estimado"]);
+            Assert.Equal(25d, Convert.ToDouble(linha["Espera (min)"]));
+            Assert.Equal(35d, Convert.ToDouble(linha["Descarga (min)"]));
+        }
+
+        [Fact]
+        public async Task Xlsx_acima_do_limite_lanca_e_nao_le_as_linhas()
+        {
+            BancoRetornaTotal(RelatorioLimites.MaxLinhasXlsx + 1);
+
+            await Assert.ThrowsAsync<BusinessException>(() =>
+                _service.GerarRelatorioAgendamentos(FiltroValido(), FormatoRelatorio.Xlsx));
+
+            await _repo.DidNotReceiveWithAnyArgs().GetLinhasRelatorioAsync(default!, default, default);
+        }
+
+        [Fact]
+        public async Task Detalhado_limita_a_pagina_e_estima_o_inicio_com_o_fim_anterior_na_doca()
+        {
+            var chegou = LocalParaUtc(2026, 10, 1, 8, 0);
+            var linha = ComDescarga(chegou, chegou.AddMinutes(60));
+            _repo.GetPaginaRelatorioAsync(Arg.Any<RelatorioAgendamentoCriteria>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+                .Returns(new PagedResponse<AgendamentoRelatorioLinha> { Items = [linha], PageNumber = 1, PageSize = 100, TotalCount = 1, TotalPages = 1 });
+            _repo.ListarFinsDescargaAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>(), Arg.Any<IReadOnlyCollection<Guid>?>(), Arg.Any<CancellationToken>())
+                .Returns(new List<FimDescargaDoca> { new(Doca, chegou.AddMinutes(30)), new(Doca, chegou.AddMinutes(60)) });
+
+            var query = new RelatorioAgendamentoDetalhadoQueryDto
+            {
+                DataInicio = new DateTime(2026, 10, 1),
+                DataFim = new DateTime(2026, 10, 1),
+                PageNumber = 0,
+                PageSize = 1000
+            };
+
+            var pagina = await _service.ListarDetalhadoAsync(query);
+
+            await _repo.Received(1).GetPaginaRelatorioAsync(Arg.Any<RelatorioAgendamentoCriteria>(), 1, RelatorioLimites.MaxPorPagina, Arg.Any<CancellationToken>());
+            await _repo.Received(1).ListarFinsDescargaAsync(
+                chegou, chegou.AddMinutes(60),
+                Arg.Is<IReadOnlyCollection<Guid>?>(d => d != null && d.Single() == Doca),
+                Arg.Any<CancellationToken>());
+
+            var dto = Assert.Single(pagina.Items);
+            Assert.True(dto.InicioEstimado);
+            Assert.Equal(chegou.AddMinutes(30), dto.InicioDescarga);
+            Assert.Equal(30d, dto.EsperaMin);
+            Assert.Equal(30d, dto.DescargaMin);
+            Assert.Equal("Grade", dto.Origem);
+            Assert.Equal("NoHorario", dto.SituacaoChegada);
+        }
+
+        [Fact]
+        public async Task Detalhado_com_ordenacao_invalida_nao_consulta_o_banco()
+        {
+            var query = new RelatorioAgendamentoDetalhadoQueryDto
+            {
+                DataInicio = new DateTime(2026, 10, 1),
+                DataFim = new DateTime(2026, 10, 1),
+                OrdenarPor = "senha"
+            };
+
+            await Assert.ThrowsAsync<BusinessException>(() => _service.ListarDetalhadoAsync(query));
+
+            await _repo.DidNotReceiveWithAnyArgs().GetPaginaRelatorioAsync(default!, default, default, default);
         }
     }
 }

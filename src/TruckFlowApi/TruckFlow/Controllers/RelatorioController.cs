@@ -4,6 +4,7 @@ using Microsoft.Net.Http.Headers;
 using TruckFlow.Application.Interfaces;
 using TruckFlow.Domain.Dto.Relatorio;
 using TruckFlow.Domain.Dto.RelatorioBi;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Entities;
 using TruckFlow.Domain.Enums;
 
@@ -48,6 +49,24 @@ namespace TruckFlow.Controllers
             CancellationToken token)
         {
             return Ok(await _biService.CapacidadeDocasAsync(filtro, token));
+        }
+
+        [HttpGet("agendamentos/detalhado")]
+        [ProducesResponseType(typeof(PagedResponse<AgendamentoDetalhadoDto>), 200)]
+        public async Task<IActionResult> AgendamentosDetalhado(
+            [FromQuery] RelatorioAgendamentoDetalhadoQueryDto query,
+            CancellationToken token)
+        {
+            return Ok(await _service.ListarDetalhadoAsync(query, token));
+        }
+
+        [HttpGet("agendamentos/resumo")]
+        [ProducesResponseType(typeof(RelatorioDetalhadoResumoDto), 200)]
+        public async Task<IActionResult> AgendamentosResumo(
+            [FromQuery] RelatorioAgendamentoFilterDto filtros,
+            CancellationToken token)
+        {
+            return Ok(await _service.ResumoDetalhadoAsync(filtros, token));
         }
 
         [HttpGet("agendamentos")]

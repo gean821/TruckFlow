@@ -80,6 +80,18 @@ internal sealed class FakeAgendamentoRepositorioParaMotorista : IAgendamentoRepo
         RelatorioAgendamentoCriteria criteria, int limite) =>
         throw new NotImplementedException();
 
+    public Task<TruckFlow.Domain.Dto.Shared.PagedResponse<AgendamentoRelatorioLinha>> GetPaginaRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, int pageNumber, int pageSize, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
+    public Task<List<RelatorioResumoLinha>> ListarResumoRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
+    public Task<List<FimDescargaDoca>> ListarFinsDescargaAsync(
+        DateTime deUtc, DateTime ateUtc, IReadOnlyCollection<Guid>? docas = null, CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+
     public Task<List<AgendamentoEntity>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default) =>
         throw new NotImplementedException();
 

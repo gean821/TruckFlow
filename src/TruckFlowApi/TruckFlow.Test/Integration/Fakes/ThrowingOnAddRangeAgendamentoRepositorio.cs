@@ -45,6 +45,18 @@ internal sealed class ThrowingOnAddRangeAgendamentoRepositorio(IAgendamentoRepos
         RelatorioAgendamentoCriteria criteria, int limite) =>
         inner.StreamLinhasRelatorioAsync(criteria, limite);
 
+    public Task<PagedResponse<AgendamentoRelatorioLinha>> GetPaginaRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, int pageNumber, int pageSize, CancellationToken cancellationToken = default) =>
+        inner.GetPaginaRelatorioAsync(criteria, pageNumber, pageSize, cancellationToken);
+
+    public Task<List<RelatorioResumoLinha>> ListarResumoRelatorioAsync(
+        RelatorioAgendamentoCriteria criteria, CancellationToken cancellationToken = default) =>
+        inner.ListarResumoRelatorioAsync(criteria, cancellationToken);
+
+    public Task<List<FimDescargaDoca>> ListarFinsDescargaAsync(
+        DateTime deUtc, DateTime ateUtc, IReadOnlyCollection<Guid>? docas = null, CancellationToken cancellationToken = default) =>
+        inner.ListarFinsDescargaAsync(deUtc, ateUtc, docas, cancellationToken);
+
     public Task<List<Agendamento>> GetByMotoristaId(Guid motoristaId, CancellationToken token = default) =>
         inner.GetByMotoristaId(motoristaId, token);
 

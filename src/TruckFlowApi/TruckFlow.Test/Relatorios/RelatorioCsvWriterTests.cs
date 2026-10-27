@@ -1,5 +1,7 @@
 using TruckFlow.Application.Relatorios;
 using TruckFlow.Domain.Dto.Relatorio;
+using TruckFlow.Domain.Enums;
+using TruckFlow.Domain.Rules;
 using static TruckFlow.Test.Relatorios.RelatorioTestData;
 
 namespace TruckFlow.Test.Relatorios
@@ -40,7 +42,33 @@ namespace TruckFlow.Test.Relatorios
 
             Assert.Equal(1, total);
             Assert.Equal(
-                "Fornecedor A;Soja;ABC1D23;João Silva;Unidade 1;Doca 3;Ls;1500,5;Agendado;01/10/2026 07:30;01/10/2026 08:30",
+                "Fornecedor A;Soja;ABC1D23;João Silva;Unidade 1;Doca 3;Ls;1500,5;Agendado;01/10/2026 07:30;01/10/2026 08:30;Avulso;;;;;;;;;;",
+                Linhas(bytes)[1]);
+        }
+
+        [Fact]
+        public async Task Inclui_ciclo_do_caminhao_e_situacao_da_chegada()
+        {
+            var chegou = LocalParaUtc(2026, 10, 1, 8, 40);
+            var fim = LocalParaUtc(2026, 10, 1, 9, 30);
+            var linha = new AgendamentoRelatorioLinha
+            {
+                Id = Guid.NewGuid(),
+                DaGrade = true,
+                NotaFiscalNumero = 12345,
+                TipoCarga = TipoCarga.Milho,
+                Status = StatusAgendamento.Finalizado,
+                DataInicio = LocalParaUtc(2026, 10, 1, 7, 30),
+                DataFim = LocalParaUtc(2026, 10, 1, 8, 30),
+                ChegouEm = chegou,
+                FimDescargaEm = fim,
+                Ciclo = new CicloCaminhaoResultado(Guid.NewGuid(), LocalParaUtc(2026, 10, 1, 8, 50), true, fim, true, 10, 40, 50)
+            };
+
+            var (bytes, _) = await Escrever(linha);
+
+            Assert.EndsWith(
+                ";Concluído;01/10/2026 07:30;01/10/2026 08:30;Grade;12345;01/10/2026 08:40;Atrasado;01/10/2026 08:50;Sim;01/10/2026 09:30;01/10/2026 09:30;10;40;50",
                 Linhas(bytes)[1]);
         }
 

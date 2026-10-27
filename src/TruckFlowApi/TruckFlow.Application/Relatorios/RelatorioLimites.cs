@@ -12,6 +12,10 @@ namespace TruckFlow.Application.Relatorios
 
         public const int MaxLinhasPdf = 5_000;
 
+        public const int MaxLinhasXlsx = 100_000;
+
+        public const int MaxPorPagina = 100;
+
         public const int PeriodoMaximoDias = 366;
     }
 }

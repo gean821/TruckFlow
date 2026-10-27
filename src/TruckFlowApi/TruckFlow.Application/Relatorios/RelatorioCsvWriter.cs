@@ -10,7 +10,8 @@ namespace TruckFlow.Application.Relatorios
     public static class RelatorioCsvWriter
     {
         public const string Cabecalho =
-            "Fornecedor;Produto;Placa;Motorista;Unidade;Local;TipoVeiculo;Peso;Status;DataInicio;DataFim";
+            "Fornecedor;Produto;Placa;Motorista;Unidade;Local;TipoVeiculo;Peso;Status;DataInicio;DataFim;" +
+            "Origem;NotaFiscal;Chegada;SituacaoChegada;InicioDescarga;InicioEstimado;FimDescarga;Saida;EsperaMin;DescargaMin;PermanenciaMin";
 
         private static readonly UTF8Encoding Utf8ComBom = new(encoderShouldEmitUTF8Identifier: true);
 
@@ -47,9 +48,27 @@ namespace TruckFlow.Application.Relatorios
                 Campo(a.LocalDescarga),
                 Campo(a.TipoVeiculo?.ToString()),
                 a.PesoCarga?.ToString("0.##", RelatorioFormatacao.PtBr) ?? "",
-                Campo(a.Status.ToString()),
+                Campo(RelatorioDetalhadoCalculo.StatusRotulo(a.Status)),
                 RelatorioFormatacao.DataHoraLocal(a.DataInicio),
-                RelatorioFormatacao.DataHoraLocal(a.DataFim));
+                RelatorioFormatacao.DataHoraLocal(a.DataFim),
+                a.DaGrade ? "Grade" : "Avulso",
+                a.NotaFiscalNumero?.ToString(RelatorioFormatacao.PtBr) ?? "",
+                DataHora(a.ChegouEm),
+                Campo(RelatorioDetalhadoCalculo.SituacaoRotulo(
+                    RelatorioDetalhadoCalculo.Situacao(a.Status, a.DataInicio, a.DataFim, a.ChegouEm))),
+                DataHora(a.Ciclo?.InicioDescarga),
+                a.Ciclo?.InicioDescarga is null ? "" : a.Ciclo.InicioEstimado ? "Sim" : "Não",
+                DataHora(a.FimDescargaEm),
+                DataHora(a.Ciclo?.Saida),
+                Minutos(a.Ciclo?.EsperaMinutos),
+                Minutos(a.Ciclo?.DescargaMinutos),
+                Minutos(a.Ciclo?.PermanenciaMinutos));
+
+        private static string DataHora(DateTime? utc) =>
+            utc.HasValue ? RelatorioFormatacao.DataHoraLocal(utc.Value) : "";
+
+        private static string Minutos(double? minutos) =>
+            minutos.HasValue ? Math.Round(minutos.Value).ToString("0", RelatorioFormatacao.PtBr) : "";
 
         private static string Campo(string? valor)
         {

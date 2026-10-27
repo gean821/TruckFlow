@@ -9,6 +9,7 @@ namespace TruckFlow.Domain.Enums
     public enum FormatoRelatorio
     {
         Csv,
-        Pdf
+        Pdf,
+        Xlsx
     }
 }

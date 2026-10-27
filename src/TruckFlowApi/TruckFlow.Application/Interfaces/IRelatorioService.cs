@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TruckFlow.Domain.Dto.Relatorio;
+using TruckFlow.Domain.Dto.Shared;
 using TruckFlow.Domain.Enums;
 
 namespace TruckFlow.Application.Interfaces
@@ -13,6 +14,14 @@ namespace TruckFlow.Application.Interfaces
         Task<RelatorioArquivoDto> GerarRelatorioAgendamentos(
             RelatorioAgendamentoFilterDto filtros,
             FormatoRelatorio formato,
+            CancellationToken token = default);
+
+        Task<PagedResponse<AgendamentoDetalhadoDto>> ListarDetalhadoAsync(
+            RelatorioAgendamentoDetalhadoQueryDto query,
+            CancellationToken token = default);
+
+        Task<RelatorioDetalhadoResumoDto> ResumoDetalhadoAsync(
+            RelatorioAgendamentoFilterDto filtros,
             CancellationToken token = default);
     }
 }
