@@ -46,7 +46,7 @@ namespace TruckFlow.Application.Relatorios
                 Campo(a.MotoristaNome),
                 Campo(a.UnidadeEntrega),
                 Campo(a.LocalDescarga),
-                Campo(a.TipoVeiculo?.ToString()),
+                Campo(RelatorioDetalhadoCalculo.TipoVeiculoRotulo(a.TipoVeiculo)),
                 a.PesoCarga?.ToString("0.##", RelatorioFormatacao.PtBr) ?? "",
                 Campo(RelatorioDetalhadoCalculo.StatusRotulo(a.Status)),
                 RelatorioFormatacao.DataHoraLocal(a.DataInicio),

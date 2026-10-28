@@ -49,7 +49,7 @@ namespace TruckFlow.Application.Relatorios
                 Motorista = l.MotoristaNome,
                 Telefone = l.MotoristaTelefone,
                 Placa = l.PlacaVeiculo,
-                TipoVeiculo = l.TipoVeiculo?.ToString(),
+                TipoVeiculo = RelatorioDetalhadoCalculo.TipoVeiculoRotulo(l.TipoVeiculo),
                 Fornecedor = l.FornecedorNome,
                 Produto = l.Produto,
                 NotaFiscal = l.NotaFiscalNumero,
