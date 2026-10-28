@@ -115,9 +115,31 @@ public class RelatorioDetalhadoCalculoTests
         Assert.Equal("Não compareceu", dto.StatusRotulo);
         Assert.Equal("Avulso", dto.Origem);
         Assert.Equal("Milho", dto.Produto);
-        Assert.Equal("BiTrem", dto.TipoVeiculo);
+        Assert.Equal("Bitrem", dto.TipoVeiculo);
         Assert.Equal("NaoCompareceu", dto.SituacaoChegada);
         Assert.Null(dto.AtrasoChegadaMin);
         Assert.False(dto.InicioEstimado);
+    }
+
+    [Theory]
+    [InlineData(TipoVeiculo.CarretaDoisEixos, "Carreta 2 eixos")]
+    [InlineData(TipoVeiculo.Ls, "LS (cavalo mecânico)")]
+    [InlineData(TipoVeiculo.CarretaCavaloTrucado, "Carreta cavalo trucado")]
+    [InlineData(TipoVeiculo.BiTrem, "Bitrem")]
+    [InlineData(TipoVeiculo.TriTrem, "Tritrem")]
+    [InlineData(TipoVeiculo.RodoTrem, "Rodotrem")]
+    [InlineData(TipoVeiculo.CarretaBau, "Carreta baú")]
+    [InlineData(TipoVeiculo.CarretaSider, "Carreta sider")]
+    [InlineData(TipoVeiculo.Vanderleia, "Vanderléia")]
+    [InlineData(TipoVeiculo.BauFrigorifico, "Baú frigorífico")]
+    public void TipoVeiculoRotulo_TraduzTodosOsTipos(TipoVeiculo tipo, string esperado)
+    {
+        Assert.Equal(esperado, RelatorioDetalhadoCalculo.TipoVeiculoRotulo(tipo));
+    }
+
+    [Fact]
+    public void TipoVeiculoRotulo_SemTipo_DevolveNulo()
+    {
+        Assert.Null(RelatorioDetalhadoCalculo.TipoVeiculoRotulo(null));
     }
 }

@@ -42,7 +42,7 @@ namespace TruckFlow.Test.Relatorios
 
             Assert.Equal(1, total);
             Assert.Equal(
-                "Fornecedor A;Soja;ABC1D23;João Silva;Unidade 1;Doca 3;Ls;1500,5;Agendado;01/10/2026 07:30;01/10/2026 08:30;Avulso;;;;;;;;;;",
+                "Fornecedor A;Soja;ABC1D23;João Silva;Unidade 1;Doca 3;LS (cavalo mecânico);1500,5;Agendado;01/10/2026 07:30;01/10/2026 08:30;Avulso;;;;;;;;;;",
                 Linhas(bytes)[1]);
         }
 

@@ -18,6 +18,22 @@ namespace TruckFlow.Application.Relatorios
             _ => status.ToString()
         };
 
+        public static string? TipoVeiculoRotulo(TipoVeiculo? tipo) => tipo switch
+        {
+            null => null,
+            TipoVeiculo.CarretaDoisEixos => "Carreta 2 eixos",
+            TipoVeiculo.Ls => "LS (cavalo mecânico)",
+            TipoVeiculo.CarretaCavaloTrucado => "Carreta cavalo trucado",
+            TipoVeiculo.BiTrem => "Bitrem",
+            TipoVeiculo.TriTrem => "Tritrem",
+            TipoVeiculo.RodoTrem => "Rodotrem",
+            TipoVeiculo.CarretaBau => "Carreta baú",
+            TipoVeiculo.CarretaSider => "Carreta sider",
+            TipoVeiculo.Vanderleia => "Vanderléia",
+            TipoVeiculo.BauFrigorifico => "Baú frigorífico",
+            _ => tipo.ToString()
+        };
+
         public static SituacaoChegada? Situacao(StatusAgendamento status, DateTime inicio, DateTime fim, DateTime? chegouEm)
         {
             if (chegouEm is null)
@@ -68,7 +84,7 @@ namespace TruckFlow.Application.Relatorios
                 MotoristaNome = l.MotoristaNome,
                 MotoristaTelefone = l.MotoristaTelefone,
                 PlacaVeiculo = l.PlacaVeiculo,
-                TipoVeiculo = l.TipoVeiculo?.ToString(),
+                TipoVeiculo = TipoVeiculoRotulo(l.TipoVeiculo),
                 FornecedorNome = l.FornecedorNome,
                 Produto = l.Produto,
                 UnidadeEntrega = l.UnidadeEntrega,
